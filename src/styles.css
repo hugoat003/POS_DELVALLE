@@ -1,25 +1,63 @@
-/* FUWA POS — estilos globales y variables de tema.
-   Paleta tomada del logo: azul marino + crema + dorado.
+/* Café del Valle POS — estilos globales y variables de tema.
+   Paleta tomada del logo: verde olivo + café + crema.
 
-   Estos valores eran configurables desde el panel de Tweaks. El cliente fijó
-   la identidad visual, así que ahora viven aquí y nadie los cambia en caliente:
-   tema Mochi (el azul marino de siempre), tipografía Fredoka y redondeo 28px. */
+   Los nombres antiguos (--navy, --gold, --cream) se conservan como alias de la
+   paleta nueva. Son ~2000 usos en estilos inline por todo el JSX; renombrarlos
+   de golpe sería un refactor enorme sin ganancia funcional. Se migran por
+   pantalla, conforme cada una se rediseña. */
 :root {
-  --navy: #3a4158;
-  --gold: #bfa377;
-  --cream: #faf6ee;
-  --ink: #3a4158;
-  --muted: #94918a;
-  --line: #ece6da;
-  --primary: #3a4158;
-  --primary-soft: #eceef5;
+  /* ---- Paleta Café del Valle ---- */
+  --verde: #4a5a24;        /* olivo del logo: acción principal */
+  --verde-oscuro: #3c4a1c; /* estado activo / hover */
+  --verde-suave: #edf0e1;  /* fondo de selección */
+  --verde-palido: #e9eddc;
+  --verde-claro: #f4f8e6;  /* texto sobre olivo */
+  --cafe: #8b5a2b;         /* café del logo: acento y precios */
+  --fondo: #f6f2ea;        /* crema del lienzo */
+  --superficie: #ffffff;
+  --superficie-baja: #fbf8f2;
+  --tinta: #2a2118;        /* texto principal */
+  --tinta-2: #7a6e5e;
+  --tinta-3: #8c8071;
+  --tinta-4: #a0947f;
+  --borde: #e7dfd1;
+  --borde-suave: #f0eadf;
+  --borde-fuerte: #dcd1bf;
+
+  /* ---- Semánticos ----
+     Separados de la marca a propósito: el olivo NO puede ser también el verde
+     de "todo bien", o el usuario deja de distinguir marca de estado. */
+  --ok: #3f6b37;
+  --ok-suave: #e4efe0;
+  --aviso: #92651a;
+  --aviso-suave: #f7edda;
+  --error: #a8382a;
+  --error-suave: #f7e4e0;
+
+  /* ---- Alias de compatibilidad (código heredado) ---- */
+  --navy: var(--verde);
+  --gold: var(--cafe);
+  --cream: var(--fondo);
+  --ink: var(--tinta);
+  --muted: var(--tinta-3);
+  --line: var(--borde);
+  --primary: var(--verde);
+  --primary-soft: var(--verde-suave);
+
   /* Redondeo de las superficies grandes (tarjetas, modales, paneles). Los
-     controles pequeños llevan su propio radio: 28px en un input de 44px de
-     alto lo convertiría en pastilla. */
-  --r: 28px;
-  --display: "Fredoka", system-ui;
-  --ui: "Nunito", system-ui, sans-serif;
-  --jp: "Mochiy Pop One", sans-serif;
+     controles pequeños llevan su propio radio. Café del Valle es mucho menos
+     redondo que FUWA: 28px → 16px. Los multiplicadores existentes siguen
+     funcionando — calc(--r * .7) da 11px en botones, calc(--r * 1.2) da 19px
+     en hojas modales. */
+  --r: 16px;
+
+  /* Archivo es el caballo de batalla (400-800). Instrument Serif entra solo en
+     cifras grandes y títulos, y SOLO en peso 400: no tiene negritas reales y
+     forzarlas produce falso bold. Por eso --display sigue siendo Archivo. */
+  --display: "Archivo", system-ui, sans-serif;
+  --ui: "Archivo", system-ui, sans-serif;
+  --serif: "Instrument Serif", Georgia, serif;
+  --jp: var(--display); /* heredado: la marca japonesa se retira en la fase 3 */
 }
 
 * {

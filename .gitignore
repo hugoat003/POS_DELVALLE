@@ -11,3 +11,6 @@ server/data/
 
 # configuración de la instalación: IPs y nombres de impresora de cada local
 .env
+
+# capturas de validación (se regeneran con: node tests/smoke.mjs --fotos)
+design/capturas/
