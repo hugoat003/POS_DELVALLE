@@ -93,6 +93,32 @@ try {
   ok("se puede agregar un producto al carrito", agregado);
   await foto("04-carrito");
 
+  // ------------------------------------------------- mesa obligatoria
+  /* Una orden "para aquí" no se puede cobrar sin mesa: la comanda saldría sin
+     destino. "Para llevar" nunca la necesita. */
+  seccion("Mesa obligatoria antes de cobrar");
+  // Solo "Método de pago" es exclusivo de la pantalla de cobro: "Total a pagar"
+  // y "Efectivo" también aparecen en la de orden y darían un falso positivo.
+  const enCobro = () => p.getByText(/MÉTODO DE PAGO/i).first().isVisible().catch(() => false);
+  const cerrarModal = async () => {
+    const x = p.locator('[aria-label="Cerrar"]').first();
+    if (await x.isVisible().catch(() => false)) { await x.click(); await p.waitForTimeout(450); }
+  };
+
+  await p.getByRole("button", { name: /^Para aquí/ }).first().click().catch(() => {});
+  await p.waitForTimeout(500);
+  await cerrarModal();
+  await p.getByRole("button", { name: /^Cobrar/ }).first().click().catch(() => {});
+  await p.waitForTimeout(700);
+  ok("bloquea el cobro sin mesa asignada", !(await enCobro()));
+  await cerrarModal();
+  ok("avisa qué falta", await p.getByText(/Elegí una mesa para cobrar/).first().isVisible().catch(() => false));
+
+  // Para llevar no exige mesa
+  await p.getByRole("button", { name: /^Para llevar/ }).first().click().catch(() => {});
+  await p.waitForTimeout(500);
+  ok("el aviso se retira con Para llevar", !(await p.getByText(/Elegí una mesa para cobrar/).first().isVisible().catch(() => false)));
+
   // ---------------------------------------------------------------- cobro
   seccion("Cobrar");
   const cobrar = p.getByRole("button", { name: /Cobrar|Pagar/i }).first();
@@ -102,7 +128,9 @@ try {
     await cobrar.click();
     await p.waitForTimeout(900);
     await foto("05-cobro");
-    ok("abre la pantalla de cobro", await p.getByText(/Efectivo|Total a pagar|Recibido/i).first().isVisible().catch(() => false));
+    ok("abre la pantalla de cobro", await enCobro());
+    const volver = p.getByRole("button", { name: /Volver/i }).first();
+    if (await volver.isVisible().catch(() => false)) { await volver.click(); await p.waitForTimeout(600); }
   }
 
   // ------------------------------------------------------------ navegación

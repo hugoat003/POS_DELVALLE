@@ -18,10 +18,23 @@
 
 import { round3 } from "./recipe.js";
 
-// Unidades en las que puede vivir un ingrediente. kg, L y oz NO están aquí a
-// propósito: son formas de comprar, no de gastar, y ahora tienen su propio
-// lugar como unidad de compra.
-export const BASE_UNITS = ["g", "ml", "pza"];
+/* Unidades en las que puede vivir un ingrediente.
+
+   kg, L, lb y galón NO están aquí a propósito: son formas de comprar, no de
+   gastar, y tienen su lugar como unidad de compra.
+
+   La onza sí está, y en dos sabores. En una cafetería la onza es unidad de
+   GASTO real, no solo de compra: los vasos son de 12 y 16 onzas, la leche se
+   sirve por onzas y el café se dosifica en onzas de peso. Obligar a escribir
+   las recetas en gramos y mililitros cuando el barista piensa en onzas
+   introduce una conversión mental en cada receta, que es justo donde se
+   cuelan los errores.
+
+   Se separan `oz` (peso) y `fl oz` (volumen) en vez de ofrecer una "onza" a
+   secas: son magnitudes distintas —28.35 g contra 29.57 ml— y confundirlas
+   descuadraría el inventario sin que nadie note por qué. Cada una arrastra sus
+   propios presets de compra, así que quien elige `oz` nunca ve galones. */
+export const BASE_UNITS = ["g", "oz", "ml", "fl oz", "pza"];
 
 /* Presets de compra por unidad base.
 
@@ -47,6 +60,20 @@ export const PURCHASE_PRESETS = {
     { unit: "gal", label: "galón", factor: 3785.411784 },
     { unit: "fl oz", label: "onza líquida", factor: 29.5735295625 },
   ],
+  // Onza de PESO como unidad base. 1 lb = 16 oz exactas, por definición.
+  oz: [
+    { unit: "oz", label: "onza", factor: 1 },
+    { unit: "lb", label: "libra", factor: 16 },
+    { unit: "kg", label: "kilo", factor: 35.27396194958041 },
+    { unit: "g", label: "gramo", factor: 0.035273961949580414 },
+  ],
+  // Onza LÍQUIDA como unidad base. 1 galón = 128 fl oz exactas, por definición.
+  "fl oz": [
+    { unit: "fl oz", label: "onza líquida", factor: 1 },
+    { unit: "gal", label: "galón", factor: 128 },
+    { unit: "L", label: "litro", factor: 33.814022701843204 },
+    { unit: "ml", label: "mililitro", factor: 0.033814022701843206 },
+  ],
   pza: [
     { unit: "pza", label: "pieza", factor: 1 },
     { unit: "docena", label: "docena", factor: 12 },
@@ -57,11 +84,24 @@ export const PURCHASE_PRESETS = {
 // obligar a nadie a recordar las equivalencias de memoria.
 export const CHULETA = {
   g: "1 lb = 453.59 g · 1 kg = 1000 g · 1 oz = 28.35 g",
+  oz: "1 lb = 16 oz · 1 kg = 35.27 oz · 1 oz = 28.35 g",
   ml: "1 L = 1000 ml · 1 galón = 3785.41 ml · 1 fl oz = 29.57 ml",
+  "fl oz": "1 galón = 128 fl oz · 1 L = 33.81 fl oz · 1 fl oz = 29.57 ml",
   pza: "El contenido es cuántas piezas trae el empaque",
 };
 
 export const presetsFor = (baseUnit) => PURCHASE_PRESETS[baseUnit] || PURCHASE_PRESETS.g;
+
+/* Nombre largo de la unidad base, para el selector del formulario. Sin esto
+   "oz" y "fl oz" se leen casi igual de un vistazo y es exactamente la
+   confusión que se quiere evitar. */
+export const UNIT_LABELS = {
+  g: "gramos",
+  oz: "onzas (peso)",
+  ml: "mililitros",
+  "fl oz": "onzas líq.",
+  pza: "piezas",
+};
 
 /* Factor efectivo de un ingrediente: cuántas unidades base trae una de compra.
    Cae a 1 ante cualquier valor inservible — un factor 0 sería una división por

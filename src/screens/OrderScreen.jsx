@@ -225,6 +225,27 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
   const [modal, setModal] = useState(null);
   const [tablePicker, setTablePicker] = useState(false);
   const [anulando, setAnulando] = useState(null);
+  const [avisoMesa, setAvisoMesa] = useState(false);
+
+  /* Una orden "para aquí" sin mesa deja la comanda sin destino: cocina y barra
+     no saben a quién entregarle, y en el historial la venta queda sin ubicar.
+     Solo se exige si el local tiene mesas cargadas — un café de mostrador que
+     nunca configuró el mapa no debe quedar bloqueado. "Para llevar" nunca la
+     necesita. */
+  const hayMesas = areas.some((a) => a.tables.length > 0);
+  const faltaMesa = orderType === "Aquí" && !table && hayMesas;
+
+  /* No se deshabilita el botón: uno muerto no dice qué hacer. Se abre el
+     selector de mesa y se deja el aviso puesto hasta que se resuelva. */
+  function intentarCobrar() {
+    if (faltaMesa) {
+      setAvisoMesa(true);
+      setTablePicker(true);
+      return;
+    }
+    setAvisoMesa(false);
+    onCheckout();
+  }
   const catById = useMemo(() => Object.fromEntries(cats.map((c) => [c.id, c])), [cats]);
   const ingById = useMemo(() => Object.fromEntries(ingredients.map((i) => [i.id, i])), [ingredients]);
   // Unidades que alcanzan de cada producto con el inventario actual.
@@ -336,6 +357,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
                   if (o === "Para llevar") setTable(null);
                   // Al pasar a "Para aquí" se abre el mapa para asignar mesa de una vez.
                   else if (!table && areas.some((a) => a.tables.length > 0)) setTablePicker(true);
+                  if (o !== "Aquí") setAvisoMesa(false);
                 }}
                 style={{
                   flex: 1,
@@ -373,9 +395,9 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
                 fontFamily: "var(--ui)",
                 fontWeight: 800,
                 fontSize: 14.5,
-                border: "2px " + (table ? "solid var(--primary)" : "dashed var(--line)"),
-                background: table ? "var(--primary-soft)" : "#fff",
-                color: table ? "var(--primary)" : "var(--muted)",
+                border: "1px " + (table ? "solid var(--verde)" : avisoMesa ? "solid var(--aviso)" : "dashed var(--borde)"),
+                background: table ? "var(--verde-suave)" : avisoMesa ? "var(--aviso-suave)" : "var(--superficie)",
+                color: table ? "var(--verde-oscuro)" : avisoMesa ? "var(--aviso)" : "var(--tinta-3)",
                 transition: "all .12s ease",
               }}
             >
@@ -460,9 +482,26 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
                   sentido y sin salida la mesa quedaría ocupada para siempre. La
                   acción pasa a ser descartar la cuenta. */}
               {totalCuenta > 0 ? (
-                <Btn kind={cart.length > 0 ? "ghost" : "primary"} size="lg" full onClick={onCheckout} icon="card">
+                <>
+              {faltaMesa && avisoMesa && (
+                <div
+                  role="status"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 9, marginBottom: 10, padding: "10px 13px",
+                    borderRadius: 11, background: "var(--aviso-suave)", color: "var(--aviso)",
+                    fontSize: 13, fontWeight: 600, lineHeight: 1.4,
+                  }}
+                >
+                  <span style={{ flexShrink: 0, display: "flex" }}>
+                    <Icon name="alert" size={17} />
+                  </span>
+                  <span>Elegí una mesa para cobrar, o cambiá la orden a <b>Para llevar</b>.</span>
+                </div>
+              )}
+                <Btn kind={cart.length > 0 ? "ghost" : "primary"} size="lg" full onClick={intentarCobrar} icon="card">
                   Cobrar · {money(totalCuenta)}
                 </Btn>
+                </>
               ) : (
                 account.number && (
                   <Btn kind="danger" size="lg" full onClick={onDescartarCuenta} icon="trash">
@@ -484,7 +523,22 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
             </div>
           ) : (
             <>
-              <Btn kind="primary" size="lg" full disabled={cart.length === 0} onClick={onCheckout} icon="card">
+              {faltaMesa && avisoMesa && (
+                <div
+                  role="status"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 9, marginBottom: 10, padding: "10px 13px",
+                    borderRadius: 11, background: "var(--aviso-suave)", color: "var(--aviso)",
+                    fontSize: 13, fontWeight: 600, lineHeight: 1.4,
+                  }}
+                >
+                  <span style={{ flexShrink: 0, display: "flex" }}>
+                    <Icon name="alert" size={17} />
+                  </span>
+                  <span>Elegí una mesa para cobrar, o cambiá la orden a <b>Para llevar</b>.</span>
+                </div>
+              )}
+              <Btn kind="primary" size="lg" full disabled={cart.length === 0} onClick={intentarCobrar} icon="card">
                 Cobrar {count > 0 ? "· " + money(subtotal) : ""}
               </Btn>
               <div style={{ textAlign: "center", fontSize: 12, color: "var(--muted)", marginTop: 10 }}>El cliente paga antes de consumir · precios con impuestos incluidos</div>
@@ -501,6 +555,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
           onPick={(t) => {
             setTable(t);
             setTablePicker(false);
+            setAvisoMesa(false); // ya se resolvió lo que el aviso pedía
           }}
         />
       )}

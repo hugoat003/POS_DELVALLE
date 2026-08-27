@@ -1,5 +1,5 @@
 <#
-  FUWA POS — detiene el sistema (servidor + app en pantalla).
+  Café del Valle POS — detiene el sistema (servidor + app en pantalla).
 
   Para mantenimiento: actualizar el menú desde código, cambiar el .env,
   restaurar un respaldo a mano. No desinstala nada: al reiniciar o con
@@ -9,9 +9,9 @@
 #>
 
 $Raiz = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$Tarea = "FUWA POS"
+$Tarea = "Café del Valle POS"
 
-Write-Host "Deteniendo FUWA POS..." -ForegroundColor Cyan
+Write-Host "Deteniendo Café del Valle POS..." -ForegroundColor Cyan
 
 # 1. La tarea, para que el bucle de supervisión no lo vuelva a levantar.
 $t = Get-ScheduledTask -TaskName $Tarea -ErrorAction SilentlyContinue

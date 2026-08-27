@@ -1,10 +1,12 @@
-# FUWA · Punto de Venta
+# Café del Valle · Punto de Venta
 
-POS para la cafetería **FUWA** (café estilo asiático: matcha, boba, postres).
-Estética suave/kawaii — azul marino + crema + dorado, tomada del logo (mascota mochi,
-日本のコーヒー). Moneda: **Quetzal (Q)**. El cliente **paga antes de consumir**.
+POS para la cafetería **Café del Valle** (Barillas, Huehuetenango).
+Identidad tomada del logo: verde olivo y café sobre crema, tipografía Archivo con
+Instrument Serif en cifras y títulos. Moneda: **Quetzal (Q)**. El cliente
+**paga antes de consumir**.
 
-Implementado con **React + Vite** a partir del prototipo de diseño de FUWA.
+Implementado con **React 18 + Vite** en el cliente y **Express + SQLite** en el
+servidor, con impresión térmica ESC/POS (caja por USB, cocina por red).
 
 ## Cómo correrlo
 
@@ -49,9 +51,9 @@ proxy con HTTPS. Receta con **Caddy** (certificados Let's Encrypt automáticos):
 git clone <repo> /opt/fuwa && cd /opt/fuwa
 npm install && npm run build       # nunca subas node_modules desde tu Mac
 
-# 2. Servicio systemd — /etc/systemd/system/fuwa.service
+# 2. Servicio systemd — /etc/systemd/system/cafedelvalle.service
 [Unit]
-Description=FUWA POS
+Description=Café del Valle POS
 After=network.target
 [Service]
 User=fuwa
@@ -197,7 +199,7 @@ powershell -ExecutionPolicy Bypass -File deploy\windows\instalar.ps1
 
 Instrucciones completas y solución de problemas en
 [deploy/windows/LEEME.md](deploy/windows/LEEME.md). Para Linux hay una unidad
-systemd en [deploy/linux/fuwa.service](deploy/linux/fuwa.service).
+systemd en [deploy/linux/cafedelvalle.service](deploy/linux/cafedelvalle.service).
 
 **El arranque va atado al inicio de sesión, no al arranque de Windows**, y es a
 propósito: un servicio correría como SYSTEM, donde no existen ni la unidad de
@@ -231,7 +233,7 @@ justamente el día que se necesita. Hay dos caminos:
 apuntar `BACKUP_COPIA` a una carpeta dentro de la unidad sincronizada:
 
 ```bash
-BACKUP_COPIA=G:\Mi unidad\Respaldos FUWA
+BACKUP_COPIA=G:\Mi unidad\Respaldos Cafe del Valle
 ```
 
 El sistema solo copia un archivo; de subirlo se encarga Drive. Sin credenciales, sin tokens

@@ -1,5 +1,5 @@
 <#
-  FUWA POS — instalación en la mini PC de caja.
+  Café del Valle POS — instalación en la mini PC de caja.
 
   Deja el equipo listo para que, al encenderlo, arranque solo el sistema
   completo: servidor, respaldo automático, impresión y la app en pantalla.
@@ -22,14 +22,14 @@ param(
 
 $ErrorActionPreference = "Stop"
 $Raiz = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$Tarea = "FUWA POS"
+$Tarea = "Café del Valle POS"
 
 function Paso($n, $t) { Write-Host "`n[$n] $t" -ForegroundColor Cyan }
 function Ok($t)   { Write-Host "    OK  $t" -ForegroundColor Green }
 function Aviso($t){ Write-Host "    !   $t" -ForegroundColor Yellow }
 function Alto($t) { Write-Host "    X   $t" -ForegroundColor Red; exit 1 }
 
-Write-Host "`n=== FUWA POS · instalación de la caja ===" -ForegroundColor White
+Write-Host "`n=== Café del Valle POS · instalación de la caja ===" -ForegroundColor White
 Write-Host "Proyecto: $Raiz"
 
 $admin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
@@ -74,7 +74,7 @@ if (Test-Path $envFile) {
 
 # ----------------------------------------------------------- 4. firewall
 Paso 4 "Abriendo el puerto $Puerto para las tablets"
-$reglaNombre = "FUWA POS ($Puerto)"
+$reglaNombre = "Café del Valle POS ($Puerto)"
 Get-NetFirewallRule -DisplayName $reglaNombre -ErrorAction SilentlyContinue | Remove-NetFirewallRule -ErrorAction SilentlyContinue
 New-NetFirewallRule -DisplayName $reglaNombre -Direction Inbound -Action Allow `
   -Protocol TCP -LocalPort $Puerto -Profile Private,Domain | Out-Null
@@ -103,7 +103,7 @@ $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" 
 
 Register-ScheduledTask -TaskName $Tarea -Action $accion -Trigger $disparador `
   -Settings $ajustes -Principal $principal `
-  -Description "Levanta el servidor de FUWA POS y abre la app al iniciar sesion." | Out-Null
+  -Description "Levanta el servidor de Café del Valle POS y abre la app al iniciar sesion." | Out-Null
 Ok "tarea '$Tarea' registrada para el usuario $env:USERNAME"
 
 # ------------------------------------------------------------------ final
@@ -115,7 +115,7 @@ Falta hacer a mano (una vez):
   1. EDITAR .env  ->  $envFile
        PRINTER_CAJA=windows://RPT009          nombre del recurso compartido
        PRINTER_COCINA=tcp://192.168.1.50:9100 IP fija de la impresora de cocina
-       BACKUP_COPIA=C:\Users\$env:USERNAME\Mi unidad\Respaldos FUWA
+       BACKUP_COPIA=C:\Users\$env:USERNAME\Mi unidad\Respaldos Cafe del Valle
 
   2. IMPRESORA DE CAJA (USB): instalarla con el driver "Generic / Text Only"
      y compartirla con el mismo nombre que pusiste en PRINTER_CAJA.

@@ -1,8 +1,8 @@
 {
-  "name": "fuwa-pos",
+  "name": "cafe-del-valle-pos",
   "private": true,
   "version": "1.0.0",
-  "description": "Punto de venta para la cafetería FUWA (estilo asiático kawaii). Moneda: Quetzal (Q).",
+  "description": "Punto de venta para la cafetería Café del Valle (Barillas, Huehuetenango). Moneda: Quetzal (Q).",
   "type": "module",
   "scripts": {
     "dev": "concurrently -k -n server,vite \"node --env-file-if-exists=.env server/index.js\" \"vite\"",

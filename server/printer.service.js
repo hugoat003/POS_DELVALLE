@@ -165,7 +165,7 @@ export function createPrinterService({ db, intervalMs = 4000 }) {
   /* Aviso de subred equivocada.
 
      El equipo se prueba en una red y se instala en otra: la oficina es
-     192.168.1.x y el local 192.168.0.x. Si el .env quedó con la IP del otro
+     192.168.1.x y el local 192.168.2.x. Si el .env quedó con la IP del otro
      sitio, la impresora nunca responde y el síntoma —"no salen las comandas"—
      no señala al archivo de configuración por ningún lado.
 

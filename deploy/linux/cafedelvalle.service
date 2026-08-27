@@ -1,6 +1,6 @@
-# FUWA POS — unidad systemd (VPS o mini PC con Linux).
+# Café del Valle POS — unidad systemd (VPS o mini PC con Linux).
 #
-#   sudo cp deploy/linux/fuwa.service /etc/systemd/system/
+#   sudo cp deploy/linux/cafedelvalle.service /etc/systemd/system/
 #   sudo systemctl daemon-reload
 #   sudo systemctl enable --now fuwa
 #   journalctl -u fuwa -f
@@ -8,7 +8,7 @@
 # Ajusta User y WorkingDirectory a tu instalación.
 
 [Unit]
-Description=FUWA POS
+Description=Café del Valle POS
 After=network.target
 
 [Service]

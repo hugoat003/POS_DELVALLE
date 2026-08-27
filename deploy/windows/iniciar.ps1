@@ -1,5 +1,5 @@
 <#
-  FUWA POS — arranque de la caja.
+  Café del Valle POS — arranque de la caja.
 
   Lo lanza la tarea programada al iniciar sesión en Windows. Hace tres cosas:
     1. levanta el servidor (que también sirve la app compilada),
@@ -61,7 +61,7 @@ if (-not (Test-Path (Join-Path $Raiz "dist"))) {
   exit 1
 }
 
-Escribir "iniciando FUWA POS · node=$Node · puerto=$Puerto"
+Escribir "iniciando Café del Valle POS · node=$Node · puerto=$Puerto"
 
 # --- navegador en modo pantalla completa ---
 function AbrirApp {

@@ -1,7 +1,7 @@
 /* Café del Valle POS — átomos de UI: botón, chip y piezas de dashboard.
 
-   Café del Valle es fino donde FUWA era grueso: bordes de 1px en vez de 2px,
-   pesos de 600/700 en vez de 800 y chips rectangulares en vez de píldoras.
+   Café del Valle es una identidad fina: bordes de 1px, pesos de 600/700 y
+   chips rectangulares en vez de píldoras.
    Las alturas táctiles NO cambian: la tablet de caja las necesita. */
 import { Icon } from "./Icon.jsx";
 import { money } from "../lib/format.js";

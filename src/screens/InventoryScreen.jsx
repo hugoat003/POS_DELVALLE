@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
 import { Btn, Pill, overlay, sheet, iconBtn } from "../components/ui.jsx";
 import { money } from "../lib/format.js";
-import { BASE_UNITS, presetsFor, CHULETA, costPerBase, fromBase, purchaseLabel, hasPurchaseUnit } from "../lib/units.js";
+import { BASE_UNITS, UNIT_LABELS, presetsFor, CHULETA, costPerBase, fromBase, purchaseLabel, hasPurchaseUnit } from "../lib/units.js";
 
 const inp = {
   width: "100%",
@@ -115,9 +115,14 @@ function IngredientForm({ initial, onCancel, onSave, onDelete }) {
             hint={tieneHistoria ? "No se puede cambiar: el ingrediente ya tiene existencia o movimientos, y las recetas pasarían a significar otra cosa." : "La receta de cada producto se escribe en esta unidad."}
           >
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", opacity: tieneHistoria ? 0.5 : 1 }}>
+              {/* Símbolo arriba y nombre abajo: "oz" y "fl oz" se distinguen mal
+                  de un vistazo, y confundirlas descuadra el inventario. */}
               {BASE_UNITS.map((u) => (
-                <Pill key={u} active={unit === u} onClick={() => elegirBase(u)} style={{ fontSize: 14, padding: "8px 16px" }}>
-                  {u}
+                <Pill key={u} active={unit === u} onClick={() => elegirBase(u)} style={{ fontSize: 14, padding: "7px 15px" }}>
+                  <span style={{ display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.2 }}>
+                    <span style={{ fontWeight: 700 }}>{u}</span>
+                    <span style={{ fontSize: 10.5, fontWeight: 500, opacity: 0.75 }}>{UNIT_LABELS[u]}</span>
+                  </span>
                 </Pill>
               ))}
             </div>

@@ -1,5 +1,5 @@
 # ════════════════════════════════════════════════════════════════════
-#  FUWA POS · configuración de PRUEBA (oficina, casa, cualquier red)
+#  Café del Valle POS · configuración de PRUEBA (oficina, casa, cualquier red)
 #
 #      copy deploy\env-prueba.example .env      (Windows)
 #      cp   deploy/env-prueba.example .env      (Mac / Linux)

@@ -46,8 +46,8 @@
 
   /* Redondeo de las superficies grandes (tarjetas, modales, paneles). Los
      controles pequeños llevan su propio radio. Café del Valle es mucho menos
-     redondo que FUWA: 28px → 16px. Los multiplicadores existentes siguen
-     funcionando — calc(--r * .7) da 11px en botones, calc(--r * 1.2) da 19px
+     redondo de lo que suele verse en un POS: 28px → 16px. Los multiplicadores
+     existentes siguen funcionando — calc(--r * .7) da 11px en botones, calc(--r * 1.2) da 19px
      en hojas modales. */
   --r: 16px;
 

@@ -4,6 +4,7 @@ import { Icon } from "../components/Icon.jsx";
 import { Btn, Pill, overlay, sheet, iconBtn } from "../components/ui.jsx";
 import { money } from "../lib/format.js";
 import { SIZES_BEBIDA, catColors } from "../data.js";
+import { STATIONS, DEFAULT_STATION, stationOf } from "../lib/stations.js";
 import { productCost } from "../lib/recipe.js";
 
 const MOD_LIST = [
@@ -366,8 +367,23 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
 }
 
 // ---------- Editor de modificadores (leche, azúcar, extras) ----------
-function ModifiersEditor({ mods, setMods, ingredients = [] }) {
+function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = [] }) {
   const order = ["leche", "azucar", "extras"];
+
+  /* A dónde llega cada grupo de opciones.
+
+     Un extra NO tiene destino propio: viaja pegado a la línea del producto que
+     lo lleva, así que hereda la estación de la categoría de ese producto. Un
+     "shot extra" sobre un capuchino aparece en el tablero de barra; el mismo
+     grupo sobre un sándwich sale impreso en cocina. Por eso aquí se muestra el
+     destino en vez de dejarlo elegir: darle estación propia obligaría a partir
+     una línea entre dos destinos, y eso cambia cómo funcionan las comandas,
+     el tablero y las anulaciones. */
+  function destinoDe(gid) {
+    const usados = (menu || []).filter((p) => (p.mods || []).includes(gid));
+    const estaciones = [...new Set(usados.map((p) => stationOf(p.cat, cats)))].sort();
+    return { productos: usados.length, estaciones };
+  }
   const typeLabel = { single: "El cliente elige una opción", multi: "El cliente puede elegir varias" };
   const [openOpt, setOpenOpt] = useState(null); // "grupo:indice" con la receta desplegada
 
@@ -399,16 +415,51 @@ function ModifiersEditor({ mods, setMods, ingredients = [] }) {
         <span style={{ flexShrink: 0 }}>
           <Icon name="note" size={20} />
         </span>
-        Define cuánto se cobra de más por cada opción. <b>+Q0.00</b> = sin costo adicional. Estos precios aplican a todos los productos que usen la opción.
+        <span style={{ flex: 1 }}>
+          Define cuánto se cobra de más por cada opción. <b>+Q0.00</b> = sin costo adicional. Los precios aplican a todos los productos que usen la opción, y cada extra viaja al mismo destino que su producto — el destino se cambia en <b>Categorías</b>.
+        </span>
       </div>
       {order.map((gid) => {
         const g = mods[gid];
         if (!g) return null;
         return (
           <div key={gid} style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", overflow: "hidden" }}>
-            <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--line)" }}>
-              <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 18, color: "var(--navy)" }}>{g.label}</div>
-              <div style={{ fontSize: 13, color: "var(--muted)" }}>{typeLabel[g.type]}</div>
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: "var(--ui)", fontWeight: 600, fontSize: 17, color: "var(--tinta)" }}>{g.label}</div>
+                <div style={{ fontSize: 13, color: "var(--tinta-3)" }}>{typeLabel[g.type]}</div>
+              </div>
+              {(() => {
+                const { productos, estaciones } = destinoDe(gid);
+                if (!productos) {
+                  return (
+                    <span style={{ fontSize: 12, color: "var(--tinta-4)", fontStyle: "italic", whiteSpace: "nowrap" }}>
+                      Ningún producto la usa
+                    </span>
+                  );
+                }
+                const nombre = (st) => (st === "cocina" ? "Cocina" : "Barra");
+                return (
+                  <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }} title={`${productos} producto(s) usan estas opciones`}>
+                    <span style={{ fontSize: 11.5, color: "var(--tinta-3)", textTransform: "uppercase", letterSpacing: 0.5, fontWeight: 600 }}>Llega a</span>
+                    {estaciones.map((st) => (
+                      <span
+                        key={st}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 999,
+                          fontSize: 12, fontWeight: 600, whiteSpace: "nowrap",
+                          background: st === "cocina" ? "var(--superficie-baja)" : "var(--verde-suave)",
+                          color: st === "cocina" ? "var(--cafe)" : "var(--verde-oscuro)",
+                          border: "1px solid " + (st === "cocina" ? "var(--borde)" : "transparent"),
+                        }}
+                      >
+                        <Icon name={st === "cocina" ? "print" : "bag"} size={13} />
+                        {nombre(st)}
+                      </span>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
             <div style={{ padding: "6px 20px 16px" }}>
               <div style={{ display: "flex", gap: 10, padding: "8px 0 4px", fontSize: 11.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>
@@ -541,24 +592,55 @@ function CategoriesEditor({ cats, setCats, counts, onDelete }) {
   }
   function addCat() {
     const hue = 200;
-    setCats((prev) => [...prev, { id: "c_" + Date.now().toString(36), name: "Nueva categoría", icon: "🍽️", hue, ...catColors(hue) }]);
+    setCats((prev) => [...prev, { id: "c_" + Date.now().toString(36), name: "Nueva categoría", icon: "🍽️", hue, station: DEFAULT_STATION, ...catColors(hue) }]);
   }
 
   return (
-    <div style={{ maxWidth: 720, display: "flex", flexDirection: "column", gap: 14 }}>
+    <div style={{ maxWidth: 880, display: "flex", flexDirection: "column", gap: 14 }}>
       <div style={{ background: "var(--primary-soft)", color: "var(--primary)", borderRadius: "var(--r)", padding: "14px 18px", fontSize: 14.5, fontWeight: 700, display: "flex", gap: 10, alignItems: "center", lineHeight: 1.4 }}>
         <span style={{ flexShrink: 0 }}>
           <Icon name="note" size={20} />
         </span>
-        Crea y personaliza las categorías del menú. El color se ajusta con el tono; cada categoría usa su propio acento pastel.
+        <span style={{ flex: 1 }}>
+          Crea y personaliza las categorías del menú. El <b>destino</b> decide a dónde va cada producto al enviar la orden: a la pantalla de barra o a la comanda impresa de cocina.
+        </span>
       </div>
       {cats.map((c) => (
         <div key={c.id} style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "14px 16px", display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ width: 52, height: 52, borderRadius: 14, background: c.tint, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>{c.icon}</div>
           <input value={c.icon} onChange={(e) => setCat(c.id, "icon", e.target.value)} title="Emoji" style={{ ...inp, width: 64, textAlign: "center", fontSize: 20, flexShrink: 0 }} />
           <input value={c.name} onChange={(e) => setCat(c.id, "name", e.target.value)} style={{ ...inp, flex: 1, minWidth: 0 }} />
-          <div style={{ display: "flex", flexDirection: "column", gap: 2, width: 150, flexShrink: 0 }}>
-            <span style={{ fontSize: 11, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>Tono · {c.hue}</span>
+          {/* Destino de preparación. Es el único control que decide si el item
+              aparece en el tablero de barra o sale impreso en cocina. */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--tinta-3)", textTransform: "uppercase", letterSpacing: 0.5 }}>Destino</span>
+            <div style={{ display: "flex", gap: 3, background: "var(--superficie-baja)", border: "1px solid var(--borde)", borderRadius: 11, padding: 3 }}>
+              {STATIONS.map((st) => {
+                const on = (c.station || DEFAULT_STATION) === st;
+                const cocina = st === "cocina";
+                return (
+                  <button
+                    key={st}
+                    onClick={() => setCat(c.id, "station", st)}
+                    title={cocina ? "Sale impreso en la comanda de cocina" : "Aparece en el tablero (KDS) de la barra"}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8,
+                      border: "none", cursor: "pointer", fontFamily: "var(--ui)", fontSize: 13, fontWeight: 600,
+                      background: on ? "var(--verde)" : "transparent",
+                      color: on ? "var(--verde-claro)" : "var(--tinta-3)",
+                      transition: "background .12s ease, color .12s ease",
+                    }}
+                  >
+                    <Icon name={cocina ? "print" : "bag"} size={15} />
+                    {cocina ? "Cocina" : "Barra"}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, width: 130, flexShrink: 0 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--tinta-3)", textTransform: "uppercase", letterSpacing: 0.5 }}>Tono · {c.hue}</span>
             <input type="range" min={0} max={360} value={c.hue} onChange={(e) => setCat(c.id, "hue", e.target.value)} style={{ width: "100%", accentColor: c.ink }} />
           </div>
           <div style={{ width: 54, textAlign: "right", flexShrink: 0 }}>
@@ -741,7 +823,7 @@ export function MenuEditor({ menu, setMenu, mods, setMods, cats, setCats, ingred
             {list.length === 0 && <div style={{ textAlign: "center", color: "var(--muted)", padding: 60, fontSize: 16 }}>No hay productos en esta categoría.</div>}
           </>
         ) : tab === "opciones" ? (
-          <ModifiersEditor mods={mods} setMods={setMods} ingredients={ingredients} />
+          <ModifiersEditor mods={mods} setMods={setMods} ingredients={ingredients} menu={menu} cats={cats} />
         ) : (
           <CategoriesEditor cats={cats} setCats={setCats} counts={counts} onDelete={removeCat} />
         )}

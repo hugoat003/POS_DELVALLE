@@ -1,4 +1,4 @@
-# Instalar FUWA POS en la mini PC de caja
+# Instalar Café del Valle POS en la mini PC de caja
 
 Deja el equipo de forma que **al encenderlo arranque solo**: servidor, impresión,
 respaldo automático y la app a pantalla completa. Nadie tiene que abrir nada.
@@ -30,7 +30,7 @@ copy deploy\env-prueba.example .env    # oficina o casa: sin hardware
 ```
 
 **`env-local.example`** ya trae los datos medidos en la red del local:
-impresora de caja `Receipt` por USB, cocina en `192.168.0.201:9100` y el
+impresora de caja `Receipt` por USB, cocina en `192.168.1.XXX:9100` y el
 respaldo a la carpeta de Drive. Solo hay que ajustar el nombre de usuario de
 Windows en la ruta del respaldo.
 
@@ -44,8 +44,8 @@ reemplaza. Los tres valores que importan:
 
 ```ini
 PRINTER_CAJA=windows://Receipt              # nombre del recurso compartido
-PRINTER_COCINA=tcp://192.168.0.201:9100     # IP fija de la de cocina
-BACKUP_COPIA=C:\Users\Caja\Mi unidad\Respaldos FUWA
+PRINTER_COCINA=tcp://192.168.1.XXX:9100     # IP fija de la de cocina
+BACKUP_COPIA=C:\Users\Caja\Mi unidad\Respaldos Cafe del Valle
 ```
 
 `instalar.ps1` ya añadió `NODE_ENV=production`, `HOST=0.0.0.0` y `PORT=5174`.
@@ -62,14 +62,14 @@ completo:
 
 | | Oficina | Local |
 |---|---|---|
-| Red | 192.168.1.0/24 | 192.168.0.0/24 |
-| Router | 192.168.1.1 | 192.168.0.1 |
-| Mini PC | **DHCP** (no fijar) | 192.168.0.200 |
-| Impresora cocina | 192.168.1.201 | 192.168.0.201 |
+| Red | 192.168.1.0/24 | 192.168.1.0/24 |
+| Router | 192.168.1.1 | 192.168.1.1 |
+| Mini PC | **DHCP** (no fijar) | 192.168.1.YYY |
+| Impresora cocina | 192.168.1.XXX | 192.168.1.XXX |
 | Plantilla | `env-oficina.example` | `env-local.example` |
 
 **No le pongas IP estática a la mini PC mientras pruebas.** Si le fijas
-192.168.1.200 aquí y la llevas al local (192.168.0.x), el equipo queda aislado:
+192.168.1.YYY aquí y la llevas al local (192.168.1.x), el equipo queda aislado:
 una estática de otro segmento no alcanza al router. No falla la app — falla la
 red, y eso se diagnostica mal porque parece que el POS se rompió. Para probar no
 hace falta IP fija: el servidor escucha en todas las interfaces y al arrancar
@@ -93,14 +93,14 @@ El cambio, en la mini PC:
 ```powershell
 powershell -ExecutionPolicy Bypass -File deploy\windows\detener.ps1
 copy deploy\env-local.example .env
-Start-ScheduledTask -TaskName "FUWA POS"
+Start-ScheduledTask -TaskName "Café del Valle POS"
 ```
 
 `detener` y `Start-ScheduledTask` están porque el servidor lee el `.env` **una
 sola vez, al arrancar**: cambiar el archivo con el sistema corriendo no hace
 nada hasta reiniciarlo. Reiniciar la mini PC consigue lo mismo.
 
-Y en la impresora de cocina, cambiar su IP a 192.168.0.201.
+Y en la impresora de cocina, cambiar su IP a 192.168.1.XXX.
 
 Las plantillas de `deploy\` **no se renombran ni se borran**: son moldes. El
 archivo que el sistema lee es siempre `.env` en la raíz; copiar encima de él es
@@ -110,7 +110,7 @@ nada.
 Si te equivocas de plantilla, el servidor lo dice al arrancar:
 
 ```
-[impresora] OJO: la impresora de cocina (192.168.0.201) está en otra red que
+[impresora] OJO: la impresora de cocina (192.168.1.XXX) está en otra red que
 este equipo (192.168.1.14). Revisa PRINTER_COCINA en el .env
 ```
 
@@ -194,8 +194,8 @@ Si eliges (B), dos precauciones que valen la pena:
 - Que la cuenta de la caja sea **usuario estándar, no administrador**, y que la
   cuenta de administrador sea otra, con su propia contraseña. Así, quien encienda
   el equipo no puede instalar nada ni tocar la configuración.
-- El **PIN de FUWA es independiente** de Windows: entrar al escritorio no da
-  acceso a las ventas. Con un matiz: la sesión de FUWA dura **12 h de
+- El **PIN de Café del Valle es independiente** de Windows: entrar al escritorio no da
+  acceso a las ventas. Con un matiz: la sesión de Café del Valle dura **12 h de
   inactividad**, así que si el equipo se reinicia dentro de ese plazo la app
   vuelve con la sesión del último empleado ya abierta. Al día siguiente
   (más de 12 h cerrados) sí pide PIN. Si prefieres que lo pida **siempre** al
@@ -216,14 +216,14 @@ Al arrancar, el servidor imprime en el log las direcciones donde lo ven las
 tablets:
 
 ```
-FUWA POS · servidor de datos en http://0.0.0.0:5174
+Café del Valle POS · servidor de datos en http://0.0.0.0:5174
   desde las tablets: http://192.168.1.20:5174
 ```
 
 ## Probar sin reiniciar
 
 ```powershell
-Start-ScheduledTask -TaskName "FUWA POS"
+Start-ScheduledTask -TaskName "Café del Valle POS"
 ```
 
 ## Ver qué está pasando
@@ -265,7 +265,7 @@ powershell -ExecutionPolicy Bypass -File deploy\windows\detener.ps1
 git pull                 # o copiar los archivos nuevos
 npm ci
 npm run build
-Start-ScheduledTask -TaskName "FUWA POS"
+Start-ScheduledTask -TaskName "Café del Valle POS"
 ```
 
 El `.env` y `server\data\` (base, respaldos) no se tocan.
@@ -289,7 +289,7 @@ No borra datos.
 | No sale la comanda de cocina | IP equivocada. *Ajustes → Impresoras → Probar cocina* dice si la IP existe o si no hay nadie ahí. Las comandas **no se pierden**: quedan en cola y salen al corregirla. |
 | El ticket de caja sale con símbolos raros | La impresora no está con el driver "Generic / Text Only". |
 | El respaldo no llega a Drive | La carpeta no es accesible. *Herramientas → Respaldo automático* lo dice al arrancar. |
-| No arranca nada al encender | No hay inicio de sesión automático (paso 4), o la tarea está deshabilitada: `Get-ScheduledTask -TaskName "FUWA POS"`. |
+| No arranca nada al encender | No hay inicio de sesión automático (paso 4), o la tarea está deshabilitada: `Get-ScheduledTask -TaskName "Café del Valle POS"`. |
 
 Nada de esto pone en riesgo los datos: la base está en `server\data\fuwa.db` y
 hay una copia diaria en `server\data\backups\`.
