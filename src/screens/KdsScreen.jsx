@@ -96,6 +96,13 @@ function Ticket({ order, ahora, onAvanzar, onRetroceder }) {
                   </span>
                 )}
               </div>
+              {/* Extra desviado desde otro plato: sin este renglón el barista ve
+                  un "Café" suelto y no sabe a qué mesa ni a qué platillo va. */}
+              {l.desdeLinea && (
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--cafe)", paddingLeft: 34, marginTop: 1 }}>
+                  del {l.desdeLinea}
+                </div>
+              )}
               {sub && <div style={{ fontSize: 13, color: "var(--muted)", paddingLeft: 34 }}>{sub}</div>}
               {l.note && (
                 <div style={{ fontSize: 13, fontWeight: 800, color: "oklch(0.5 0.16 25)", paddingLeft: 34, marginTop: 2 }}>⚠ {l.note}</div>

@@ -80,9 +80,13 @@ export function CustomizeModal({ product, cat, modGroupsMap, initialLine, onClos
   const chosenMods = useMemo(() => {
     const arr = [];
     Object.entries(single).forEach(([gid, opt]) => {
-      if (opt && opt.delta !== undefined) arr.push({ group: gid, name: opt.name, delta: opt.delta });
+      // `station` solo se copia si la opción la define: sin ella el extra viaja
+      // con su producto, que es el comportamiento normal.
+      if (opt && opt.delta !== undefined) arr.push({ group: gid, name: opt.name, delta: opt.delta, ...(opt.station ? { station: opt.station } : {}) });
     });
-    Object.values(multi).forEach((opts) => Object.values(opts).forEach((o) => arr.push({ group: "extras", name: o.name, delta: o.delta })));
+    Object.values(multi).forEach((opts) =>
+      Object.values(opts).forEach((o) => arr.push({ group: "extras", name: o.name, delta: o.delta, ...(o.station ? { station: o.station } : {}) }))
+    );
     return arr;
   }, [single, multi]);
 

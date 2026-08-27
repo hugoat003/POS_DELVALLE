@@ -29,11 +29,58 @@ export function stationOf(catId, cats) {
   return STATIONS.includes(s) ? s : DEFAULT_STATION;
 }
 
+/* Destino de una opción de modificador, si tiene uno propio. Sin `station` (lo
+   normal) devuelve null y la opción viaja con su producto. */
+export function stationOfMod(mod) {
+  const s = mod && mod.station;
+  return STATIONS.includes(s) ? s : null;
+}
+
 /* Separa las líneas por destino. Devuelve siempre las dos llaves aunque vengan
-   vacías, para que quien consume no tenga que defenderse de undefined. */
+   vacías, para que quien consume no tenga que defenderse de undefined.
+
+   Un extra puede tener destino propio y salirse del de su producto. El caso que
+   lo motiva: un desayuno va a cocina, pero el café que trae incluido lo prepara
+   la barra — mientras el aguacate o el frijol del mismo desayuno se quedan en
+   cocina. Cuando eso pasa se emite una LÍNEA DERIVADA en la otra estación:
+
+     cocina  →  1× Desayuno chapín   (aguacate, frijol)
+     barra   →  1× Café              · del Desayuno chapín
+
+   La derivada lleva `derivada: true` y `desdeLinea` con el producto del que
+   salió, para que el barista sepa a qué plato pertenece. Y el extra se quita de
+   la línea base: si la cocina siguiera viendo "café" en el desayuno, lo
+   prepararía también y saldrían dos.
+
+   Esto es SOLO ruteo de preparación. Estas listas alimentan el tablero de barra
+   y la comanda impresa, nada más: el total, el ticket del cliente y el descuento
+   de inventario se calculan aparte, sobre las líneas reales. Una derivada nunca
+   suma dinero ni consume existencias dos veces. */
 export function splitByStation(lines, cats) {
   const out = { barra: [], cocina: [] };
-  for (const l of lines || []) out[stationOf(l.catId, cats)].push(l);
+  for (const l of lines || []) {
+    const base = stationOf(l.catId, cats);
+    const propios = [];
+    const desviados = [];
+    for (const m of l.mods || []) {
+      const st = stationOfMod(m);
+      if (st && st !== base) desviados.push([st, m]);
+      else propios.push(m);
+    }
+    // Sin desvíos la línea pasa tal cual, sin copiarla.
+    out[base].push(desviados.length ? { ...l, mods: propios } : l);
+    for (const [st, m] of desviados) {
+      out[st].push({
+        ...l,
+        uid: `${l.uid}+${m.name}`,
+        name: m.name,
+        size: null,
+        mods: [],
+        desdeLinea: l.name,
+        derivada: true,
+      });
+    }
+  }
   return out;
 }
 

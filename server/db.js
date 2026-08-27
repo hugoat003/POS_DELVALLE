@@ -937,7 +937,7 @@ function routeOrderTx(row, seq) {
       cashier: row.cashier,
       // Un envío posterior al primero es un agregado, no la orden completa.
       agregado: seq > 1,
-      lines: cocina.map((l) => ({ qty: l.qty, name: l.name, size: l.size, mods: l.mods, note: l.note })),
+      lines: cocina.map((l) => ({ qty: l.qty, name: l.name, size: l.size, mods: l.mods, note: l.note, desde: l.desdeLinea })),
     });
   }
 

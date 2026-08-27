@@ -130,7 +130,9 @@ export const SIZES_BEBIDA = [
    cero como si fuera exacto. Sin receta en ningún lado, la app avisa
    honestamente "vendido sin receta cargada". */
 const M = (id, label, options, type = "single") => ({ id, label, type, required: false, options });
-const O = (name, delta = 0) => ({ name, delta });
+/* `station` opcional: desvía ESA opción a otra estación de preparación. Sin
+   ella el extra viaja con su producto, que es lo normal. Ver lib/stations.js. */
+const O = (name, delta = 0, station) => ({ name, delta, ...(station ? { station } : {}) });
 
 const TOPPINGS = [
   "Avena", "Granola", "Chispas de chocolate", "Coco rallado", "Oreo", "Pecanas",
@@ -162,7 +164,9 @@ const MOD_LECHE = {
 export const MOD_GROUPS = {
   leche: MOD_LECHE,
   azucar: M("azucar", "Nivel de azúcar", [O("0%"), O("25%"), O("50%"), O("100%")]),
-  extras: M("extras", "Extras", [O("Shot extra", 6)], "multi"),
+  // "Café incluido" lleva destino barra: en un plato de cocina el café lo
+  // prepara el barista, mientras el resto del plato se queda en la cocina.
+  extras: M("extras", "Extras", [O("Shot extra", 6), O("Café incluido", 0, "barra"), O("Aguacate", 5), O("Frijol volteado", 3)], "multi"),
 
   // --- comida ---
   proteina: M("proteina", "Proteína", [O("Cerdo"), O("Pollo empanizado")]),
@@ -233,5 +237,5 @@ export const PRODUCTS = [
     sizes: null, mods: [], recipe: [] },
 
   { id: 'p_sandwich_pavo', cat: 'comida', name: 'Sándwich de pavo', price: 45, desc: 'Pavo, queso, aguacate y pesto en pan artesanal', icon: '🥪',
-    sizes: null, mods: [], recipe: [] },
+    sizes: null, mods: ['extras'], recipe: [] },
 ];

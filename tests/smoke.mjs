@@ -147,6 +147,45 @@ try {
     }
   }
 
+  // ---------------------------------------------- extra con destino propio
+  /* Un plato de cocina con un extra marcado "barra": la cocina recibe el plato
+     sin ese extra y la barra recibe el extra con su origen. Es lo más
+     intrincado del ruteo, así que se prueba de punta a punta. */
+  seccion("Extra desviado a otra estación");
+  await p.getByRole("button", { name: /^Orden/ }).first().click();
+  await p.waitForTimeout(700);
+  const sandwich = p.locator('[style*="cursor: pointer"]').filter({ hasText: /Sándwich de pavo/ }).first();
+  if (await sandwich.isVisible().catch(() => false)) {
+    await sandwich.click();
+    await p.waitForTimeout(800);
+    const cafeExtra = p.getByText("Café incluido").first();
+    const hayExtra = await cafeExtra.isVisible().catch(() => false);
+    ok("el extra con destino propio aparece en el modal", hayExtra);
+    if (hayExtra) {
+      await cafeExtra.click();
+      await p.waitForTimeout(300);
+      await p.getByRole("button", { name: /Agregar|Añadir/i }).last().click();
+      await p.waitForTimeout(600);
+      await p.getByRole("button", { name: /^Para llevar/ }).first().click();
+      await p.waitForTimeout(400);
+      await p.getByRole("button", { name: /^Cobrar/ }).first().click();
+      await p.waitForTimeout(900);
+      await p.getByRole("button", { name: /^Exacto/ }).first().click();
+      await p.waitForTimeout(400);
+      await p.getByRole("button", { name: /Confirmar pago/i }).first().click();
+      await p.waitForTimeout(2200);
+
+      await p.getByRole("button", { name: /^Barra/ }).first().click();
+      // El tablero sincroniza cada 4s: se espera al contenido, no un tiempo fijo.
+      await p.getByText(/Café incluido/).first().waitFor({ timeout: 20000 }).catch(() => {});
+      const tablero = await p.locator("body").innerText();
+      ok("la barra recibe el extra", /Café incluido/.test(tablero));
+      ok("el extra dice de qué plato salió", /del Sándwich de pavo/.test(tablero));
+      ok("la barra NO recibe el plato de cocina", !/×\s*Sándwich de pavo/.test(tablero));
+      await foto("08-barra-derivada");
+    }
+  }
+
   seccion("Consola y red");
   ok("sin errores de JavaScript", errores.length === 0);
   if (errores.length) errores.slice(0, 5).forEach((e) => console.log("      " + e.slice(0, 160)));

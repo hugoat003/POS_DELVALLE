@@ -381,8 +381,11 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
      el tablero y las anulaciones. */
   function destinoDe(gid) {
     const usados = (menu || []).filter((p) => (p.mods || []).includes(gid));
-    const estaciones = [...new Set(usados.map((p) => stationOf(p.cat, cats)))].sort();
-    return { productos: usados.length, estaciones };
+    const est = new Set(usados.map((p) => stationOf(p.cat, cats)));
+    // Una opción con destino propio suma su estación aunque ningún producto
+    // del grupo vaya ahí: es justo el caso del café dentro de un desayuno.
+    for (const o of (mods[gid] && mods[gid].options) || []) if (o.station) est.add(o.station);
+    return { productos: usados.length, estaciones: [...est].sort() };
   }
   const typeLabel = { single: "El cliente elige una opción", multi: "El cliente puede elegir varias" };
   const [openOpt, setOpenOpt] = useState(null); // "grupo:indice" con la receta desplegada
@@ -396,9 +399,17 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
   function setOpt(gid, i, field, value) {
     setMods((prev) => {
       const g = prev[gid];
-      const opts = g.options.map((o, idx) =>
-        idx === i ? { ...o, [field]: field === "delta" ? Math.round((parseFloat(value) || 0) * 100) / 100 : value } : o
-      );
+      const opts = g.options.map((o, idx) => {
+        if (idx !== i) return o;
+        if (field === "delta") return { ...o, delta: Math.round((parseFloat(value) || 0) * 100) / 100 };
+        // "Con el producto" es la ausencia del campo, no una cadena vacía: así
+        // la opción queda igual que las que nunca se tocaron.
+        if (field === "station" && !value) {
+          const { station, ...resto } = o;
+          return resto;
+        }
+        return { ...o, [field]: value };
+      });
       return { ...prev, [gid]: { ...g, options: opts } };
     });
   }
@@ -416,7 +427,7 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
           <Icon name="note" size={20} />
         </span>
         <span style={{ flex: 1 }}>
-          Define cuánto se cobra de más por cada opción. <b>+Q0.00</b> = sin costo adicional. Los precios aplican a todos los productos que usen la opción, y cada extra viaja al mismo destino que su producto — el destino se cambia en <b>Categorías</b>.
+          Define cuánto se cobra de más por cada opción. <b>+Q0.00</b> = sin costo adicional. Los precios aplican a todos los productos que usen la opción. Con <b>Destino</b> el extra viaja con su producto (lo normal) o se manda aparte: útil cuando un plato de cocina trae café, que lo prepara la barra.
         </span>
       </div>
       {order.map((gid) => {
@@ -465,6 +476,7 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
               <div style={{ display: "flex", gap: 10, padding: "8px 0 4px", fontSize: 11.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>
                 <span style={{ flex: 1 }}>Opción</span>
                 <span style={{ width: 130 }}>Recargo</span>
+                <span style={{ width: 150 }}>Destino</span>
                 <span style={{ width: 30 }} />
               </div>
               {g.options.map((o, i) => {
@@ -485,6 +497,36 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
                           style={{ ...inp, paddingLeft: 40, fontFamily: "var(--display)", fontWeight: 800 }}
                         />
                       </div>
+                      {/* Destino propio del extra.
+
+                          Por omisión ("Con el producto") la opción viaja pegada
+                          a su línea, que es lo correcto casi siempre. El desvío
+                          existe para casos como el desayuno que va a cocina pero
+                          trae café incluido: ese café lo prepara la barra,
+                          mientras el aguacate del mismo plato se queda. */}
+                      <select
+                        value={o.station || ""}
+                        onChange={(e) => setOpt(gid, i, "station", e.target.value || undefined)}
+                        title="A dónde se manda a preparar este extra"
+                        style={{
+                          ...inp,
+                          width: 150,
+                          flexShrink: 0,
+                          paddingLeft: 12,
+                          paddingRight: 8,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          color: o.station ? "var(--verde-oscuro)" : "var(--tinta-3)",
+                          background: o.station ? "var(--verde-suave)" : "var(--superficie)",
+                          borderColor: o.station ? "var(--verde)" : "var(--borde)",
+                        }}
+                      >
+                        <option value="">Con el producto</option>
+                        <option value="barra">→ Barra</option>
+                        <option value="cocina">→ Cocina</option>
+                      </select>
+
                       {/* Consumo de la opción: plegado para no saturar la lista. */}
                       <button
                         onClick={() => setOpenOpt(open ? null : key)}

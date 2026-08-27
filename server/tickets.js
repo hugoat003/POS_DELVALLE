@@ -47,6 +47,9 @@ export function buildComanda(p) {
     t.bold(true).size(0x01);
     t.line((p.cancelacion ? "NO HACER: " : "") + l.qty + " x " + l.name);
     t.size(0x00).bold(false);
+    // Extra desviado desde otro plato: sin esto la cocina ve un item suelto
+    // y no sabe de qué orden salió.
+    if (l.desde) t.wrap("del " + l.desde, 4);
     const sub = subtitulo(l);
     if (sub) t.wrap(sub, 4);
     // La nota va destacada: es donde vienen las alergias y los "sin cebolla".
