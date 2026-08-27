@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>FUWA · Punto de Venta</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Mochiy+Pop+One&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Modo caja/kiosco: bloquea el zoom por gesto en tablet (iOS ignora
+      // user-scalable=no). Cancela el pinch-zoom y el doble-tap para ampliar.
+      (function () {
+        // Safari (iPadOS): gestos de pellizco.
+        ["gesturestart", "gesturechange", "gestureend"].forEach((ev) =>
+          document.addEventListener(ev, (e) => e.preventDefault(), { passive: false })
+        );
+        // Pellizco con dos dedos en navegadores que exponen touchmove.
+        document.addEventListener(
+          "touchmove",
+          (e) => {
+            if (e.touches.length > 1) e.preventDefault();
+          },
+          { passive: false }
+        );
+        // Doble-tap para ampliar.
+        //
+        // Ojo: preventDefault() en touchend también cancela el click sintético.
+        // Aplicarlo a TODO toque rápido hacía que dos pulsaciones seguidas
+        // (teclado del PIN, botones de cantidad) perdieran la segunda: se
+        // sentía como un cooldown de 300ms. Solo se cancela cuando el gesto
+        // parece de verdad un doble-tap de zoom: dos toques casi en el mismo
+        // punto y fuera de un control interactivo.
+        let lastTouch = 0;
+        let lastX = 0;
+        let lastY = 0;
+        document.addEventListener(
+          "touchend",
+          (e) => {
+            const now = Date.now();
+            const t = e.changedTouches[0];
+            const x = t ? t.clientX : 0;
+            const y = t ? t.clientY : 0;
+            const rapido = now - lastTouch <= 300;
+            const mismoPunto = Math.abs(x - lastX) < 32 && Math.abs(y - lastY) < 32;
+            const interactivo =
+              e.target && e.target.closest && e.target.closest("button, a, input, select, textarea, label, [role='button']");
+            if (rapido && mismoPunto && !interactivo) e.preventDefault();
+            lastTouch = now;
+            lastX = x;
+            lastY = y;
+          },
+          { passive: false }
+        );
+      })();
+    </script>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

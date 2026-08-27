@@ -1,0 +1,35 @@
+# ════════════════════════════════════════════════════════════════════
+#  FUWA POS · configuración de PRUEBA (oficina, casa, cualquier red)
+#
+#      copy deploy\env-prueba.example .env      (Windows)
+#      cp   deploy/env-prueba.example .env      (Mac / Linux)
+#
+#  Sirve para probar el sistema completo desde una tablet SIN tener las
+#  impresoras conectadas. A propósito no menciona ninguna IP: funciona igual
+#  en la oficina, en casa o en el local, porque el servidor escucha en todas
+#  las interfaces y él mismo dice en qué dirección lo ven las tablets.
+# ════════════════════════════════════════════════════════════════════
+
+PORT=5174
+NODE_ENV=production
+HOST=0.0.0.0
+
+# ──────────────────── impresoras simuladas ────────────────────
+# En vez de mandar los bytes a una impresora, los escribe a disco:
+#     server/data/tickets/comanda-XXXX.txt   ← lo que saldría en cocina
+#     server/data/tickets/ticket-XXXX.txt    ← lo que saldría en caja
+# El .txt sale legible, con acentos y las columnas ya cuadradas a 80 mm, así
+# se puede revisar el formato exacto antes de tener el hardware.
+PRINTER_CAJA=file://./server/data/tickets
+PRINTER_COCINA=file://./server/data/tickets
+
+# ───────────────────────── respaldos ─────────────────────────
+# Cada 0 horas = respalda al arrancar, para poder verlo funcionando sin
+# esperar. En el local va a las 3 y conserva 30 días.
+BACKUP_AUTO=on
+BACKUP_HORA=0
+BACKUP_CONSERVAR=7
+
+# Sin copia fuera del equipo: en pruebas no hace falta y evita ensuciar el
+# Drive del negocio con respaldos que no son reales.
+# BACKUP_COPIA=

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es-GT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POS · Café del Valle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===================== Sidebar ===================== -->
+  <aside class="sidebar">
+    <div class="sidebar__brand">
+      <img src="assets/logo.png" alt="Café del Valle"
+           onerror="this.onerror=null;this.src='assets/logo.svg'">
+    </div>
+
+    <button class="nav-item" data-nav="ventas" type="button">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+      Ventas
+    </button>
+    <button class="nav-item" data-nav="ordenes" type="button">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>
+      Órdenes
+    </button>
+    <button class="nav-item" data-nav="pago" type="button">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20M6 15h4"/></svg>
+      Cobrar
+    </button>
+
+    <div class="nav-item nav-item--muted">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h4v18H3zM10 9h4v12h-4zM17 6h4v15h-4z"/></svg>
+      Reportes
+    </div>
+    <div class="nav-item nav-item--muted">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+      Ajustes
+    </div>
+
+    <button class="sidebar__foot" id="cerrarTurno" type="button">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 3v9"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>
+      Cerrar turno
+    </button>
+  </aside>
+
+  <!-- ===================== Main ===================== -->
+  <main class="main">
+
+    <header class="header">
+      <div class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A0947F" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <label class="sr-only" for="buscar">Buscar producto</label>
+        <input id="buscar" type="search" autocomplete="off" placeholder="Buscar producto o código…">
+        <button class="search__clear" id="buscarClear" type="button" hidden aria-label="Limpiar búsqueda">×</button>
+      </div>
+
+      <div class="header__right">
+        <div class="header__block">
+          <div class="header__name" id="cajero">María José</div>
+          <div class="header__role">Cajera · Turno AM</div>
+        </div>
+        <div class="avatar" id="avatar">MJ</div>
+        <div class="header__rule"></div>
+        <div class="header__block">
+          <div class="header__time num" id="reloj">--:--</div>
+          <div class="header__date" id="fecha">—</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ---------- Ventas ---------- -->
+    <section class="screen" id="screen-ventas">
+      <section class="catalog">
+        <div class="cats" id="cats"></div>
+        <div class="grid" id="productos"></div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel__head">
+          <div>
+            <div class="panel__title">Orden actual</div>
+            <div class="panel__sub" id="ordenSub">Mesa 4 · #A-1187</div>
+          </div>
+          <div class="segment">
+            <button type="button" data-tipo="Mesa">Mesa</button>
+            <button type="button" data-tipo="Llevar">Llevar</button>
+          </div>
+        </div>
+
+        <div class="lines" id="lineas"></div>
+
+        <div class="totals">
+          <div class="totals__rows">
+            <div class="totals__row"><span>Subtotal</span><strong class="num" id="tSubtotal">Q0.00</strong></div>
+            <div class="totals__row"><span>IVA incluido (12%)</span><span class="num" id="tIva">Q0.00</span></div>
+            <div class="totals__row">
+              <button class="tip-toggle is-on" id="tipToggle" type="button" aria-pressed="true">
+                <span class="tip-toggle__box">✓</span> Propina sugerida (10%)
+              </button>
+              <strong class="num" id="tPropina">Q0.00</strong>
+            </div>
+          </div>
+          <div class="grand">
+            <span class="grand__label">Total</span>
+            <span class="grand__value num" id="tTotal">Q0.00</span>
+          </div>
+          <div class="totals__actions">
+            <button class="btn-ghost" id="btnGuardar" type="button">Guardar</button>
+            <button class="btn-pay" id="btnCobrar" type="button">
+              Cobrar <span class="num" id="btnCobrarMonto">Q0.00 →</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ---------- Órdenes ---------- -->
+    <section class="screen screen--scroll" id="screen-ordenes" hidden>
+      <div class="orders__head">
+        <h2 class="page-title">Órdenes abiertas</h2>
+        <span class="orders__count" id="ordenesResumen"></span>
+      </div>
+      <div class="orders__grid" id="ordenesGrid"></div>
+    </section>
+
+    <!-- ---------- Cobrar ---------- -->
+    <section class="screen" id="screen-pago" hidden>
+      <section class="pay">
+        <h2 class="page-title" id="pagoTitulo">Cobrar orden</h2>
+        <div class="pay__sub" id="pagoSub"></div>
+
+        <div class="methods" id="metodos"></div>
+
+        <div class="received">
+          <span class="received__label" id="recibidoLabel">Recibido</span>
+          <span class="received__value num" id="recibido">Q0.00</span>
+        </div>
+
+        <div class="keypad" id="teclado"></div>
+        <div class="quick" id="rapidos"></div>
+      </section>
+
+      <aside class="summary">
+        <div class="summary__title">Resumen</div>
+        <div class="summary__lines" id="resumenLineas"></div>
+
+        <div class="summary__foot">
+          <div class="summary__rows">
+            <div class="summary__row"><span>Total a pagar</span><strong class="num" id="pTotal">Q0.00</strong></div>
+            <div class="summary__row"><span id="pRecibidoLabel">Efectivo recibido</span><strong class="num" id="pRecibido">Q0.00</strong></div>
+          </div>
+          <div class="change" id="cambioWrap">
+            <span class="change__label" id="cambioLabel">Cambio</span>
+            <span class="change__value num" id="cambio">Q0.00</span>
+          </div>
+          <button class="btn-confirm" id="btnConfirmar" type="button">Confirmar pago e imprimir</button>
+          <button class="btn-back" id="btnVolver" type="button">Volver a la orden</button>
+        </div>
+      </aside>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

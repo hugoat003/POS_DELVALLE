@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 264 104" width="264" height="104" role="img" aria-label="Café del Valle">
+  <title>Café del Valle</title>
+  <!-- Placeholder wordmark in the brand palette.
+       Drop the real artwork in as assets/logo.png and it takes over automatically. -->
+  <g fill="none" stroke="#4A5A24" stroke-width="9" stroke-linecap="round">
+    <path d="M96 34a36 36 0 0 1 72 0"/>
+  </g>
+  <g fill="#8B5A2B">
+    <ellipse cx="118" cy="27" rx="6" ry="9" transform="rotate(-12 118 27)"/>
+    <ellipse cx="146" cy="27" rx="6" ry="9" transform="rotate(12 146 27)"/>
+  </g>
+  <text x="132" y="70" text-anchor="middle"
+        font-family="'Instrument Serif', Georgia, 'Times New Roman', serif"
+        font-size="30" fill="#2A2118">Café del Valle</text>
+  <text x="132" y="90" text-anchor="middle"
+        font-family="'Archivo', system-ui, sans-serif"
+        font-size="10" letter-spacing="3.4" fill="#A0947F">CAFETERÍA</text>
+</svg>

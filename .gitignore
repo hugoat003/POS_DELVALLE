@@ -1,0 +1,13 @@
+node_modules
+dist
+dist-ssr
+*.local
+.vite
+.DS_Store
+
+# datos locales del servidor: base, respaldos, tickets de simulación, logs de
+# arranque y el perfil del navegador en modo caja. Nada de esto se versiona.
+server/data/
+
+# configuración de la instalación: IPs y nombres de impresora de cada local
+.env

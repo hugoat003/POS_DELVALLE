@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>FUWA · Manual de Inventario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Mochiy+Pop+One&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #3a4158;
+    --gold: #bfa377;
+    --cream: #faf6ee;
+    --ink: #3a4158;
+    --muted: #857f74;
+    --line: #e6ddcd;
+    --green: #4a7c5d;
+    --red: #b0483f;
+    --amber: #b07d2a;
+    --display: "Fredoka", system-ui, sans-serif;
+    --ui: "Nunito", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @page { size: A4; margin: 14mm 13mm; }
+
+  body {
+    font-family: var(--ui);
+    color: var(--ink);
+    background: #fff;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  h1, h2, h3, .display { font-family: var(--display); font-weight: 700; }
+
+  /* ---------- portada ---------- */
+  .cover {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 18px;
+    padding: 24px 32px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .cover .blob1 { position: absolute; right: -50px; top: -60px; width: 200px; height: 200px; border-radius: 999px; background: rgba(255,255,255,.05); }
+  .cover .blob2 { position: absolute; right: 60px; bottom: -90px; width: 150px; height: 150px; border-radius: 999px; background: rgba(191,163,119,.16); }
+  .brand { display: flex; align-items: center; gap: 11px; position: relative; margin-bottom: 20px; }
+  .brand .name { font-family: var(--display); font-weight: 700; font-size: 22pt; letter-spacing: .5px; line-height: 1; }
+  .brand .jp { font-family: "Mochiy Pop One", sans-serif; font-size: 7pt; color: var(--gold); letter-spacing: 2.5px; margin-top: 4px; }
+  .cover h1 { font-size: 26pt; line-height: 1.12; position: relative; margin-bottom: 8px; }
+  .cover .sub { color: rgba(255,255,255,.75); font-size: 11pt; position: relative; max-width: 88%; }
+  .cover .tag {
+    display: inline-block; margin-top: 12px; position: relative;
+    background: rgba(191,163,119,.22); color: #e8d9bd;
+    border: 1.5px solid rgba(191,163,119,.45);
+    padding: 5px 14px; border-radius: 999px;
+    font-size: 8.5pt; font-weight: 800; letter-spacing: .5px;
+  }
+
+  /* ---------- regla de oro ---------- */
+  .golden {
+    border: 2.5px solid var(--gold);
+    background: #fdf9f1;
+    border-radius: 16px;
+    padding: 15px 20px;
+    margin-bottom: 16px;
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .golden .icon {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 999px;
+    background: var(--gold); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19pt; font-family: var(--display); font-weight: 700;
+  }
+  .golden .k { font-family: var(--display); font-weight: 700; font-size: 13pt; color: var(--navy); margin-bottom: 4px; }
+  .golden p { font-size: 10.5pt; }
+  .golden b { color: var(--navy); }
+
+  /* ---------- secciones ---------- */
+  section { margin-bottom: 18px; break-inside: avoid; }
+  .shead { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .snum {
+    width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+    background: var(--navy); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-weight: 700; font-size: 11pt;
+  }
+  .shead h2 { font-size: 15pt; color: var(--navy); }
+  .shead .hint { font-size: 9pt; color: var(--muted); margin-left: auto; font-weight: 700; }
+
+  /* ---------- tarjetas de caso ---------- */
+  .cases { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .case {
+    border: 2px solid var(--line); border-radius: 14px;
+    padding: 14px 16px; background: #fff; break-inside: avoid;
+  }
+  .case .top { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; }
+  .case .pill {
+    font-size: 8pt; font-weight: 800; padding: 3px 10px; border-radius: 999px;
+    text-transform: uppercase; letter-spacing: .4px;
+  }
+  .case h3 { font-size: 11.5pt; color: var(--navy); }
+  .case p { font-size: 9.5pt; color: var(--muted); line-height: 1.45; }
+  .case .path { font-size: 9pt; color: var(--navy); font-weight: 700; margin-top: 7px; }
+  .p-green { background: #e6f0e9; color: var(--green); }
+  .p-red { background: #f7e6e4; color: var(--red); }
+  .p-amber { background: #f9efdb; color: var(--amber); }
+  .p-navy { background: #eceef5; color: var(--navy); }
+  .b-green { border-color: #cbe0d2; }
+  .b-red { border-color: #ecd2ce; }
+  .b-amber { border-color: #eeddbc; }
+
+  /* ---------- tablas ---------- */
+  table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  th {
+    text-align: left; font-size: 8pt; font-weight: 800; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .5px;
+    padding: 7px 10px; border-bottom: 2px solid var(--line);
+  }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--line); font-size: 10pt; vertical-align: top; }
+  td.field { font-weight: 800; color: var(--navy); width: 33%; }
+  td.val { font-family: var(--display); font-weight: 600; color: var(--navy); width: 22%; }
+  td.why { color: var(--muted); font-size: 9.5pt; }
+  .val-box {
+    display: inline-block; background: var(--cream); border: 1.5px solid var(--line);
+    border-radius: 7px; padding: 2px 9px; font-family: var(--display); font-weight: 600;
+  }
+
+  /* ---------- fórmula ---------- */
+  .formula {
+    background: var(--navy); color: #fff; border-radius: 14px;
+    padding: 18px 22px; text-align: center; margin: 4px 0 14px;
+  }
+  .formula .eq { font-family: var(--display); font-weight: 600; font-size: 14pt; }
+  .formula .eq b { color: var(--gold); }
+  .formula .note { font-size: 9pt; color: rgba(255,255,255,.7); margin-top: 7px; }
+
+  .conv { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .conv .c {
+    background: var(--cream); border: 1.5px solid var(--line); border-radius: 12px;
+    padding: 11px 13px; text-align: center;
+  }
+  .conv .c .from { font-size: 9pt; color: var(--muted); font-weight: 700; }
+  .conv .c .to { font-family: var(--display); font-weight: 700; font-size: 13pt; color: var(--navy); margin-top: 2px; }
+
+  /* Las dos unidades, lado a lado */
+  .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .dos .col { border: 2px solid var(--line); border-radius: 14px; padding: 14px 16px; background: #fff; }
+  .dos .col p { font-size: 9.5pt; color: var(--muted); line-height: 1.45; margin-bottom: 9px; }
+  .tag-gasto, .tag-compra {
+    display: inline-block; font-size: 8.5pt; font-weight: 800; letter-spacing: .4px;
+    text-transform: uppercase; padding: 3px 10px; border-radius: 999px; margin-bottom: 7px;
+  }
+  .tag-gasto { background: #eceef5; color: var(--navy); }
+  .tag-compra { background: #f6efe1; color: #8a6f3d; }
+  .mini { display: flex; flex-direction: column; gap: 5px; font-size: 9.5pt; color: var(--ink); }
+
+  /* ---------- ejemplo paso a paso ---------- */
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 13px; margin-bottom: 13px; break-inside: avoid; }
+  .step .num {
+    counter-increment: step; flex-shrink: 0;
+    width: 27px; height: 27px; border-radius: 999px;
+    background: var(--gold); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-weight: 700; font-size: 11pt;
+  }
+  .step .num::before { content: counter(step); }
+  .step .body { flex: 1; }
+  .step .t { font-weight: 800; color: var(--navy); font-size: 10.5pt; margin-bottom: 3px; }
+  .step .d { font-size: 9.5pt; color: var(--muted); }
+
+  /* ---------- avisos ---------- */
+  .warn {
+    border-radius: 14px; padding: 14px 18px; margin-bottom: 11px;
+    display: flex; gap: 12px; align-items: flex-start; break-inside: avoid;
+  }
+  .warn.no { background: #fbf1f0; border: 2px solid #ecd2ce; }
+  .warn.si { background: #eef5f0; border: 2px solid #cbe0d2; }
+  .warn .m { font-size: 15pt; line-height: 1; flex-shrink: 0; }
+  .warn .t { font-weight: 800; font-size: 10.5pt; margin-bottom: 2px; }
+  .warn.no .t { color: var(--red); }
+  .warn.si .t { color: var(--green); }
+  .warn .d { font-size: 9.5pt; color: var(--muted); line-height: 1.45; }
+
+  /* ---------- pie ---------- */
+  .foot {
+    margin-top: 26px; padding-top: 14px; border-top: 2px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 8.5pt; color: var(--muted); font-weight: 700;
+  }
+  .foot .jp { font-family: "Mochiy Pop One", sans-serif; color: var(--gold); letter-spacing: 2px; }
+
+  /* Cada hoja es el área útil real de una A4 (297×210mm menos los márgenes de
+     @page). Así lo que se ve en pantalla es exactamente lo que sale impreso, y
+     se puede revisar página por página antes de generar el PDF. */
+  .sheet { width: 184mm; min-height: 269mm; break-after: page; position: relative; }
+  .sheet:last-child { break-after: auto; }
+  @media screen {
+    body { background: #e9e4d9; padding: 20px; }
+    .sheet {
+      background: #fff; margin: 0 auto 20px; padding: 14mm 13mm;
+      box-shadow: 0 8px 30px -10px rgba(40,44,60,.35); border-radius: 3px;
+    }
+  }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .sheet { padding: 0; margin: 0; box-shadow: none; }
+  }
+  .lead { font-size: 10.5pt; color: var(--muted); margin-bottom: 12px; }
+  code { background: var(--cream); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font-family: var(--display); font-weight: 600; color: var(--navy); font-size: 9.5pt; }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+<!-- ============ PORTADA ============ -->
+<div class="cover">
+  <div class="blob1"></div><div class="blob2"></div>
+  <div class="brand">
+    <svg width="42" height="42" viewBox="0 0 100 100" fill="none">
+      <path d="M50 14c20 0 32 14 32 30 0 10-6 14-14 16-6 1.5-12 2-18 2s-12-.5-18-2c-8-2-14-6-14-16 0-16 12-30 32-30z" fill="#fff"/>
+      <path d="M40 52c3 4 7 6 10 6s7-2 10-6" stroke="#3a4158" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+    </svg>
+    <div>
+      <div class="name">FUWA</div>
+      <div class="jp">日本のコーヒー</div>
+    </div>
+  </div>
+  <h1>Manual de Inventario</h1>
+  <div class="sub">Registra tal como compras — por libra, por galón, por caja — y deja que la app haga las cuentas. Cinco minutos de lectura, para todo el equipo.</div>
+  <div class="tag">Punto de venta FUWA · Inventario</div>
+</div>
+
+<!-- ============ REGLA DE ORO ============ -->
+<div class="golden">
+  <div class="icon">!</div>
+  <div>
+    <div class="k">La regla de oro</div>
+    <p>Cada ingrediente tiene <b>dos unidades</b>: una para <b>gastarlo</b> y otra para <b>comprarlo</b>.</p>
+    <p style="margin-top:6px">La receta se escribe en la de gastar (18 g de café). La compra se registra en la de comprar (5 libras). <b>La app convierte sola</b> — tú nunca haces la cuenta.</p>
+  </div>
+</div>
+
+<!-- ============ 1 · LAS DOS UNIDADES ============ -->
+<section>
+  <div class="shead">
+    <div class="snum">1</div>
+    <h2>Las dos unidades</h2>
+  </div>
+  <div class="dos">
+    <div class="col">
+      <div class="tag-gasto">Cómo lo gastas</div>
+      <p>La unidad de la receta y de la existencia. Solo hay tres, y se elige una vez.</p>
+      <div class="mini">
+        <span><code>g</code> lo que se pesa</span>
+        <span><code>ml</code> lo que se sirve</span>
+        <span><code>pza</code> lo que se cuenta</span>
+      </div>
+    </div>
+    <div class="col">
+      <div class="tag-compra">Cómo lo compras</div>
+      <p>El empaque tal como te lo vende el proveedor, con su precio de factura.</p>
+      <div class="mini">
+        <span><code>libra</code> <code>kilo</code> <code>galón</code> <code>litro</code></span>
+        <span>o el tuyo: <code>caja</code>, <code>bolsa</code>, <code>saco</code>, <code>pastel</code></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2 · EL COSTO ============ -->
+<section>
+  <div class="shead">
+    <div class="snum">2</div>
+    <h2>El costo se calcula solo</h2>
+  </div>
+  <p class="lead">Escribes <b>cuánto trae el empaque</b> y <b>cuánto costó</b>. La app muestra el resultado mientras escribes, para que veas de inmediato si algo quedó mal.</p>
+  <div class="formula">
+    <div class="eq">Q90.00 por <b>libra</b> &nbsp;=&nbsp; Q0.20 por <b>gramo</b></div>
+    <div class="note">Esto aparece solo, en vivo, dentro del formulario del ingrediente.</div>
+  </div>
+  <p class="lead">
+    Ya no divides Q90 ÷ 454 en la calculadora. Solo eliges <code>libra</code>, dejas el contenido que la
+    app propone y escribes el precio de la factura. Si el proveedor sube el precio, cambias solo ese número.
+  </p>
+</section>
+
+</div><!-- fin hoja 1 -->
+
+<div class="sheet">
+<!-- ============ 3 · EJEMPLO ============ -->
+<section>
+  <div class="shead">
+    <div class="snum">3</div>
+    <h2>Ejemplo completo: fresa congelada</h2>
+    <div class="hint">Ingrediente nuevo</div>
+  </div>
+  <p class="lead">Inventario → <b>Nuevo ingrediente</b> (solo el gerente). La compras <b>por libra a Q22</b>.</p>
+  <table>
+    <thead><tr><th>Campo</th><th>Qué escribes</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr><td class="field">Nombre</td><td class="val"><span class="val-box">Fresa congelada</span></td><td class="why">Como lo conoce el equipo.</td></tr>
+      <tr><td class="field">Cómo lo gastas</td><td class="val"><span class="val-box">g</span></td><td class="why">Porque la receta del Asai dice “200 g”.</td></tr>
+      <tr><td class="field">Cómo lo compras</td><td class="val"><span class="val-box">libra</span></td><td class="why">Tal como te lo vende el proveedor.</td></tr>
+      <tr><td class="field">Contenido</td><td class="val"><span class="val-box">453.59</span></td><td class="why">La app ya lo trae puesto. Solo se escribe a mano si elegiste “Otro…”.</td></tr>
+      <tr><td class="field">Precio por libra</td><td class="val"><span class="val-box">22</span></td><td class="why">Lo que dice la factura. <b>Sin dividir nada.</b></td></tr>
+      <tr><td class="field">Alerta bajo (g)</td><td class="val"><span class="val-box">900</span></td><td class="why">900 g ≈ 4 Asai. La app te dice a cuántas libras equivale.</td></tr>
+      <tr><td class="field">Existencia inicial</td><td class="val"><span class="val-box">5</span></td><td class="why">Cinco libras. La app las guarda como 2,268 g.</td></tr>
+    </tbody>
+  </table>
+  <p class="lead" style="margin-top:12px">
+    Al guardar verás <b>Q22.00 por libra = Q0.05 por gramo</b>. Ese es el número que usa la app para el
+    costo de cada Asai. <b>Si el ingrediente ya existe</b>, no lo vuelvas a crear: usa <b>Movimiento → Compra</b>.
+  </p>
+</section>
+
+<!-- ============ 4 · CASOS ============ -->
+<section>
+  <div class="shead">
+    <div class="snum">4</div>
+    <h2>Los cuatro casos del día a día</h2>
+  </div>
+  <p class="lead">Si eres <b>cajero o barista</b>, tu botón dice <b>Merma</b> y es el único que necesitas. Las compras y los conteos los registra el <b>gerente</b>, que ve el botón <b>Movimiento</b> con las tres opciones.</p>
+  <div class="cases">
+    <div class="case b-green">
+      <div class="top"><span class="pill p-green">Entra</span><h3>Compra</h3></div>
+      <p>Llegó mercadería del proveedor. Escribe <b>5</b> y elige <b>libra</b>: la app registra los 2,268 g. Antes de confirmar te muestra la conversión.</p>
+      <div class="path">Inventario → Movimiento → Compra <span style="color:var(--muted);font-weight:600">(gerente)</span></div>
+    </div>
+    <div class="case b-red">
+      <div class="top"><span class="pill p-red">Sale</span><h3>Merma</h3></div>
+      <p>Se derramó, se venció, se cayó o salió mal la bebida. Anótalo el mismo día: es la única forma de saber cuánto se está perdiendo.</p>
+      <div class="path">Inventario → Merma <span style="color:var(--muted);font-weight:600">(todos)</span></div>
+    </div>
+    <div class="case b-amber">
+      <div class="top"><span class="pill p-amber">Corrige</span><h3>Conteo</h3></div>
+      <p>Contaste físicamente y no cuadra. Escribe <b>lo que contaste</b> —en libras o en gramos, tú eliges— y la app calcula la diferencia.</p>
+      <div class="path">Inventario → Movimiento → Ajuste <span style="color:var(--muted);font-weight:600">(gerente)</span></div>
+    </div>
+    <div class="case">
+      <div class="top"><span class="pill p-navy">Automático</span><h3>Venta</h3></div>
+      <p>Al cobrar, la app descuenta sola los ingredientes según la receta. <b>Nadie toca el inventario por las ventas.</b></p>
+      <div class="path">No hay que hacer nada</div>
+    </div>
+  </div>
+</section>
+
+</div><!-- fin hoja 2 -->
+
+<div class="sheet">
+<!-- ============ 5 · QUÉ NO HACER ============ -->
+<section>
+  <div class="shead">
+    <div class="snum">5</div>
+    <h2>Lo que nunca se hace</h2>
+  </div>
+  <div class="warn no">
+    <div class="m">✕</div>
+    <div>
+      <div class="t">No cambies la unidad de “cómo lo gastas”</div>
+      <div class="d">Si el Asai dice “200 g de fresa” y cambias esa unidad a piezas, la receta pasaría a significar <b>200 piezas</b>. La app lo bloquea en cuanto el ingrediente tiene existencia o movimientos: si de verdad hace falta, se crea otro ingrediente.</div>
+    </div>
+  </div>
+  <div class="warn no">
+    <div class="m">✕</div>
+    <div>
+      <div class="t">No inventes el contenido del empaque</div>
+      <div class="d">Es lo único de lo que depende el costo. Si dices que una libra trae <code>45</code> gramos en vez de <code>453.59</code>, la app creerá que la fresa cuesta diez veces más y el reporte de ganancias saldrá falso. Revisa siempre la línea que dice <b>“Q22.00 por libra = Q0.05 por gramo”</b>.</div>
+    </div>
+  </div>
+  <div class="warn no">
+    <div class="m">✕</div>
+    <div>
+      <div class="t">No corrijas la existencia “a la fuerza”</div>
+      <div class="d">Todo cambio entra como Compra, Merma o Conteo. Así queda registrado el motivo y se puede revisar después quién movió qué.</div>
+    </div>
+  </div>
+  <div class="warn si">
+    <div class="m">✓</div>
+    <div>
+      <div class="t">Sí: avisa cuando algo aparezca en rojo o en negativo</div>
+      <div class="d">Una existencia en negativo significa que se vendió algo que nunca se registró como compra. No es un error de la app: falta anotar una entrada.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6 · CHULETA ============ -->
+<section>
+  <div class="shead">
+    <div class="snum">6</div>
+    <h2>Chuleta rápida</h2>
+    <div class="hint">Para pegar junto a la barra</div>
+  </div>
+  <table>
+    <thead><tr><th>Si pasa esto…</th><th>Haces esto</th></tr></thead>
+    <tbody>
+      <tr><td class="field">Llegó el proveedor</td><td>Movimiento → <b>Compra</b> → escribe <b>5</b> y elige <b>libra</b></td></tr>
+      <tr><td class="field">Se derramó la leche</td><td>Movimiento → <b>Merma</b> → cuántos <b>ml</b> se perdieron</td></tr>
+      <tr><td class="field">Salió mal una bebida</td><td>Movimiento → <b>Merma</b> → los ingredientes que se botaron</td></tr>
+      <tr><td class="field">Conteo de fin de mes</td><td>Movimiento → <b>Ajuste</b> → lo que contaste, en libras o en gramos</td></tr>
+      <tr><td class="field">Cobraste una orden</td><td>Nada. La app ya descontó</td></tr>
+      <tr><td class="field">Subió el precio del café</td><td>Gerente: edita el ingrediente y cambia solo el <b>precio por libra</b></td></tr>
+      <tr><td class="field">Aparece “Bajo” en amarillo</td><td>Hay que reponer ese ingrediente pronto</td></tr>
+      <tr><td class="field">Aparece en rojo / negativo</td><td>Falta registrar una compra. Avisa al gerente</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="foot">
+  <span>FUWA · Manual de inventario para el personal</span>
+  <span class="jp">ふわふわ</span>
+</div>
+</div><!-- fin hoja 3 -->
+
+</body>
+</html>

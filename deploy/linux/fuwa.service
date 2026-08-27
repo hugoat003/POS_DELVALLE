@@ -1,0 +1,40 @@
+# FUWA POS — unidad systemd (VPS o mini PC con Linux).
+#
+#   sudo cp deploy/linux/fuwa.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now fuwa
+#   journalctl -u fuwa -f
+#
+# Ajusta User y WorkingDirectory a tu instalación.
+
+[Unit]
+Description=FUWA POS
+After=network.target
+
+[Service]
+Type=simple
+User=fuwa
+WorkingDirectory=/opt/fuwa
+
+# HOST se fija aparte de NODE_ENV a propósito:
+#   0.0.0.0    → mini PC en el local: las tablets tienen que alcanzarla
+#   127.0.0.1  → VPS detrás de un reverse proxy con HTTPS
+Environment=NODE_ENV=production
+Environment=HOST=0.0.0.0
+Environment=PORT=5174
+EnvironmentFile=-/opt/fuwa/.env
+
+ExecStart=/usr/bin/node --env-file-if-exists=.env server/index.js
+
+Restart=always
+RestartSec=5
+
+# La base es un archivo local: el servicio no necesita nada más del sistema.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/opt/fuwa/server/data
+
+[Install]
+WantedBy=multi-user.target

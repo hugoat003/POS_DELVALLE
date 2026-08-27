@@ -1,0 +1,35 @@
+# ════════════════════════════════════════════════════════════════════
+#  FUWA POS · pruebas en la OFICINA con impresora real
+#
+#      cp deploy/env-oficina.example .env
+#
+#  Red 192.168.1.0/24 · router 192.168.1.1 (medida el 16 de agosto de 2026)
+#
+#  OJO: el local es 192.168.0.x y la oficina 192.168.1.x — cambia el TERCER
+#  número. Por eso hay una plantilla por sitio: usar la del local aquí deja la
+#  impresora muda, porque .0.201 no existe en esta red.
+#
+#  Si no vas a conectar la impresora, usa env-prueba.example: ese no menciona
+#  ninguna IP y funciona en cualquier red.
+# ════════════════════════════════════════════════════════════════════
+
+PORT=5174
+NODE_ENV=production
+HOST=0.0.0.0
+
+# La IP del servidor (192.168.1.200) NO va aquí: se le asigna al equipo.
+# Las tablets entran a:   http://192.168.1.200:5174
+
+# ──────────────────────── impresoras ────────────────────────
+# Caja: si estás en Mac no hay recurso compartido de Windows, así que el ticket
+# del cliente se escribe a disco. En la mini PC esta línea es windows://Receipt
+PRINTER_CAJA=file://./server/data/tickets
+
+# Cocina: impresora real en esta red.
+# En la impresora:  IP 192.168.1.201 · máscara 255.255.255.0 · gateway 192.168.1.1
+PRINTER_COCINA=tcp://192.168.1.201:9100
+
+# ───────────────────────── respaldos ─────────────────────────
+BACKUP_AUTO=on
+BACKUP_HORA=0
+BACKUP_CONSERVAR=7

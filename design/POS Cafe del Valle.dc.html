@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#F6F2EA; font-family:'Archivo',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:#8B5A2B; text-decoration:none; }
+  a:hover { color:#4A5A24; }
+  *::-webkit-scrollbar { width:8px; height:8px; }
+  *::-webkit-scrollbar-thumb { background:#DED3C2; border-radius:8px; }
+  *::-webkit-scrollbar-track { background:transparent; }
+</style>
+</helmet>
+<div style="display:flex; height:100vh; min-height:820px; background:#F6F2EA; color:#2A2118; font-family:'Archivo',sans-serif; overflow:hidden">
+
+  <aside style="width:236px; flex:none; display:flex; flex-direction:column; gap:8px; padding:22px 18px; background:#FFFFFF; border-right:1px solid #E7DFD1">
+    <div style="padding:6px 6px 0; margin-bottom:26px">
+      <img src="assets/logo.png" alt="Café del Valle" style="width:132px; display:block" />
+    </div>
+
+    <button onClick="{{ irVentas }}" style="{{ navVentas }}" style-hover="background:#F2EDE2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+      Ventas
+    </button>
+    <button onClick="{{ irOrdenes }}" style="{{ navOrdenes }}" style-hover="background:#F2EDE2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>
+      Órdenes
+    </button>
+    <button onClick="{{ irPago }}" style="{{ navPago }}" style-hover="background:#F2EDE2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20M6 15h4"/></svg>
+      Cobrar
+    </button>
+    <div style="display:flex; align-items:center; gap:12px; padding:13px 14px; border-radius:12px; color:#A0947F; font-size:15px; font-weight:500">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h4v18H3zM10 9h4v12h-4zM17 6h4v15h-4z"/></svg>
+      Reportes
+    </div>
+    <div style="display:flex; align-items:center; gap:12px; padding:13px 14px; border-radius:12px; color:#A0947F; font-size:15px; font-weight:500">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+      Ajustes
+    </div>
+
+    <div style="margin-top:auto; padding-top:18px; border-top:1px solid #E7DFD1; display:flex; align-items:center; gap:12px; color:#A0947F; font-size:14px">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 3v9"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>
+      Cerrar turno
+    </div>
+  </aside>
+
+  <main style="flex:1; display:flex; flex-direction:column; min-width:0">
+    <header style="display:flex; align-items:center; gap:22px; padding:18px 26px; border-bottom:1px solid #E7DFD1; background:#FFFFFF">
+      <div style="flex:1; max-width:460px; display:flex; align-items:center; gap:11px; background:#F6F2EA; border:1px solid #E7DFD1; border-radius:12px; padding:11px 15px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A0947F" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span style="color:#A0947F; font-size:15px">Buscar producto o código…</span>
+      </div>
+      <div style="margin-left:auto; display:flex; align-items:center; gap:26px">
+        <div style="text-align:right">
+          <div style="font-size:15px; font-weight:600">{{ cajero }}</div>
+          <div style="font-size:12.5px; color:#8C8071; letter-spacing:.03em">Cajera · Turno AM</div>
+        </div>
+        <div style="width:42px; height:42px; border-radius:50%; background:#4A5A24; color:#F4F8E6; display:grid; place-items:center; font-weight:700; font-size:15px">MJ</div>
+        <div style="width:1px; height:34px; background:#E7DFD1"></div>
+        <div style="text-align:right">
+          <div style="font-size:16px; font-weight:600; font-variant-numeric:tabular-nums">10:42</div>
+          <div style="font-size:12.5px; color:#8C8071">Sáb 23 ago</div>
+        </div>
+      </div>
+    </header>
+
+    <sc-if value="{{ esVentas }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:1; display:flex; min-height:0">
+        <section style="flex:1; display:flex; flex-direction:column; min-width:0; padding:20px 24px">
+          <div style="display:flex; gap:9px; flex-wrap:wrap; margin-bottom:20px">
+            <sc-for list="{{ categorias }}" as="c" hint-placeholder-count="5">
+              <button onClick="{{ c.sel }}" style="{{ c.style }}" style-hover="border-color:#C9BCA6">{{ c.nombre }}</button>
+            </sc-for>
+          </div>
+          <div style="flex:1; overflow-y:auto; display:grid; grid-template-columns:repeat(4,1fr); gap:14px; align-content:start; padding-right:4px">
+            <sc-for list="{{ productos }}" as="p" hint-placeholder-count="12">
+              <div style="background:#FFFFFF; border:1px solid #E7DFD1; border-radius:16px; padding:12px; display:flex; flex-direction:column; gap:11px; cursor:pointer; box-shadow:0 1px 2px rgba(60,45,25,.04)" style-hover="border-color:#4A5A24; box-shadow:0 4px 14px rgba(60,45,25,.09)">
+                <div style="{{ p.tile }}">{{ p.inicial }}</div>
+                <div style="display:flex; flex-direction:column; gap:3px; padding:0 3px 3px">
+                  <div style="font-size:14.5px; font-weight:600; line-height:1.25; text-wrap:pretty">{{ p.nombre }}</div>
+                  <div style="font-size:14px; color:#8B5A2B; font-weight:700; font-variant-numeric:tabular-nums">{{ p.precio }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <aside style="width:388px; flex:none; display:flex; flex-direction:column; background:#FFFFFF; border-left:1px solid #E7DFD1">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:20px 22px 14px">
+            <div>
+              <div style="font-size:17px; font-weight:600">Orden actual</div>
+              <div style="font-size:12.5px; color:#8C8071; margin-top:3px">Mesa 4 · #A-1187</div>
+            </div>
+            <div style="display:flex; background:#F2EDE2; border:1px solid #E7DFD1; border-radius:10px; padding:3px">
+              <button onClick="{{ setMesa }}" style="{{ btnMesa }}">Mesa</button>
+              <button onClick="{{ setLlevar }}" style="{{ btnLlevar }}">Llevar</button>
+            </div>
+          </div>
+
+          <div style="flex:1; overflow-y:auto; padding:4px 22px; display:flex; flex-direction:column; gap:2px">
+            <sc-for list="{{ orden }}" as="l" hint-placeholder-count="4">
+              <div style="display:flex; gap:13px; align-items:flex-start; padding:13px 0; border-bottom:1px solid #F0EADF">
+                <div style="width:26px; height:26px; flex:none; border-radius:8px; background:#EFEADF; color:#5A4C3B; display:grid; place-items:center; font-size:13px; font-weight:700">{{ l.cant }}</div>
+                <div style="flex:1; min-width:0">
+                  <div style="font-size:14.5px; font-weight:600">{{ l.nombre }}</div>
+                  <div style="font-size:12.5px; color:#8C8071; margin-top:2px">{{ l.detalle }}</div>
+                </div>
+                <div style="font-size:14.5px; font-weight:600; font-variant-numeric:tabular-nums">{{ l.total }}</div>
+              </div>
+            </sc-for>
+            <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:14px; padding:12px; border:1px dashed #D8CCB8; border-radius:12px; color:#8C8071; font-size:13.5px; cursor:pointer" style-hover="border-color:#4A5A24; color:#4A5A24">
+              <span style="font-size:16px; line-height:1">+</span> Agregar nota a la orden
+            </div>
+          </div>
+
+          <div style="padding:18px 22px 22px; border-top:1px solid #E7DFD1; background:#FBF8F2">
+            <div style="display:flex; flex-direction:column; gap:9px; font-size:14px">
+              <div style="display:flex; justify-content:space-between; color:#7A6E5E"><span>Subtotal</span><span style="font-variant-numeric:tabular-nums; color:#2A2118">Q113.00</span></div>
+              <div style="display:flex; justify-content:space-between; color:#7A6E5E"><span>IVA incluido (12%)</span><span style="font-variant-numeric:tabular-nums">Q12.11</span></div>
+              <div style="display:flex; justify-content:space-between; color:#7A6E5E"><span>Propina sugerida (10%)</span><span style="font-variant-numeric:tabular-nums; color:#2A2118">Q11.30</span></div>
+            </div>
+            <div style="display:flex; align-items:baseline; justify-content:space-between; margin:16px 0 18px; padding-top:16px; border-top:1px solid #E7DFD1">
+              <span style="font-size:17px; font-weight:600">Total</span>
+              <span style="font-family:'Instrument Serif',serif; font-size:36px; letter-spacing:-.01em; font-variant-numeric:tabular-nums; color:#3C4A1C">Q124.30</span>
+            </div>
+            <div style="display:flex; gap:11px">
+              <button style="flex:none; padding:16px 18px; border-radius:13px; background:#FFFFFF; border:1px solid #DCD1BF; color:#5A4C3B; font-family:inherit; font-size:14.5px; font-weight:600; cursor:pointer" style-hover="border-color:#4A5A24; color:#4A5A24">Guardar</button>
+              <button onClick="{{ irPago }}" style="flex:1; display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-radius:13px; border:none; background:#4A5A24; color:#F4F8E6; font-family:inherit; font-size:15.5px; font-weight:700; cursor:pointer" style-hover="background:#3C4A1C">
+                Cobrar <span style="font-variant-numeric:tabular-nums">Q124.30 →</span>
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ esOrdenes }}">
+      <div style="flex:1; overflow-y:auto; padding:24px 26px">
+        <div style="display:flex; align-items:baseline; gap:16px; margin-bottom:20px">
+          <h2 style="margin:0; font-family:'Instrument Serif',serif; font-size:30px; font-weight:400">Órdenes abiertas</h2>
+          <span style="color:#8C8071; font-size:14px">6 activas · Q612.50 en curso</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(268px,1fr)); gap:16px">
+          <sc-for list="{{ ordenes }}" as="o" hint-placeholder-count="6">
+            <div style="background:#FFFFFF; border:1px solid #E7DFD1; border-radius:18px; padding:18px; display:flex; flex-direction:column; gap:14px; cursor:pointer; box-shadow:0 1px 2px rgba(60,45,25,.04)" style-hover="border-color:#4A5A24; box-shadow:0 4px 14px rgba(60,45,25,.09)">
+              <div style="display:flex; align-items:center; justify-content:space-between">
+                <div>
+                  <div style="font-size:16.5px; font-weight:700">{{ o.lugar }}</div>
+                  <div style="font-size:12.5px; color:#8C8071; margin-top:3px">{{ o.folio }} · {{ o.hora }}</div>
+                </div>
+                <span style="{{ o.chip }}">{{ o.estado }}</span>
+              </div>
+              <div style="font-size:13.5px; color:#7A6E5E; line-height:1.5; text-wrap:pretty">{{ o.items }}</div>
+              <div style="display:flex; align-items:center; justify-content:space-between; padding-top:13px; border-top:1px solid #F0EADF">
+                <span style="font-size:12.5px; color:#8C8071">{{ o.mesero }}</span>
+                <span style="font-size:18px; font-weight:700; font-variant-numeric:tabular-nums">{{ o.total }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ esPago }}">
+      <div style="flex:1; display:flex; min-height:0">
+        <section style="flex:1; padding:28px 30px; display:flex; flex-direction:column; min-width:0">
+          <h2 style="margin:0 0 4px; font-family:'Instrument Serif',serif; font-size:30px; font-weight:400">Cobrar orden #A-1187</h2>
+          <div style="color:#8C8071; font-size:14px; margin-bottom:24px">Mesa 4 · 4 productos</div>
+
+          <div style="display:flex; gap:12px; margin-bottom:26px">
+            <sc-for list="{{ metodos }}" as="m" hint-placeholder-count="3">
+              <button onClick="{{ m.sel }}" style="{{ m.style }}" style-hover="border-color:#C9BCA6">
+                <span style="font-size:15.5px; font-weight:600">{{ m.nombre }}</span>
+                <span style="font-size:12.5px; color:#8C8071">{{ m.nota }}</span>
+              </button>
+            </sc-for>
+          </div>
+
+          <div style="display:flex; align-items:baseline; justify-content:space-between; background:#FFFFFF; border:1px solid #E7DFD1; border-radius:16px; padding:20px 22px; margin-bottom:20px">
+            <span style="font-size:14.5px; color:#7A6E5E">Recibido</span>
+            <span style="font-family:'Instrument Serif',serif; font-size:42px; line-height:1; font-variant-numeric:tabular-nums">Q150.00</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:11px; max-width:460px">
+            <sc-for list="{{ teclas }}" as="t" hint-placeholder-count="12">
+              <div style="background:#FFFFFF; border:1px solid #E7DFD1; border-radius:14px; padding:19px 0; text-align:center; font-size:21px; font-weight:600; cursor:pointer; font-variant-numeric:tabular-nums" style-hover="background:#F2EDE2; border-color:#C9BCA6">{{ t }}</div>
+            </sc-for>
+          </div>
+        </section>
+
+        <aside style="width:388px; flex:none; display:flex; flex-direction:column; background:#FFFFFF; border-left:1px solid #E7DFD1; padding:24px 22px">
+          <div style="font-size:17px; font-weight:600; margin-bottom:16px">Resumen</div>
+          <div style="display:flex; flex-direction:column; gap:2px">
+            <sc-for list="{{ orden }}" as="l" hint-placeholder-count="4">
+              <div style="display:flex; gap:12px; padding:11px 0; border-bottom:1px solid #F0EADF; font-size:14px">
+                <span style="color:#8C8071; width:22px; font-variant-numeric:tabular-nums">{{ l.cant }}×</span>
+                <span style="flex:1">{{ l.nombre }}</span>
+                <span style="font-weight:600; font-variant-numeric:tabular-nums">{{ l.total }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="margin-top:auto; padding-top:20px">
+            <div style="display:flex; flex-direction:column; gap:9px; font-size:14px; color:#7A6E5E">
+              <div style="display:flex; justify-content:space-between"><span>Total a pagar</span><span style="color:#2A2118; font-variant-numeric:tabular-nums">Q124.30</span></div>
+              <div style="display:flex; justify-content:space-between"><span>Efectivo recibido</span><span style="color:#2A2118; font-variant-numeric:tabular-nums">Q150.00</span></div>
+            </div>
+            <div style="display:flex; align-items:baseline; justify-content:space-between; margin:16px 0 18px; padding-top:16px; border-top:1px solid #E7DFD1">
+              <span style="font-size:16px; font-weight:600; color:#8B5A2B">Cambio</span>
+              <span style="font-family:'Instrument Serif',serif; font-size:36px; color:#8B5A2B; font-variant-numeric:tabular-nums">Q25.70</span>
+            </div>
+            <button style="width:100%; padding:17px; border-radius:13px; border:none; background:#4A5A24; color:#F4F8E6; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer" style-hover="background:#3C4A1C">Confirmar pago e imprimir</button>
+            <button onClick="{{ irVentas }}" style="width:100%; margin-top:10px; padding:14px; border-radius:13px; background:#FFFFFF; border:1px solid #DCD1BF; color:#7A6E5E; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer" style-hover="border-color:#4A5A24; color:#4A5A24">Volver a la orden</button>
+          </div>
+        </aside>
+      </div>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;cajero&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;María José&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const MENU = [
+  ["Café", "Espresso", 12], ["Café", "Americano", 15], ["Café", "Cortado", 18], ["Café", "Capuchino", 22],
+  ["Café", "Latte", 24], ["Café", "Flat White", 23], ["Café", "Mocha", 26], ["Café", "Cold Brew", 25],
+  ["Bebidas", "Chocolate caliente", 22], ["Bebidas", "Chai Latte", 25], ["Bebidas", "Matcha Latte", 28],
+  ["Bebidas", "Limonada con hierbabuena", 18], ["Bebidas", "Té helado de durazno", 16], ["Bebidas", "Licuado de banano", 24],
+  ["Panadería", "Croissant de mantequilla", 15], ["Panadería", "Pan de banano", 18], ["Panadería", "Muffin de chocolate", 16],
+  ["Panadería", "Empanada de piña", 14], ["Panadería", "Rol de canela", 20],
+  ["Postres", "Cheesecake de mora", 32], ["Postres", "Tres leches", 30], ["Postres", "Brownie con nuez", 20], ["Postres", "Pie de limón", 28],
+  ["Comida", "Sándwich de pavo", 45], ["Comida", "Bagel con queso crema", 28], ["Comida", "Quiche de espinaca", 38], ["Comida", "Ensalada César", 42]
+];
+
+const TINTES = {
+  "Café": ["#F0E4D5", "#8B5A2B"],
+  "Bebidas": ["#E9EDDC", "#4A5A24"],
+  "Panadería": ["#F5E8D5", "#A0703C"],
+  "Postres": ["#F3E5DD", "#9B5B45"],
+  "Comida": ["#EBEEDF", "#55632C"]
+};
+
+class Component extends DCLogic {
+  state = { pantalla: "ventas", cat: "Todo", tipo: "Mesa", metodo: "Efectivo" };
+
+  chip(activo) {
+    return "padding:10px 18px; border-radius:11px; font-family:inherit; font-size:14.5px; font-weight:600; cursor:pointer; transition:.15s; " +
+      (activo
+        ? "background:#4A5A24; color:#F4F8E6; border:1px solid #4A5A24"
+        : "background:#FFFFFF; color:#7A6E5E; border:1px solid #E7DFD1");
+  }
+
+  nav(activo) {
+    return "display:flex; align-items:center; gap:12px; width:100%; padding:13px 14px; border-radius:12px; font-family:inherit; font-size:15px; font-weight:500; text-align:left; cursor:pointer; border:none; transition:.15s; " +
+      (activo ? "background:#EDF0E1; color:#3C4A1C; font-weight:600" : "background:transparent; color:#7A6E5E");
+  }
+
+  seg(activo) {
+    return "padding:7px 15px; border-radius:8px; border:none; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; " +
+      (activo ? "background:#4A5A24; color:#F4F8E6" : "background:transparent; color:#8C8071");
+  }
+
+  renderVals() {
+    const { pantalla, cat, tipo, metodo } = this.state;
+    const cats = ["Todo", "Café", "Bebidas", "Panadería", "Postres", "Comida"];
+
+    const orden = [
+      { cant: 2, nombre: "Capuchino", detalle: "Grande · leche deslactosada", total: "Q44.00" },
+      { cant: 1, nombre: "Latte", detalle: "Mediano · doble shot", total: "Q24.00" },
+      { cant: 1, nombre: "Croissant de mantequilla", detalle: "Calentado", total: "Q15.00" },
+      { cant: 1, nombre: "Tres leches", detalle: "Para compartir", total: "Q30.00" }
+    ];
+
+    const est = c => "padding:5px 11px; border-radius:999px; font-size:11.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; background:" + c[0] + "; color:" + c[1];
+
+    return {
+      cajero: this.props.cajero ?? "María José",
+      esVentas: pantalla === "ventas",
+      esOrdenes: pantalla === "ordenes",
+      esPago: pantalla === "pago",
+      irVentas: () => this.setState({ pantalla: "ventas" }),
+      irOrdenes: () => this.setState({ pantalla: "ordenes" }),
+      irPago: () => this.setState({ pantalla: "pago" }),
+      navVentas: this.nav(pantalla === "ventas"),
+      navOrdenes: this.nav(pantalla === "ordenes"),
+      navPago: this.nav(pantalla === "pago"),
+
+      categorias: cats.map(c => ({ nombre: c, style: this.chip(c === cat), sel: () => this.setState({ cat: c }) })),
+      productos: MENU.filter(p => cat === "Todo" || p[0] === cat).map(p => {
+        const t = TINTES[p[0]];
+        return {
+          nombre: p[1],
+          precio: "Q" + p[2].toFixed(2),
+          inicial: p[1].charAt(0),
+          tile: "height:104px; border-radius:11px; display:grid; place-items:center; font-family:'Instrument Serif',serif; font-size:44px; background:" + t[0] + "; color:" + t[1]
+        };
+      }),
+
+      orden,
+      setMesa: () => this.setState({ tipo: "Mesa" }),
+      setLlevar: () => this.setState({ tipo: "Llevar" }),
+      btnMesa: this.seg(tipo === "Mesa"),
+      btnLlevar: this.seg(tipo === "Llevar"),
+
+      ordenes: [
+        { lugar: "Mesa 4", folio: "#A-1187", hora: "10:31", estado: "Abierta", chip: est(["#F0EADF", "#5A4C3B"]), items: "2 Capuchino · 1 Latte · 1 Croissant · 1 Tres leches", mesero: "María José", total: "Q124.30" },
+        { lugar: "Mesa 2", folio: "#A-1186", hora: "10:22", estado: "En barra", chip: est(["#E9EDDC", "#41501F"]), items: "3 Americano · 2 Rol de canela", mesero: "Luis", total: "Q85.00" },
+        { lugar: "Para llevar", folio: "#A-1185", hora: "10:18", estado: "Lista", chip: est(["#F0E4D5", "#8B5A2B"]), items: "1 Cold Brew · 1 Bagel con queso crema", mesero: "María José", total: "Q53.00" },
+        { lugar: "Mesa 7", folio: "#A-1184", hora: "10:05", estado: "Abierta", chip: est(["#F0EADF", "#5A4C3B"]), items: "2 Matcha Latte · 1 Cheesecake de mora · 1 Ensalada César", mesero: "Ana", total: "Q130.00" },
+        { lugar: "Barra 1", folio: "#A-1183", hora: "09:58", estado: "En barra", chip: est(["#E9EDDC", "#41501F"]), items: "1 Espresso doble · 1 Empanada de piña", mesero: "Luis", total: "Q38.00" },
+        { lugar: "Mesa 9", folio: "#A-1182", hora: "09:47", estado: "Por cobrar", chip: est(["#F6E3D6", "#A85A28"]), items: "2 Quiche de espinaca · 2 Limonada con hierbabuena · 1 Brownie", mesero: "Ana", total: "Q182.20" }
+      ],
+
+      metodos: ["Efectivo", "Tarjeta", "QR / Transferencia"].map((m, i) => ({
+        nombre: m,
+        nota: ["Cambio automático", "Visa · MC · Visanet", "BAM, BI, Banrural"][i],
+        sel: () => this.setState({ metodo: m }),
+        style: "flex:1; display:flex; flex-direction:column; align-items:flex-start; gap:4px; padding:17px 19px; border-radius:14px; font-family:inherit; text-align:left; cursor:pointer; transition:.15s; " +
+          (m === metodo ? "background:#EDF0E1; border:1px solid #4A5A24; color:#2A2118" : "background:#FFFFFF; border:1px solid #E7DFD1; color:#7A6E5E")
+      })),
+
+      teclas: ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "←"]
+    };
+  }
+}
+</script>
+</body>
+</html>

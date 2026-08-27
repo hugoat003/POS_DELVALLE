@@ -1,0 +1,47 @@
+# ════════════════════════════════════════════════════════════════════
+#  FUWA POS · configuración del LOCAL (producción)
+#
+#  Copiar como .env en la raíz del proyecto, en la mini PC de caja:
+#      copy deploy\env-local.example .env
+#
+#  Datos tomados de la red del local el 15 de agosto de 2026.
+#  Red 192.168.0.0/24 · router 192.168.0.1
+# ════════════════════════════════════════════════════════════════════
+
+# ───────────────────────── servidor ─────────────────────────
+PORT=5174
+NODE_ENV=production
+
+# Escuchar en TODAS las interfaces. Sin esta línea, con NODE_ENV=production el
+# servidor solo atiende en localhost: en la caja se ve todo perfecto y NINGUNA
+# tablet conecta. Es el fallo más confuso de todo el montaje.
+HOST=0.0.0.0
+
+# La IP de la mini PC (192.168.0.200) NO va aquí: se le asigna a Windows o se
+# reserva en el router. El servidor no necesita saber cuál tiene — al arrancar
+# imprime solo las direcciones donde lo ven las tablets.
+#
+#     Las tablets entran a:   http://192.168.0.200:5174
+
+# ──────────────────────── impresoras ────────────────────────
+# Caja (ticket del cliente): 3nstar RPT009 por USB en la mini PC.
+# "Receipt" es el nombre del recurso compartido de Windows. Instalarla con el
+# driver "Generic / Text Only": con el driver propio el spooler intenta
+# rasterizar los comandos ESC/POS y salen jeroglíficos.
+PRINTER_CAJA=windows://Receipt
+
+# Cocina (comandas): 3nstar RPT009 por red, IP estática 192.168.0.201.
+# Se eligió .201 porque el DHCP de este router reparte DESDE .2 hacia arriba
+# (iba por .29 al medirlo). Una estática baja habría chocado en semanas.
+# En la impresora:  IP 192.168.0.201 · máscara 255.255.255.0 · gateway 192.168.0.1
+PRINTER_COCINA=tcp://192.168.0.201:9100
+
+# ───────────────────────── respaldos ─────────────────────────
+BACKUP_AUTO=on
+BACKUP_HORA=3
+BACKUP_CONSERVAR=30
+
+# Carpeta sincronizada de Google Drive para escritorio, en modo "Duplicar
+# archivos". AJUSTAR el nombre de usuario de Windows. Si Drive todavía no está
+# instalado, comentar esta línea: el respaldo local se guarda igual.
+BACKUP_COPIA=C:\Users\Caja\Mi unidad\Respaldos FUWA

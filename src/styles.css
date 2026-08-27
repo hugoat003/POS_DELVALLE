@@ -1,0 +1,201 @@
+/* FUWA POS — estilos globales y variables de tema.
+   Paleta tomada del logo: azul marino + crema + dorado.
+
+   Estos valores eran configurables desde el panel de Tweaks. El cliente fijó
+   la identidad visual, así que ahora viven aquí y nadie los cambia en caliente:
+   tema Mochi (el azul marino de siempre), tipografía Fredoka y redondeo 28px. */
+:root {
+  --navy: #3a4158;
+  --gold: #bfa377;
+  --cream: #faf6ee;
+  --ink: #3a4158;
+  --muted: #94918a;
+  --line: #ece6da;
+  --primary: #3a4158;
+  --primary-soft: #eceef5;
+  /* Redondeo de las superficies grandes (tarjetas, modales, paneles). Los
+     controles pequeños llevan su propio radio: 28px en un input de 44px de
+     alto lo convertiría en pastilla. */
+  --r: 28px;
+  --display: "Fredoka", system-ui;
+  --ui: "Nunito", system-ui, sans-serif;
+  --jp: "Mochiy Pop One", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+body {
+  font-family: var(--ui);
+  background: var(--cream);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  /* Kiosco táctil: permite desplazar pero desactiva el pinch-zoom del navegador. */
+  touch-action: pan-x pan-y;
+  -webkit-text-size-adjust: 100%;
+}
+/* Alto del viewport en tablet.
+
+   Safari de iOS/iPadOS calcula 100vh como si la barra del navegador estuviera
+   oculta. En un iPad esa barra NUNCA se oculta, así que la app quedaba ~110px
+   más alta que el área visible y, al tener overflow:hidden, el último tramo era
+   inalcanzable: el botón "Confirmar pago" caía justo ahí y no se podía cobrar.
+
+   dvh mide el alto realmente visible. Se declara vh primero como respaldo para
+   navegadores viejos que no entienden dvh (la segunda regla los ignora). */
+.fuwa-viewport,
+#root {
+  height: 100vh;
+  height: 100dvh;
+}
+/* Mismo motivo para las hojas modales, que si no se salen por abajo. */
+.fuwa-sheet-tall {
+  max-height: 88vh;
+  max-height: 88dvh;
+}
+button {
+  font-family: var(--ui);
+  /* Táctil: sin la espera de doble-tap del navegador ni el flash gris al tocar. */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+h1 {
+  line-height: 1.1;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+  border: 2px solid var(--cream);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
+}
+input:focus,
+textarea:focus {
+  border-color: var(--primary) !important;
+}
+
+/* La comanda de cocina y los documentos de reimpresión permanecen ocultos en
+   pantalla; solo aparecen al imprimir. */
+.fuwa-comanda,
+.fuwa-printsrc {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  /* Por defecto (y al imprimir el recibo) se muestra el comprobante del cliente. */
+  .fuwa-printsrc {
+    display: block !important;
+  }
+  .fuwa-ticket,
+  .fuwa-ticket * {
+    visibility: visible !important;
+  }
+  .fuwa-ticket {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    box-shadow: none !important;
+  }
+  /* Al imprimir la comanda de cocina, se oculta el recibo y se muestra la comanda. */
+  body[data-print="kitchen"] .fuwa-ticket {
+    display: none !important;
+  }
+  body[data-print="kitchen"] .fuwa-comanda {
+    display: block !important;
+  }
+  body[data-print="kitchen"] .fuwa-comanda,
+  body[data-print="kitchen"] .fuwa-comanda * {
+    visibility: visible !important;
+  }
+  .fuwa-comanda {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    box-shadow: none !important;
+  }
+
+  /* Impresora térmica de rollo: el ticket/comanda ocupan todo el ancho del papel
+     y se imprimen en negro nítido (sin sombras ni bordes redondeados grandes). */
+  body[data-paper="80"] .fuwa-ticket,
+  body[data-paper="80"] .fuwa-comanda {
+    width: 72mm !important;
+    padding: 2mm 3mm !important;
+    border-radius: 0 !important;
+  }
+  body[data-paper="58"] .fuwa-ticket,
+  body[data-paper="58"] .fuwa-comanda {
+    width: 50mm !important;
+    padding: 1.5mm 2mm !important;
+    border-radius: 0 !important;
+    font-size: 11px !important;
+  }
+  /* En papel térmico todo se imprime en negro para máximo contraste/legibilidad. */
+  body[data-paper="80"] .fuwa-ticket *,
+  body[data-paper="58"] .fuwa-ticket *,
+  body[data-paper="80"] .fuwa-comanda *,
+  body[data-paper="58"] .fuwa-comanda * {
+    color: #000 !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Tablet en vertical (portrait) y pantallas angostas (≤1050px).
+   La app se diseñó para horizontal; aquí las pantallas de dos columnas
+   (menú+carrito, cobro, gastos, resumen) se apilan en una sola columna
+   y el contenedor pasa a hacer scroll vertical. El !important es
+   necesario porque el layout base va en estilos inline.
+   Los iPad en horizontal (≥1080px) no se ven afectados.
+------------------------------------------------------------------ */
+@media (max-width: 1050px) {
+  .fuwa-split {
+    grid-template-columns: 1fr !important;
+    overflow-y: auto !important;
+  }
+  /* En login, el panel de marca (reloj/logo) se oculta para dar todo el
+     ancho al teclado de PIN. */
+  .fuwa-brand-panel {
+    display: none !important;
+  }
+}
+
+@keyframes fuwaShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-9px);
+  }
+  40% {
+    transform: translateX(9px);
+  }
+  60% {
+    transform: translateX(-6px);
+  }
+  80% {
+    transform: translateX(6px);
+  }
+}
+.fuwa-shake {
+  animation: fuwaShake 0.4s ease;
+}
