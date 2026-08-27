@@ -90,7 +90,7 @@ export function ReceiptTicket({ order }) {
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, paddingBottom: 16, borderBottom: "2px dashed var(--line)" }}>
         <Mascot size={42} />
         <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 24, color: "var(--tinta)", letterSpacing: "-.01em" }}>Café del Valle</div>
-        <div style={{ fontSize: 10.5, color: "var(--cafe)", letterSpacing: 2.5, textTransform: "uppercase" }}>Cafetería · Antigua Guatemala</div>
+        <div style={{ fontSize: 10.5, color: "var(--cafe)", letterSpacing: 1.8, textTransform: "uppercase" }}>Barillas · Huehuetenango</div>
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--muted)", padding: "14px 0 4px" }}>

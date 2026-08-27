@@ -155,7 +155,7 @@ export function Login({ onLogin, users: usersProp }) {
           <div style={{ color: "rgba(255,255,255,.6)", fontSize: 16.5, marginTop: 8 }}>{fecha}</div>
         </div>
 
-        <div style={{ fontSize: 12.5, color: "rgba(244,248,230,.45)", letterSpacing: 1.5, position: "relative" }}>Antigua Guatemala</div>
+        <div style={{ fontSize: 12.5, color: "rgba(244,248,230,.45)", letterSpacing: 1.5, position: "relative" }}>Barillas, Huehuetenango</div>
       </div>
 
       {/* panel de acceso */}
