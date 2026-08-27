@@ -1,4 +1,4 @@
-/* FUWA POS — pantalla de caja cerrada: abrir turno con un fondo inicial. */
+/* Café del Valle POS — pantalla de caja cerrada: abrir turno con un fondo inicial. */
 import { useState } from "react";
 import { Icon } from "../components/Icon.jsx";
 import { Btn } from "../components/ui.jsx";
@@ -12,11 +12,11 @@ export function OpenRegister({ onOpen, lastClose, lastCloseNote, lastCashLeft })
 
   return (
     <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-      <div style={{ width: "100%", maxWidth: 440, background: "#fff", border: "2px solid var(--line)", borderRadius: "calc(var(--r) * 1.2)", padding: "32px 32px 28px", textAlign: "center", boxShadow: "0 24px 60px -28px rgba(40,44,60,.4)" }}>
+      <div style={{ width: "100%", maxWidth: 440, background: "#fff", border: "1px solid var(--line)", borderRadius: "calc(var(--r) * 1.2)", padding: "32px 32px 28px", textAlign: "center", boxShadow: "0 24px 60px -28px rgba(40,44,60,.4)" }}>
         <div style={{ width: 72, height: 72, borderRadius: 999, background: "var(--primary-soft)", color: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
           <Icon name="lock" size={34} />
         </div>
-        <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 26, color: "var(--navy)", margin: "0 0 6px" }}>La caja está cerrada</h1>
+        <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 29, letterSpacing: "-.01em", color: "var(--tinta)", margin: "0 0 6px" }}>La caja está cerrada</h1>
         <p style={{ color: "var(--muted)", margin: "0 0 22px", fontSize: 15, lineHeight: 1.5 }}>
           Para tomar órdenes y cobrar, abre la caja con el efectivo inicial del turno (fondo de caja).
         </p>
@@ -33,7 +33,7 @@ export function OpenRegister({ onOpen, lastClose, lastCloseNote, lastCashLeft })
           <div
             style={{
               background: "oklch(0.97 0.03 85)",
-              border: "2px solid oklch(0.88 0.07 85)",
+              border: "1px solid oklch(0.88 0.07 85)",
               borderRadius: 14,
               padding: "12px 16px",
               marginBottom: 20,
@@ -65,7 +65,7 @@ export function OpenRegister({ onOpen, lastClose, lastCloseNote, lastCashLeft })
               inputMode="decimal"
               placeholder="0.00"
               autoFocus
-              style={{ width: "100%", padding: "14px 18px 14px 40px", border: "2px solid var(--line)", borderRadius: 14, fontFamily: "var(--display)", fontSize: 24, fontWeight: 800, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "14px 18px 14px 40px", border: "1px solid var(--line)", borderRadius: 14, fontFamily: "var(--display)", fontSize: 24, fontWeight: 800, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
             />
           </div>
           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
@@ -81,7 +81,7 @@ export function OpenRegister({ onOpen, lastClose, lastCloseNote, lastCashLeft })
                   fontFamily: "var(--ui)",
                   fontWeight: 800,
                   fontSize: 14,
-                  border: "2px solid " + (amount === q ? "var(--primary)" : "var(--line)"),
+                  border: "1px solid " + (amount === q ? "var(--primary)" : "var(--line)"),
                   background: amount === q ? "var(--primary-soft)" : "#fff",
                   color: amount === q ? "var(--primary)" : "var(--ink)",
                 }}

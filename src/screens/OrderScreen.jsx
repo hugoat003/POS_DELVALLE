@@ -1,4 +1,4 @@
-/* FUWA POS — pantalla de orden: menú con búsqueda, carrito en vivo y modal. */
+/* Café del Valle POS — pantalla de orden: menú con búsqueda, carrito en vivo y modal. */
 import { useMemo, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
 import { Mascot } from "../components/Mascot.jsx";
@@ -22,8 +22,8 @@ function ProductCard({ product, cat, showEmoji, stockLeft, onClick }) {
       onMouseLeave={() => setHover(false)}
       style={{
         textAlign: "left",
-        background: "#fff",
-        border: "2px solid var(--line)",
+        background: "var(--superficie)",
+        border: "1px solid var(--borde)",
         borderRadius: "var(--r)",
         padding: 0,
         cursor: "pointer",
@@ -31,12 +31,12 @@ function ProductCard({ product, cat, showEmoji, stockLeft, onClick }) {
         display: "flex",
         flexDirection: "column",
         transition: "transform .12s ease, box-shadow .12s ease, border-color .12s ease",
-        transform: hover ? "translateY(-3px)" : "none",
-        boxShadow: hover ? "0 12px 26px -12px rgba(58,65,88,.35)" : "0 2px 0 rgba(58,65,88,.04)",
-        borderColor: out ? "oklch(0.8 0.1 25)" : hover ? cat.ink : "var(--line)",
+        transform: hover ? "translateY(-2px)" : "none",
+        boxShadow: hover ? "0 4px 14px rgba(60,45,25,.09)" : "0 1px 2px rgba(60,45,25,.04)",
+        borderColor: out ? "var(--error)" : hover ? "var(--verde)" : "var(--borde)",
       }}
     >
-      <div style={{ height: 104, background: cat.tint, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, position: "relative", overflow: "hidden", opacity: out ? 0.45 : 1 }}>
+      <div style={{ height: 104, margin: 10, borderRadius: 11, background: cat.tint, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, position: "relative", overflow: "hidden", opacity: out ? 0.45 : 1 }}>
         {/* Aviso de inventario: no bloquea la venta, solo advierte. */}
         {(out || low) && (
           <span
@@ -64,23 +64,22 @@ function ProductCard({ product, cat, showEmoji, stockLeft, onClick }) {
         ) : showEmoji ? (
           product.icon || cat.icon
         ) : (
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 26, color: cat.ink, opacity: 0.9 }}>
-            {product.name
-              .split(" ")
-              .map((w) => w[0])
-              .slice(0, 2)
-              .join("")}
+          /* Inicial en serif sobre el tinte de la categoría: es el lenguaje
+             visual de Café del Valle, en lugar del emoji de la marca anterior.
+             El campo `icon` sigue en el dato y editable desde el editor de menú. */
+          <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 46, lineHeight: 1, color: cat.ink }}>
+            {product.name.trim().charAt(0).toUpperCase()}
           </div>
         )}
       </div>
       {/* Sin descripción en la tarjeta: en tablet a distancia de brazo no se lee
           y roba altura. El texto sigue en el dato y en el editor de menú. */}
-      <div style={{ padding: "12px 14px 12px", display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
-        <div style={{ fontWeight: 800, fontSize: 17, color: "var(--ink)", lineHeight: 1.15, flex: 1 }}>{product.name}</div>
+      <div style={{ padding: "2px 14px 14px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+        <div style={{ fontWeight: 600, fontSize: 15, color: "var(--tinta)", lineHeight: 1.25, flex: 1, textWrap: "pretty" }}>{product.name}</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 2 }}>
-          <span style={{ fontWeight: 800, fontSize: 17, color: "var(--navy)", fontFamily: "var(--display)" }}>{money(product.price)}</span>
+          <span style={{ fontWeight: 700, fontSize: 14.5, color: "var(--cafe)", fontVariantNumeric: "tabular-nums" }}>{money(product.price)}</span>
           {(product.sizes || (product.mods && product.mods.length > 0)) && (
-            <span style={{ fontSize: 11, fontWeight: 800, color: cat.ink, background: cat.tint, padding: "3px 9px", borderRadius: 999 }}>opciones</span>
+            <span style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--tinta-3)", background: "var(--superficie-baja)", border: "1px solid var(--borde)", padding: "2px 8px", borderRadius: 999 }}>opciones</span>
           )}
         </div>
       </div>
@@ -105,7 +104,7 @@ function CartLine({ line, cat, onQty, onRemove, onEdit }) {
         {line.note && <div style={{ fontSize: 12.5, color: cat ? cat.ink : "var(--gold)", marginTop: 3, fontStyle: "italic" }}>“{line.note}”</div>}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
           {/* Targets táctiles: qtyBtn hereda 44×44 del átomo; editar/eliminar a 40×40. */}
-          <div style={{ display: "flex", alignItems: "center", gap: 2, border: "2px solid var(--line)", borderRadius: 999, padding: 2 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 2, border: "1px solid var(--line)", borderRadius: 999, padding: 2 }}>
             <button onClick={() => onQty(line.qty - 1)} style={qtyBtn}>
               <Icon name="minus" size={17} />
             </button>
@@ -203,7 +202,7 @@ function CancelLineModal({ line, onClose, onConfirm }) {
             onChange={(e) => setMotivo(e.target.value)}
             placeholder="O escribe el motivo…"
             style={{
-              width: "100%", border: "2px solid var(--line)", borderRadius: 14, padding: "11px 14px",
+              width: "100%", border: "1px solid var(--line)", borderRadius: 14, padding: "11px 14px",
               fontFamily: "var(--ui)", fontSize: 14.5, color: "var(--ink)", outline: "none",
             }}
           />
@@ -276,10 +275,10 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
   return (
     <div className="fuwa-split" style={{ display: "grid", gridTemplateColumns: "1fr 376px", height: "100%", minHeight: 0 }}>
       {/* ---- Menú ---- */}
-      <div style={{ display: "flex", flexDirection: "column", minHeight: 0, borderRight: "2px solid var(--line)" }}>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: 0, borderRight: "1px solid var(--borde)" }}>
         <div style={{ padding: "20px 26px 14px", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
-            <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 26, color: "var(--navy)", margin: 0 }}>Tomar orden</h1>
+            <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 30, letterSpacing: "-.01em", color: "var(--tinta)", margin: 0 }}>Tomar orden</h1>
             <div style={{ position: "relative", width: 260 }}>
               <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }}>
                 <Icon name="search" size={18} />
@@ -288,7 +287,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar producto…"
-                style={{ width: "100%", padding: "12px 14px 12px 40px", border: "2px solid var(--line)", borderRadius: 999, fontFamily: "var(--ui)", fontSize: 15, outline: "none", color: "var(--ink)", background: "#fff" }}
+                style={{ width: "100%", padding: "12px 14px 12px 40px", border: "1px solid var(--borde)", borderRadius: 12, fontFamily: "var(--ui)", fontSize: 15, outline: "none", color: "var(--tinta)", background: "var(--fondo)" }}
               />
             </div>
           </div>
@@ -297,8 +296,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
               Todo
             </Pill>
             {cats.map((c) => (
-              <Pill key={c.id} active={activeCat === c.id} color={c.ink} onClick={() => setActiveCat(c.id)}>
-                <span style={{ marginRight: 6 }}>{c.icon}</span>
+              <Pill key={c.id} active={activeCat === c.id} onClick={() => setActiveCat(c.id)}>
                 {c.name}
               </Pill>
             ))}
@@ -354,7 +352,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
                   transition: "all .12s ease",
                 }}
               >
-                {o === "Aquí" ? "🍽️ Para aquí" : "🥡 Para llevar"}
+                {o === "Aquí" ? "Para aquí" : "Para llevar"}
               </button>
             ))}
           </div>
@@ -423,10 +421,10 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
           )}
         </div>
 
-        <div style={{ borderTop: "2px solid var(--line)", padding: "18px 22px", flexShrink: 0 }}>
+        <div style={{ borderTop: "1px solid var(--line)", padding: "18px 22px", flexShrink: 0 }}>
           {/* Faltantes: se avisa para que alguien reponga, pero la venta sigue. */}
           {shortages.length > 0 && (
-            <div style={{ display: "flex", gap: 10, background: "oklch(0.95 0.06 85)", border: "2px solid oklch(0.88 0.09 85)", borderRadius: 14, padding: "10px 14px", marginBottom: 12, color: "oklch(0.42 0.09 70)" }}>
+            <div style={{ display: "flex", gap: 10, background: "oklch(0.95 0.06 85)", border: "1px solid oklch(0.88 0.09 85)", borderRadius: 14, padding: "10px 14px", marginBottom: 12, color: "oklch(0.42 0.09 70)" }}>
               <span style={{ flexShrink: 0, marginTop: 1 }}>
                 <Icon name="alert" size={17} />
               </span>
@@ -436,9 +434,9 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
               </div>
             </div>
           )}
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14 }}>
-            <span style={{ fontSize: 16, fontWeight: 700, color: "var(--muted)" }}>{account ? "Total de la cuenta" : "Total a pagar"}</span>
-            <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 26, color: "var(--navy)" }}>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 16, paddingTop: 14, borderTop: "1px solid var(--borde)" }}>
+            <span style={{ fontSize: 16.5, fontWeight: 600, color: "var(--tinta)" }}>{account ? "Total de la cuenta" : "Total a pagar"}</span>
+            <span style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 36, letterSpacing: "-.01em", color: "var(--verde-oscuro)", fontVariantNumeric: "tabular-nums" }}>
               {money(account ? totalCuenta : subtotal)}
             </span>
           </div>

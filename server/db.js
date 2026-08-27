@@ -1,4 +1,4 @@
-/* FUWA POS — capa de datos SQLite (better-sqlite3).
+/* Café del Valle POS — capa de datos SQLite (better-sqlite3).
    Sustituye a los archivos JSON clave-valor: lo transaccional (órdenes, gastos,
    turnos, usuarios, sesiones) vive en tablas; la config de baja concurrencia
    (menú, modificadores, categorías, tweaks) sigue como JSON en la tabla `kv`
@@ -1195,7 +1195,7 @@ function enqueueTicketFor(row) {
   const pay = JSON.parse(row.payment || "{}");
   const cfg = kvGet("fuwa_negocio") || {};
   enqueuePrint("caja", "ticket", row.id, {
-    business: cfg.nombre || "FUWA",
+    business: cfg.nombre || "Café del Valle",
     tagline: cfg.lema || "",
     address: cfg.direccion || "",
     nit: cfg.nit || "",
@@ -1232,7 +1232,7 @@ export const testPrintTx = db.transaction((target, userName) => {
     });
   } else {
     enqueuePrint("caja", "ticket", null, {
-      business: "FUWA", tagline: "Prueba de impresión", number: "TEST", time: hora,
+      business: "Café del Valle", tagline: "Prueba de impresión", number: "TEST", time: hora,
       orderType: "Prueba", table: null, cashier: userName || "",
       lines: [{ qty: 1, name: "Prueba de ticket", size: null, mods: [], note: "", lineTotal: 0 }],
       subtotal: 0, tip: 0, total: 0, method: "prueba",

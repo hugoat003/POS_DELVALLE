@@ -112,7 +112,7 @@ const oz = (...pares) => {
 
 
 /* Tamaños de arranque para un producto nuevo en el editor de menú. En onzas,
-   que es como está impresa la carta de FUWA; el gerente ajusta nombres y
+   que es como está impresa la carta de Café del Valle; el gerente ajusta nombres y
    recargos desde la pantalla. */
 export const SIZES_BEBIDA = [
   { name: "12 onz", delta: 0, recipe: [] },
@@ -207,7 +207,7 @@ export const MOD_GROUPS = {
   precio_dia: M("precio_dia", "Precio del día", [O("Q30"), O("Q35", 5)]),
 };
 
-/* Menú de FUWA. `price` es el precio del tamaño MÁS PEQUEÑO; cada tamaño mayor
+/* Menú de Café del Valle. `price` es el precio del tamaño MÁS PEQUEÑO; cada tamaño mayor
    lleva su diferencia en `delta`, igual que los modificadores. Así el precio de
    un producto sigue siendo un solo número y el recargo queda explícito.
 

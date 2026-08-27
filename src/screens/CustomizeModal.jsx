@@ -1,4 +1,4 @@
-/* FUWA POS — modal de personalización: tamaño, modificadores, nota y cantidad. */
+/* Café del Valle POS — modal de personalización: tamaño, modificadores, nota y cantidad. */
 import { useMemo, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
 import { Btn, overlay, sheet, iconBtn, qtyBtn } from "../components/ui.jsx";
@@ -23,7 +23,7 @@ function OptBtn({ active, label, hint, onClick, color }) {
         borderRadius: 14,
         cursor: "pointer",
         fontFamily: "var(--ui)",
-        border: "2px solid " + (active ? color || "var(--navy)" : "var(--line)"),
+        border: "1px solid " + (active ? color || "var(--navy)" : "var(--line)"),
         background: active ? color || "var(--navy)" : "#fff",
         color: active ? "#fff" : "var(--ink)",
         fontWeight: 800,
@@ -121,7 +121,7 @@ export function CustomizeModal({ product, cat, modGroupsMap, initialLine, onClos
             <div style={{ fontSize: 12, fontWeight: 800, color: cat.ink, textTransform: "uppercase", letterSpacing: 1 }}>
               {cat.icon} {cat.name}
             </div>
-            <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 26, color: "var(--navy)", lineHeight: 1.1, marginTop: 2 }}>{product.name}</div>
+            <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 29, letterSpacing: "-.01em", color: "var(--tinta)", lineHeight: 1.1, marginTop: 2 }}>{product.name}</div>
           </div>
           <button onClick={onClose} style={iconBtn}>
             <Icon name="x" size={22} />
@@ -173,7 +173,7 @@ export function CustomizeModal({ product, cat, modGroupsMap, initialLine, onClos
               placeholder="Ej. extra caliente, poco hielo, nombre del cliente…"
               style={{
                 width: "100%",
-                border: "2px solid var(--line)",
+                border: "1px solid var(--line)",
                 borderRadius: "calc(var(--r)*0.6)",
                 padding: "10px 12px",
                 fontFamily: "var(--ui)",
@@ -187,8 +187,8 @@ export function CustomizeModal({ product, cat, modGroupsMap, initialLine, onClos
         </div>
 
         {/* footer */}
-        <div style={{ borderTop: "2px solid var(--line)", padding: "16px 24px", display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 4, border: "2px solid var(--line)", borderRadius: 999, padding: 4 }}>
+        <div style={{ borderTop: "1px solid var(--line)", padding: "16px 24px", display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, border: "1px solid var(--line)", borderRadius: 999, padding: 4 }}>
             <button onClick={() => setQty((q) => Math.max(1, q - 1))} style={qtyBtn}>
               <Icon name="minus" size={18} />
             </button>

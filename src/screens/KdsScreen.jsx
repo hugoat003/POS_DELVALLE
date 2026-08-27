@@ -1,4 +1,4 @@
-/* FUWA POS — tablero de barra (KDS).
+/* Café del Valle POS — tablero de barra (KDS).
 
    Sustituye a la comandera impresa. Cada orden cobrada entra como ticket y
    recorre dos firmas distintas:
@@ -45,7 +45,7 @@ function Ticket({ order, ahora, onAvanzar, onRetroceder }) {
     <div
       style={{
         background: "#fff",
-        border: "2px solid " + (listo ? "var(--primary)" : "var(--line)"),
+        border: "1px solid " + (listo ? "var(--primary)" : "var(--line)"),
         borderRadius: "var(--r)",
         overflow: "hidden",
         display: "flex",
@@ -53,7 +53,7 @@ function Ticket({ order, ahora, onAvanzar, onRetroceder }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: listo ? "var(--primary-soft)" : "var(--cream)" }}>
-        <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 22, color: "var(--navy)" }}>#{order.number}</div>
+        <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 25, letterSpacing: "-.01em", color: "var(--tinta)"}}>#{order.number}</div>
         <div style={{ flex: 1, fontSize: 12.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>
           {order.orderType === "Aquí" ? "Para aquí" : "Para llevar"}
         </div>
@@ -66,7 +66,7 @@ function Ticket({ order, ahora, onAvanzar, onRetroceder }) {
       {/* Mesa en grande: es lo primero que busca quien recoge el pedido. */}
       {order.table ? (
         <div style={{ margin: "12px 16px 0", border: "2.5px solid var(--navy)", borderRadius: 12, textAlign: "center", padding: "8px 10px" }}>
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 24, color: "var(--navy)", lineHeight: 1.1 }}>MESA {order.table.label}</div>
+          <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 27, letterSpacing: "-.01em", color: "var(--tinta)", lineHeight: 1.1 }}>MESA {order.table.label}</div>
           <div style={{ fontSize: 11.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 1 }}>{order.table.areaName}</div>
         </div>
       ) : (
@@ -115,7 +115,7 @@ function Ticket({ order, ahora, onAvanzar, onRetroceder }) {
             title="Volver a preparación"
             style={{
               width: 46, borderRadius: 12, cursor: "pointer", background: "#fff",
-              border: "2px solid var(--line)", color: "var(--muted)",
+              border: "1px solid var(--line)", color: "var(--muted)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
@@ -183,7 +183,7 @@ export function KdsScreen({ orders, shiftOpen, onSetPrep }) {
       <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: 40, textAlign: "center" }}>
         <div style={{ maxWidth: 380 }}>
           <Mascot size={90} />
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 22, color: "var(--navy)", marginTop: 14 }}>La caja está cerrada</div>
+          <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 25, letterSpacing: "-.01em", color: "var(--tinta)", marginTop: 14 }}>La caja está cerrada</div>
           <div style={{ color: "var(--muted)", fontSize: 15, marginTop: 6, lineHeight: 1.5 }}>
             Las comandas aparecen aquí en cuanto caja abra el turno y empiece a cobrar.
           </div>
@@ -195,7 +195,7 @@ export function KdsScreen({ orders, shiftOpen, onSetPrep }) {
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }}>
       <div style={{ padding: "22px 32px 12px", flexShrink: 0 }}>
-        <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 28, color: "var(--navy)", margin: "0 0 4px" }}>Barra</h1>
+        <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 31, letterSpacing: "-.01em", color: "var(--tinta)", margin: "0 0 4px" }}>Barra</h1>
         <p style={{ color: "var(--muted)", margin: 0, fontSize: 15 }}>
           {activas.length === 0 ? "Todo al día: no hay comandas pendientes." : `${activas.length} comanda${activas.length === 1 ? "" : "s"} en curso.`}
         </p>

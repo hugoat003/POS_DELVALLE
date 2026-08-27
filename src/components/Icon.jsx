@@ -1,4 +1,4 @@
-/* FUWA POS — iconos de línea (simples, trazo). */
+/* Café del Valle POS — iconos de línea (simples, trazo). */
 
 const PATHS = {
   order: "M3 6h18M3 6l1.5 13a2 2 0 0 0 2 1.8h11a2 2 0 0 0 2-1.8L21 6M9 10v6M15 10v6",

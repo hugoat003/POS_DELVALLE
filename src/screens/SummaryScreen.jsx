@@ -1,4 +1,4 @@
-/* FUWA POS — dashboard de ventas: turno actual o rango de fechas + comparativa de turnos. */
+/* Café del Valle POS — dashboard de ventas: turno actual o rango de fechas + comparativa de turnos. */
 import { useMemo, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
 import { Mascot } from "../components/Mascot.jsx";
@@ -52,7 +52,7 @@ function Donut({ frac }) {
         />
       </svg>
       <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-        <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 24, color: "var(--navy)" }}>{Math.round(frac * 100)}%</div>
+        <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 27, letterSpacing: "-.01em", fontVariantNumeric: "tabular-nums", color: "var(--verde-oscuro)"}}>{Math.round(frac * 100)}%</div>
         <div style={{ fontSize: 11, color: "var(--muted)", fontWeight: 700, marginTop: 3 }}>efectivo</div>
       </div>
     </div>
@@ -81,7 +81,7 @@ function PeriodSelector({ period, setPeriod }) {
           <button
             key={p.id}
             onClick={() => setPeriod(p.id)}
-            style={{ padding: "8px 16px", borderRadius: 999, fontFamily: "var(--ui)", fontWeight: 800, fontSize: 13.5, cursor: "pointer", border: "2px solid " + (active ? "var(--primary)" : "var(--line)"), background: active ? "var(--primary)" : "#fff", color: active ? "#fff" : "var(--ink)", transition: "all .12s ease" }}
+            style={{ padding: "8px 16px", borderRadius: 999, fontFamily: "var(--ui)", fontWeight: 800, fontSize: 13.5, cursor: "pointer", border: "1px solid " + (active ? "var(--primary)" : "var(--line)"), background: active ? "var(--primary)" : "#fff", color: active ? "#fff" : "var(--ink)", transition: "all .12s ease" }}
           >
             {p.label}
           </button>
@@ -226,12 +226,12 @@ export function SummaryScreen({ orders, expenses = [], cats, shiftHistory = [], 
     return (
       <div style={{ height: "100%", overflowY: "auto", padding: "22px 32px 40px", display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 20 }}>
-          <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 28, color: "var(--navy)", margin: 0 }}>Resumen</h1>
+          <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 31, letterSpacing: "-.01em", color: "var(--tinta)", margin: 0 }}>Resumen</h1>
           <PeriodSelector period={period} setPeriod={setPeriod} />
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, textAlign: "center" }}>
           <Mascot size={84} color="var(--line)" />
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 26, color: "var(--navy)" }}>No hay ventas en este período</div>
+          <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 29, letterSpacing: "-.01em", color: "var(--tinta)"}}>No hay ventas en este período</div>
           <div style={{ color: "var(--muted)", fontSize: 15.5, maxWidth: 380, lineHeight: 1.5 }}>{period === "turno" ? "Cobra órdenes desde la pantalla principal y aquí verás el resumen del turno en tiempo real." : "Prueba con otro período o revisa los turnos archivados en Historial."}</div>
         </div>
       </div>
@@ -248,7 +248,7 @@ export function SummaryScreen({ orders, expenses = [], cats, shiftHistory = [], 
       {/* header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 20 }}>
         <div>
-          <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 28, color: "var(--navy)", margin: "0 0 4px" }}>{period === "turno" ? "Resumen del turno" : `Resumen · ${periodLabel}`}</h1>
+          <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 31, letterSpacing: "-.01em", color: "var(--tinta)", margin: "0 0 4px" }}>{period === "turno" ? "Resumen del turno" : `Resumen · ${periodLabel}`}</h1>
           <p style={{ color: "var(--muted)", margin: 0, fontSize: 15, textTransform: "capitalize" }}>{new Date().toLocaleDateString("es-GT", { weekday: "long", day: "numeric", month: "long" })}</p>
         </div>
         <PeriodSelector period={period} setPeriod={setPeriod} />

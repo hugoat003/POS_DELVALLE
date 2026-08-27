@@ -1,4 +1,4 @@
-/* FUWA POS — áreas de mesas: mapa por área (Salón, Terraza, Jardín…).
+/* Café del Valle POS — áreas de mesas: mapa por área (Salón, Terraza, Jardín…).
    Exporta:
    - AreaMap: plano del área con las mesas posicionadas en % (tap y arrastre).
    - TablePickerModal: modal para elegir mesa al tomar una orden "Para aquí".
@@ -227,7 +227,7 @@ export function TablesEditor({ areas, setAreas }) {
     <div style={{ height: "100%", overflowY: "auto", padding: "22px 28px 30px" }}>
       <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
         <div>
-          <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 26, color: "var(--navy)", margin: 0 }}>Mesas y áreas</h1>
+          <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 29, letterSpacing: "-.01em", color: "var(--tinta)", margin: 0 }}>Mesas y áreas</h1>
           <div style={{ color: "var(--muted)", fontSize: 14.5, marginTop: 4 }}>
             Crea áreas (Salón, Terraza, Jardín…), agrega mesas y arrástralas para que el mapa se parezca a tu local. Al cobrar “Para aquí” se elige la mesa y sale en la comanda.
           </div>
@@ -271,13 +271,13 @@ export function TablesEditor({ areas, setAreas }) {
 
             {/* Panel de la mesa seleccionada */}
             {selected ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 14, background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", padding: "14px 18px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "14px 18px" }}>
                 <div style={{ fontWeight: 800, color: "var(--navy)", fontSize: 15.5, whiteSpace: "nowrap" }}>Mesa seleccionada</div>
                 <input
                   value={selected.label}
                   onChange={(e) => relabelTable(e.target.value.slice(0, 6))}
                   aria-label="Número o nombre de la mesa"
-                  style={{ width: 110, padding: "10px 14px", border: "2px solid var(--line)", borderRadius: 12, fontFamily: "var(--display)", fontSize: 19, fontWeight: 800, color: "var(--navy)", outline: "none", textAlign: "center" }}
+                  style={{ width: 110, padding: "10px 14px", border: "1px solid var(--line)", borderRadius: 12, fontFamily: "var(--display)", fontSize: 19, fontWeight: 800, color: "var(--navy)", outline: "none", textAlign: "center" }}
                 />
                 <span style={{ fontSize: 13, color: "var(--muted)", flex: 1 }}>Cambia el número (o usa un nombre corto, p. ej. “J1”) y arrastra la mesa en el mapa para moverla.</span>
                 <Btn kind="danger" size="sm" icon="trash" onClick={removeTable}>

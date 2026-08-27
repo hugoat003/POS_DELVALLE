@@ -1,4 +1,4 @@
-/* FUWA POS — respaldo automático diario.
+/* Café del Valle POS — respaldo automático diario.
 
    Escribe una copia completa al día en server/data/backups/ y, si está
    configurado, la manda fuera del local. Lo de "fuera del local" es lo que

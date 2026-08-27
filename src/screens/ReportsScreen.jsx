@@ -1,4 +1,4 @@
-/* FUWA POS — reportes por rango de fechas (diario/semanal/mensual/personalizado)
+/* Café del Valle POS — reportes por rango de fechas (diario/semanal/mensual/personalizado)
    con vista previa y descarga en PDF. Solo para el rol admin. */
 import { useMemo, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
@@ -29,7 +29,7 @@ function presetRange(id) {
 const dateInputStyle = {
   padding: "8px 12px",
   borderRadius: 12,
-  border: "2px solid var(--line)",
+  border: "1px solid var(--line)",
   fontFamily: "var(--ui)",
   fontWeight: 700,
   fontSize: 14,
@@ -37,7 +37,7 @@ const dateInputStyle = {
   background: "#fff",
 };
 
-const thStyle = { padding: "10px 12px", fontSize: 12, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.4, textAlign: "right", borderBottom: "2px solid var(--line)" };
+const thStyle = { padding: "10px 12px", fontSize: 12, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.4, textAlign: "right", borderBottom: "1px solid var(--line)" };
 const tdStyle = { padding: "10px 12px", fontWeight: 700, fontSize: 14, color: "var(--ink)", textAlign: "right", borderBottom: "1px solid var(--line)" };
 
 export function ReportsScreen({ orders, expenses = [], shiftHistory = [], menu = [], mods = {}, ingredients = [] }) {
@@ -97,7 +97,7 @@ export function ReportsScreen({ orders, expenses = [], shiftHistory = [], menu =
     <div style={{ height: "100%", overflowY: "auto", padding: "22px 32px 40px" }}>
       {/* ---- encabezado y controles ---- */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 8 }}>
-        <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 28, color: "var(--navy)", margin: 0 }}>Reportes</h1>
+        <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 31, letterSpacing: "-.01em", color: "var(--tinta)", margin: 0 }}>Reportes</h1>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {PRESETS.map((p) => {
             const active = preset === p.id;
@@ -105,7 +105,7 @@ export function ReportsScreen({ orders, expenses = [], shiftHistory = [], menu =
               <button
                 key={p.id}
                 onClick={() => pickPreset(p.id)}
-                style={{ padding: "8px 16px", borderRadius: 999, fontFamily: "var(--ui)", fontWeight: 800, fontSize: 13.5, cursor: "pointer", border: "2px solid " + (active ? "var(--primary)" : "var(--line)"), background: active ? "var(--primary)" : "#fff", color: active ? "#fff" : "var(--ink)", transition: "all .12s ease" }}
+                style={{ padding: "8px 16px", borderRadius: 999, fontFamily: "var(--ui)", fontWeight: 800, fontSize: 13.5, cursor: "pointer", border: "1px solid " + (active ? "var(--primary)" : "var(--line)"), background: active ? "var(--primary)" : "#fff", color: active ? "#fff" : "var(--ink)", transition: "all .12s ease" }}
               >
                 {p.label}
               </button>
@@ -173,7 +173,7 @@ export function ReportsScreen({ orders, expenses = [], shiftHistory = [], menu =
           </div>
 
           {/* ---- arqueos ---- */}
-          <div style={{ background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", padding: "18px 20px" }}>
+          <div style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "18px 20px" }}>
             <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 17, color: "var(--navy)", marginBottom: 10 }}>Arqueos de caja</div>
             {shifts.length === 0 ? (
               <div style={{ color: "var(--muted)", fontWeight: 700, fontSize: 14, padding: "10px 0" }}>Sin cierres de caja en el período.</div>

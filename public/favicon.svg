@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Café del Valle: anillo abierto en olivo con taza en café, tomado del
+       logotipo. Sin vapor: a 16px el detalle se convierte en ruido. -->
+  <rect width="100" height="100" rx="22" fill="#F6F2EA"/>
+  <path d="M79 27A38 38 0 1 0 79 73"
+        fill="none" stroke="#4A5A24" stroke-width="10" stroke-linecap="round"/>
+  <path d="M31 44h30v12a15 15 0 0 1-15 15h0a15 15 0 0 1-15-15z" fill="#8B5A2B"/>
+  <path d="M62 48h4a7 7 0 0 1 0 14h-2" fill="none" stroke="#8B5A2B" stroke-width="5" stroke-linecap="round"/>
+  <rect x="26" y="75" width="40" height="5" rx="2.5" fill="#8B5A2B"/>
+</svg>

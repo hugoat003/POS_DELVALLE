@@ -1,4 +1,4 @@
-/* FUWA POS — unidad de uso vs. unidad de compra.
+/* Café del Valle POS — unidad de uso vs. unidad de compra.
 
    Un ingrediente vive internamente en su UNIDAD BASE (g, ml o pza): así lo
    escriben las recetas, así se descuenta al vender y así se guarda la

@@ -1,11 +1,11 @@
-/* FUWA POS — herramientas de mantenimiento y respaldo (solo Gerencia). */
+/* Café del Valle POS — herramientas de mantenimiento y respaldo (solo Gerencia). */
 import { useRef } from "react";
 import { Icon } from "../components/Icon.jsx";
 import { Btn } from "../components/ui.jsx";
 
 function ToolCard({ icon, title, desc, danger, children }) {
   return (
-    <div style={{ background: "#fff", border: "2px solid " + (danger ? "oklch(0.85 0.07 25)" : "var(--line)"), borderRadius: "var(--r)", padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+    <div style={{ background: "#fff", border: "1px solid " + (danger ? "oklch(0.85 0.07 25)" : "var(--line)"), borderRadius: "var(--r)", padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ width: 38, height: 38, borderRadius: 11, background: danger ? "oklch(0.94 0.05 25)" : "var(--primary-soft)", color: danger ? "oklch(0.5 0.16 25)" : "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <Icon name={icon} size={19} />
@@ -118,7 +118,7 @@ export function ToolsScreen({ onResetMenu, onClearOrders, onExport, onImport, la
 
   return (
     <div style={{ height: "100%", overflowY: "auto", padding: "22px 32px 40px" }}>
-      <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 28, color: "var(--navy)", margin: "0 0 4px" }}>Herramientas</h1>
+      <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 31, letterSpacing: "-.01em", color: "var(--tinta)", margin: "0 0 4px" }}>Herramientas</h1>
       <p style={{ color: "var(--muted)", margin: "0 0 22px", fontSize: 15 }}>Acciones de mantenimiento y respaldo de datos. Visible solo para Gerencia.</p>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, maxWidth: 920 }}>
@@ -140,7 +140,7 @@ export function ToolsScreen({ onResetMenu, onClearOrders, onExport, onImport, la
           <input ref={fileInputRef} type="file" accept="application/json" onChange={handleImportFile} style={{ display: "none" }} />
         </ToolCard>
 
-        <ToolCard icon="edit" title="Reiniciar menú" desc="Restaura los productos, opciones y categorías originales de FUWA, descartando los cambios hechos en el Editor de menú." danger>
+        <ToolCard icon="edit" title="Reiniciar menú" desc="Restaura los productos, opciones y categorías originales de Café del Valle, descartando los cambios hechos en el Editor de menú." danger>
           <Btn kind="danger" size="sm" icon="check" onClick={onResetMenu}>
             Reiniciar menú
           </Btn>

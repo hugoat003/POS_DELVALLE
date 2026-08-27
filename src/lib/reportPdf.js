@@ -1,12 +1,12 @@
-/* FUWA POS — genera y descarga el PDF del reporte (jsPDF + autotable).
+/* Café del Valle POS — genera y descarga el PDF del reporte (jsPDF + autotable).
    Todo se empaqueta con la app: funciona sin internet. */
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { money } from "./format.js";
 import { toDateInput, moneyDiff } from "./reportStats.js";
 
-const NAVY = [58, 65, 88]; // #3a4158, el navy del tema Mochi
-const GOLD = [197, 160, 89];
+const VERDE = [74, 90, 36]; // #4a5a24, el olivo del logo
+const CAFE = [139, 90, 43]; // #8b5a2b
 
 const dateLabel = (ts) =>
   new Date(ts).toLocaleDateString("es-GT", { day: "numeric", month: "short", year: "numeric" });
@@ -17,10 +17,10 @@ export function downloadReportPdf({ periodLabel, from, to, kpis, shifts, profit 
   // ---- encabezado ----
   doc.setFont("helvetica", "bold");
   doc.setFontSize(24);
-  doc.setTextColor(...NAVY);
-  doc.text("FUWA", 14, 20);
+  doc.setTextColor(...VERDE);
+  doc.text("Café del Valle", 14, 20);
   doc.setFontSize(11);
-  doc.setTextColor(...GOLD);
+  doc.setTextColor(...CAFE);
   doc.text("Reporte de ventas", 14, 27);
 
   doc.setFont("helvetica", "normal");
@@ -28,7 +28,7 @@ export function downloadReportPdf({ periodLabel, from, to, kpis, shifts, profit 
   doc.setTextColor(90);
   doc.text(`Período: ${periodLabel} · ${dateLabel(from)} – ${dateLabel(to)}`, 14, 35);
   doc.text(`Generado: ${new Date().toLocaleString("es-GT")}`, 14, 40);
-  doc.setDrawColor(...GOLD);
+  doc.setDrawColor(...CAFE);
   doc.setLineWidth(0.6);
   doc.line(14, 44, 196, 44);
 
@@ -47,7 +47,7 @@ export function downloadReportPdf({ periodLabel, from, to, kpis, shifts, profit 
       ...(kpis.voided ? [["Órdenes anuladas", String(kpis.voided)]] : []),
     ],
     theme: "grid",
-    headStyles: { fillColor: NAVY, fontStyle: "bold" },
+    headStyles: { fillColor: VERDE, fontStyle: "bold" },
     styles: { fontSize: 10, cellPadding: 3 },
     columnStyles: { 1: { halign: "right", fontStyle: "bold" } },
   });
@@ -57,7 +57,7 @@ export function downloadReportPdf({ periodLabel, from, to, kpis, shifts, profit 
     const yG = doc.lastAutoTable.finalY + 12;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
-    doc.setTextColor(...NAVY);
+    doc.setTextColor(...VERDE);
     doc.text("Ganancia neta", 14, yG);
 
     autoTable(doc, {
@@ -71,7 +71,7 @@ export function downloadReportPdf({ periodLabel, from, to, kpis, shifts, profit 
         ["Margen sobre ventas", profit.revenue > 0 ? (profit.margin * 100).toFixed(1) + "%" : "-"],
       ],
       theme: "grid",
-      headStyles: { fillColor: NAVY, fontStyle: "bold" },
+      headStyles: { fillColor: VERDE, fontStyle: "bold" },
       styles: { fontSize: 10, cellPadding: 3 },
       columnStyles: { 1: { halign: "right", fontStyle: "bold" } },
       didParseCell: (data) => {
@@ -98,7 +98,7 @@ export function downloadReportPdf({ periodLabel, from, to, kpis, shifts, profit 
   const y = doc.lastAutoTable.finalY + (profit ? 18 : 12);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
-  doc.setTextColor(...NAVY);
+  doc.setTextColor(...VERDE);
   doc.text("Arqueos de caja", 14, y);
 
   autoTable(doc, {
@@ -118,7 +118,7 @@ export function downloadReportPdf({ periodLabel, from, to, kpis, shifts, profit 
         ])
       : [[{ content: "Sin cierres de caja en el período", colSpan: 9, styles: { halign: "center", textColor: 120 } }]],
     theme: "grid",
-    headStyles: { fillColor: NAVY, fontStyle: "bold", fontSize: 9 },
+    headStyles: { fillColor: VERDE, fontStyle: "bold", fontSize: 9 },
     styles: { fontSize: 9, cellPadding: 2.5, halign: "right" },
     columnStyles: { 0: { halign: "left" } },
     didParseCell: (data) => {
@@ -138,7 +138,7 @@ export function downloadReportPdf({ periodLabel, from, to, kpis, shifts, profit 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(150);
-    doc.text(`FUWA · página ${i} de ${pages}`, 14, doc.internal.pageSize.getHeight() - 8);
+    doc.text(`Café del Valle · página ${i} de ${pages}`, 14, doc.internal.pageSize.getHeight() - 8);
   }
 
   doc.save(`fuwa-reporte-${toDateInput(from)}_${toDateInput(to)}.pdf`);

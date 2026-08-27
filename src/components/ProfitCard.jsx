@@ -1,4 +1,4 @@
-/* FUWA POS — bloque de ganancia neta, compartido por Resumen y Reportes.
+/* Café del Valle POS — bloque de ganancia neta, compartido por Resumen y Reportes.
 
    Muestra el desglose completo (ingresos − costo de ventas − gastos) en vez de
    un solo número, porque un número suelto no dice dónde se está yendo el
@@ -51,7 +51,7 @@ export function ProfitCard({ profit, porDia, hint, turnosSinDetalle = 0 }) {
         <div
           style={{
             marginTop: 10, display: "flex", gap: 8, alignItems: "flex-start",
-            background: "oklch(0.95 0.06 85)", border: "2px solid oklch(0.88 0.07 85)",
+            background: "oklch(0.95 0.06 85)", border: "1px solid oklch(0.88 0.07 85)",
             borderRadius: 12, padding: "9px 12px",
           }}
         >

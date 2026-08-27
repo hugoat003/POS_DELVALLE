@@ -1,4 +1,4 @@
-/* FUWA POS — editor de menú: productos, opciones editables y categorías. */
+/* Café del Valle POS — editor de menú: productos, opciones editables y categorías. */
 import { useMemo, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
 import { Btn, Pill, overlay, sheet, iconBtn } from "../components/ui.jsx";
@@ -21,7 +21,7 @@ const cleanRecipe = (rows) =>
 const inp = {
   width: "100%",
   padding: "11px 14px",
-  border: "2px solid var(--line)",
+  border: "1px solid var(--line)",
   borderRadius: 12,
   fontFamily: "var(--ui)",
   fontSize: 15,
@@ -47,7 +47,7 @@ function CheckRow({ checked, onChange, label }) {
           width: 26,
           height: 26,
           borderRadius: 8,
-          border: "2px solid " + (checked ? "var(--primary)" : "var(--line)"),
+          border: "1px solid " + (checked ? "var(--primary)" : "var(--line)"),
           background: checked ? "var(--primary)" : "#fff",
           display: "flex",
           alignItems: "center",
@@ -201,7 +201,7 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
     <div onClick={onCancel} style={overlay}>
       <div className="fuwa-sheet-tall" onClick={(e) => e.stopPropagation()} style={{ ...sheet, maxWidth: 520, display: "flex", flexDirection: "column" }}>
         <div style={{ background: catObj.tint, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 22, color: "var(--navy)" }}>{isNew ? "Nuevo producto" : "Editar producto"}</div>
+          <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 25, letterSpacing: "-.01em", color: "var(--tinta)"}}>{isNew ? "Nuevo producto" : "Editar producto"}</div>
           <button onClick={onCancel} style={iconBtn}>
             <Icon name="x" size={22} />
           </button>
@@ -245,13 +245,13 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
                 <input value={icon} onChange={(e) => setIcon(e.target.value)} placeholder="Emoji, ej. 🍓 (vacío usa el de la categoría)" style={inp} />
                 <div style={{ display: "flex", gap: 8 }}>
                   <label
-                    style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 12, border: "2px solid var(--line)", cursor: "pointer", fontWeight: 800, fontSize: 13.5, color: "var(--navy)" }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 12, border: "1px solid var(--line)", cursor: "pointer", fontWeight: 800, fontSize: 13.5, color: "var(--navy)" }}
                   >
                     <Icon name="plus" size={16} /> Subir imagen
                     <input type="file" accept="image/*" onChange={onImageFile} style={{ display: "none" }} />
                   </label>
                   {image && (
-                    <button onClick={() => setImage("")} style={{ padding: "9px 14px", borderRadius: 12, border: "2px solid var(--line)", background: "#fff", cursor: "pointer", fontWeight: 800, fontSize: 13.5, color: "var(--muted)" }}>
+                    <button onClick={() => setImage("")} style={{ padding: "9px 14px", borderRadius: 12, border: "1px solid var(--line)", background: "#fff", cursor: "pointer", fontWeight: 800, fontSize: 13.5, color: "var(--muted)" }}>
                       Quitar imagen
                     </button>
                   )}
@@ -264,7 +264,7 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
           <Field label="Tamaños">
             <CheckRow checked={hasSizes} onChange={() => setHasSizes((v) => !v)} label="Este producto tiene tamaños" />
             {hasSizes && (
-              <div style={{ marginTop: 12, border: "2px solid var(--line)", borderRadius: 12, padding: "6px 14px 12px" }}>
+              <div style={{ marginTop: 12, border: "1px solid var(--line)", borderRadius: 12, padding: "6px 14px 12px" }}>
                 <div style={{ display: "flex", gap: 10, padding: "8px 0 4px", fontSize: 11.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>
                   <span style={{ flex: 1 }}>Tamaño</span>
                   <span style={{ width: 130 }}>Precio vs. base</span>
@@ -311,10 +311,10 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
 
           {/* Receta: lo que consume UNA unidad. Las ventas lo descuentan solas. */}
           <Field label="Receta (consumo por unidad)">
-            <div style={{ border: "2px solid var(--line)", borderRadius: 12, padding: "10px 14px 12px" }}>
+            <div style={{ border: "1px solid var(--line)", borderRadius: 12, padding: "10px 14px 12px" }}>
               <RecipeEditor value={recipe} onChange={setRecipe} ingredients={ingredients} />
               {recipe.length > 0 && (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, paddingTop: 10, borderTop: "2px solid var(--line)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, paddingTop: 10, borderTop: "1px solid var(--line)" }}>
                   <span style={{ fontSize: 13, fontWeight: 800, color: "var(--muted)" }}>
                     Costo {money(cost)} · Margen{" "}
                     <b style={{ color: marginPct >= 60 ? "oklch(0.5 0.11 150)" : marginPct >= 35 ? "oklch(0.55 0.12 85)" : "oklch(0.5 0.16 25)" }}>{marginPct}%</b>
@@ -330,7 +330,7 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
             <Field label="Ajuste de receta por tamaño" hint="Cuánto SUMA o RESTA cada tamaño sobre la receta base. Usa negativos para el tamaño chico.">
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {sizes.map((s, i) => (
-                  <div key={i} style={{ border: "2px solid var(--line)", borderRadius: 12, padding: "10px 14px 12px" }}>
+                  <div key={i} style={{ border: "1px solid var(--line)", borderRadius: 12, padding: "10px 14px 12px" }}>
                     <div style={{ fontWeight: 800, fontSize: 14, color: "var(--navy)", marginBottom: 6 }}>{s.name || "Tamaño"}</div>
                     <RecipeEditor
                       value={s.recipe || []}
@@ -346,7 +346,7 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
             </Field>
           )}
         </div>
-        <div style={{ borderTop: "2px solid var(--line)", padding: "16px 24px", display: "flex", gap: 12, alignItems: "center", flexShrink: 0 }}>
+        <div style={{ borderTop: "1px solid var(--line)", padding: "16px 24px", display: "flex", gap: 12, alignItems: "center", flexShrink: 0 }}>
           {!isNew && (
             <Btn kind="danger" size="md" icon="trash" onClick={() => onDelete(initial.id)}>
               Eliminar
@@ -405,8 +405,8 @@ function ModifiersEditor({ mods, setMods, ingredients = [] }) {
         const g = mods[gid];
         if (!g) return null;
         return (
-          <div key={gid} style={{ background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", overflow: "hidden" }}>
-            <div style={{ padding: "16px 20px", borderBottom: "2px solid var(--line)" }}>
+          <div key={gid} style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", overflow: "hidden" }}>
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--line)" }}>
               <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 18, color: "var(--navy)" }}>{g.label}</div>
               <div style={{ fontSize: 13, color: "var(--muted)" }}>{typeLabel[g.type]}</div>
             </div>
@@ -438,7 +438,7 @@ function ModifiersEditor({ mods, setMods, ingredients = [] }) {
                       <button
                         onClick={() => setOpenOpt(open ? null : key)}
                         title="Ingredientes que consume esta opción"
-                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 12px", borderRadius: 999, border: "2px solid " + (uses ? "var(--primary)" : "var(--line)"), background: uses ? "var(--primary-soft)" : "#fff", color: uses ? "var(--primary)" : "var(--muted)", cursor: "pointer", fontWeight: 800, fontSize: 12.5, fontFamily: "var(--ui)", whiteSpace: "nowrap", flexShrink: 0 }}
+                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 12px", borderRadius: 999, border: "1px solid " + (uses ? "var(--primary)" : "var(--line)"), background: uses ? "var(--primary-soft)" : "#fff", color: uses ? "var(--primary)" : "var(--muted)", cursor: "pointer", fontWeight: 800, fontSize: 12.5, fontFamily: "var(--ui)", whiteSpace: "nowrap", flexShrink: 0 }}
                       >
                         <Icon name="box" size={15} /> {uses ? (isSwap ? "Reemplaza" : uses) : "—"}
                       </button>
@@ -553,7 +553,7 @@ function CategoriesEditor({ cats, setCats, counts, onDelete }) {
         Crea y personaliza las categorías del menú. El color se ajusta con el tono; cada categoría usa su propio acento pastel.
       </div>
       {cats.map((c) => (
-        <div key={c.id} style={{ background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", padding: "14px 16px", display: "flex", alignItems: "center", gap: 14 }}>
+        <div key={c.id} style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "14px 16px", display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ width: 52, height: 52, borderRadius: 14, background: c.tint, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>{c.icon}</div>
           <input value={c.icon} onChange={(e) => setCat(c.id, "icon", e.target.value)} title="Emoji" style={{ ...inp, width: 64, textAlign: "center", fontSize: 20, flexShrink: 0 }} />
           <input value={c.name} onChange={(e) => setCat(c.id, "name", e.target.value)} style={{ ...inp, flex: 1, minWidth: 0 }} />
@@ -630,14 +630,14 @@ export function MenuEditor({ menu, setMenu, mods, setMods, cats, setCats, ingred
     <div style={{ height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }}>
       <div style={{ padding: "22px 32px 14px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-          <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 28, color: "var(--navy)", margin: 0 }}>Editor de menú</h1>
+          <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 31, letterSpacing: "-.01em", color: "var(--tinta)", margin: 0 }}>Editor de menú</h1>
           {tab === "productos" && (
             <Btn kind="primary" size="md" icon="plus" onClick={() => setEditing({})}>
               Agregar producto
             </Btn>
           )}
         </div>
-        <p style={{ color: "var(--muted)", margin: "0 0 14px", fontSize: 15 }}>Administra los productos, precios, tamaños, opciones y categorías de FUWA. Los cambios se guardan automáticamente.</p>
+        <p style={{ color: "var(--muted)", margin: "0 0 14px", fontSize: 15 }}>Administra los productos, precios, tamaños, opciones y categorías de Café del Valle. Los cambios se guardan automáticamente.</p>
         <div style={{ display: "flex", gap: 6, background: "var(--cream)", padding: 5, borderRadius: 999, width: "fit-content", marginBottom: 16 }}>
           {TABS.map(([id, lbl]) => (
             <button
@@ -691,7 +691,7 @@ export function MenuEditor({ menu, setMenu, mods, setMods, cats, setCats, ingred
                       alignItems: "center",
                       gap: 14,
                       background: "#fff",
-                      border: "2px solid var(--line)",
+                      border: "1px solid var(--line)",
                       borderRadius: "var(--r)",
                       padding: 14,
                       cursor: "pointer",

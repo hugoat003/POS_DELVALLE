@@ -1,4 +1,4 @@
-/* FUWA POS — salida física a las impresoras térmicas.
+/* Café del Valle POS — salida física a las impresoras térmicas.
 
    Dos destinos con caminos distintos a propósito:
 

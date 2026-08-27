@@ -1,51 +1,62 @@
-/* FUWA POS — mascota (blob mochi sonriente) y logotipo con subtítulo japonés. */
+/* Café del Valle POS — marca.
 
-export function Mascot({ size = 40, color = "var(--navy)" }) {
+   `Mascot` conserva el nombre por compatibilidad (lo importan 9 pantallas como
+   ilustración de estado vacío y en el ticket impreso). Es el distintivo del
+   logo —anillo abierto con taza— dibujado en SVG de un solo color, para que
+   siga aceptando `color` y se pueda teñir o imprimir en negro.
+
+   `Logo` es el logotipo completo en sus dos tintas: se usa donde hay espacio y
+   la marca debe leerse entera (barra lateral, login). */
+
+export function Mascot({ size = 40, color = "var(--verde)" }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" style={{ display: "block" }}>
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" style={{ display: "block" }} aria-hidden="true">
+      {/* Anillo abierto: la "C" de Café */}
       <path
-        d="M50 14c20 0 32 14 32 30 0 10-6 14-14 16-6 1.5-12 2-18 2s-12-.5-18-2c-8-2-14-6-14-16 0-16 12-30 32-30z"
-        fill={color}
-      />
-      <path
-        d="M40 52c3 4 7 6 10 6s7-2 10-6"
-        stroke="var(--cream)"
-        strokeWidth="3.5"
-        strokeLinecap="round"
+        d="M78 25A37 37 0 1 0 78 75"
         fill="none"
+        stroke={color}
+        strokeWidth="9.5"
+        strokeLinecap="round"
       />
+      {/* Vapor */}
+      <path
+        d="M42 30c-3.5 3.5-3.5 6.5 0 10s3.5 6.5 0 10M56 30c-3.5 3.5-3.5 6.5 0 10s3.5 6.5 0 10"
+        fill="none"
+        stroke={color}
+        strokeWidth="5"
+        strokeLinecap="round"
+      />
+      {/* Taza */}
+      <path
+        d="M30 57h32v5a16 16 0 0 1-16 16h0a16 16 0 0 1-16-16z"
+        fill="none"
+        stroke={color}
+        strokeWidth="5.5"
+        strokeLinejoin="round"
+      />
+      {/* Asa */}
+      <path d="M63 60h3.5a8 8 0 0 1 0 16H64" fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" />
+      {/* Plato */}
+      <path d="M25 82h44" stroke={color} strokeWidth="5.5" strokeLinecap="round" />
     </svg>
   );
 }
 
-export function Logo({ size = 34 }) {
+/* Logotipo completo. `variant="mark"` entrega solo el distintivo, para el riel
+   colapsado de la barra lateral en tablet. */
+export function Logo({ size = 34, variant = "full" }) {
+  const src = variant === "mark" ? "/logo-mark.png" : "/logo.png";
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <Mascot size={size} />
-      <div style={{ lineHeight: 1 }}>
-        <div
-          style={{
-            fontFamily: "var(--display)",
-            fontWeight: 800,
-            fontSize: size * 0.62,
-            color: "var(--navy)",
-            letterSpacing: ".5px",
-          }}
-        >
-          FUWA
-        </div>
-        <div
-          style={{
-            fontFamily: "var(--jp)",
-            fontSize: size * 0.24,
-            color: "var(--gold)",
-            letterSpacing: "2px",
-            marginTop: 2,
-          }}
-        >
-          日本のコーヒー
-        </div>
-      </div>
-    </div>
+    <img
+      src={src}
+      alt="Café del Valle"
+      style={{
+        height: variant === "mark" ? size : "auto",
+        width: variant === "mark" ? size : size * 3.9,
+        display: "block",
+        objectFit: "contain",
+      }}
+    />
   );
 }

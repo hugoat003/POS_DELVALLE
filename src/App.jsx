@@ -1,11 +1,11 @@
-/* FUWA POS — app principal: login, navegación por rol, estado y tweaks.
+/* Café del Valle POS — app principal: login, navegación por rol, estado y tweaks.
    El estado transaccional (turno, órdenes, gastos, empleados) vive en el
    servidor SQLite vía useServerData (con sync multi-tablet y outbox offline);
    la config (menú, opciones, categorías, apariencia) usa usePersistentState
    contra la tabla kv del servidor con caché en localStorage. */
 import { useEffect, useState } from "react";
 import { Icon } from "./components/Icon.jsx";
-import { Logo, Mascot } from "./components/Mascot.jsx";
+import { Logo } from "./components/Mascot.jsx";
 import { Login } from "./auth/Login.jsx";
 import { ROLES } from "./auth/users.js";
 import { Avatar } from "./auth/Avatar.jsx";
@@ -32,7 +32,7 @@ import { availableCashNow } from "./lib/format.js";
 import { PRODUCTS, MOD_GROUPS, CATEGORIES, AREAS } from "./data.js";
 
 /* Apariencia e impresión, antes configurables desde el panel de Tweaks.
-   El cliente fijó la identidad visual (tema Mochi, tipografía Fredoka y
+   El cliente fijó la identidad visual (paleta del logo, tipografía Archivo y
    redondeo de 28px), así que el tema y la fuente viven ahora en styles.css.
    Aquí quedan las tres opciones que NO eran cosméticas. */
 
@@ -43,7 +43,7 @@ const PAPER = "80";
 const PAPER_PAGE = { "80": "80mm auto", "58": "58mm auto", carta: "auto" };
 
 // Íconos de producto en la pantalla de orden, y sugerencia de propina al cobrar.
-const SHOW_EMOJI = true;
+const SHOW_EMOJI = false;
 const TIP_ENABLED = true;
 
 // Días sin respaldar tras los que se avisa del riesgo de pérdida de datos.
@@ -364,7 +364,7 @@ export default function App() {
   }
 
   function resetMenu() {
-    if (window.confirm("¿Restaurar el menú, las opciones y las categorías originales de FUWA?")) {
+    if (window.confirm("¿Restaurar el menú, las opciones y las categorías originales de Café del Valle?")) {
       setMenu(PRODUCTS);
       setMods(MOD_GROUPS);
       setCats(CATEGORIES);
@@ -435,7 +435,7 @@ export default function App() {
       try {
         parsed = JSON.parse(reader.result);
       } catch {
-        window.alert("El archivo no es un respaldo válido de FUWA.");
+        window.alert("El archivo no es un respaldo válido de Café del Valle.");
         return;
       }
       if (!window.confirm("¿Importar este respaldo? Se reemplazarán las órdenes, turnos y configuración actuales del servidor.")) return;
@@ -473,6 +473,20 @@ export default function App() {
     }
     return !!created;
   }
+
+  /* Reloj de la cabecera. Medio minuto basta: solo se muestran horas y
+     minutos, y un intervalo más corto solo gastaría renders. */
+  const [ahora, setAhora] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setAhora(new Date()), 30000);
+    return () => clearInterval(t);
+  }, []);
+  const hora = ahora.toLocaleTimeString("es-GT", { hour: "2-digit", minute: "2-digit", hour12: false });
+  const fecha = (() => {
+    const d = new Intl.DateTimeFormat("es-GT", { weekday: "short" }).format(ahora).replace(/\.$/, "");
+    const m = new Intl.DateTimeFormat("es-GT", { month: "short" }).format(ahora).replace(/\.$/, "");
+    return `${d.charAt(0).toUpperCase()}${d.slice(1)} ${ahora.getDate()} ${m}`;
+  })();
 
   const ALL_NAV = [
     { id: "order", icon: "order", label: "Orden", badge: cartCount },
@@ -522,42 +536,78 @@ export default function App() {
         </div>
       )}
 
-      {/* ---- Sidebar ---- */}
-      <nav style={{ width: 96, background: "#fff", borderRight: "2px solid var(--line)", display: "flex", flexDirection: "column", alignItems: "center", padding: "16px 0 12px", flexShrink: 0, zIndex: 10 }}>
-        <div style={{ marginBottom: 16, flexShrink: 0 }}>
-          <Mascot size={44} />
+      {/* ---- Barra lateral ---- */}
+      {/* Ancha con icono + texto en escritorio; colapsa a riel de iconos por
+          debajo de 1050px (ver .cdv-sidebar en styles.css). La tablet de caja
+          no puede perder 140px de ancho útil en la pantalla de orden. */}
+      <nav
+        className="cdv-sidebar"
+        style={{
+          background: "var(--superficie)",
+          borderRight: "1px solid var(--borde)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 4,
+          padding: "22px 18px",
+          flexShrink: 0,
+          zIndex: 10,
+        }}
+      >
+        <div className="cdv-brand" style={{ padding: "2px 4px 0", marginBottom: 24, flexShrink: 0 }}>
+          <span className="cdv-brand-full"><Logo size={34} /></span>
+          <span className="cdv-brand-mark"><Logo size={38} variant="mark" /></span>
         </div>
+
         {/* minHeight:0 + overflow: si hay más botones que pantalla, la lista se desliza */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1, minHeight: 0, overflowY: "auto", width: "100%", padding: "0 12px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 3, flex: 1, minHeight: 0, overflowY: "auto", width: "100%" }}>
           {NAV.map((n) => {
             const active = navActive === n.id;
             return (
               <button
                 key={n.id}
+                className="cdv-nav-item"
                 onClick={() => setView(n.id)}
+                title={n.label}
                 style={{
                   position: "relative",
                   display: "flex",
-                  flexDirection: "column",
                   alignItems: "center",
-                  gap: 4,
-                  padding: "9px 0",
+                  gap: 12,
+                  width: "100%",
+                  padding: "12px 13px",
                   flexShrink: 0,
                   border: "none",
-                  borderRadius: 16,
+                  borderRadius: 12,
                   cursor: "pointer",
                   fontFamily: "var(--ui)",
-                  fontWeight: 800,
-                  fontSize: 12,
-                  background: active ? "var(--primary-soft)" : "transparent",
-                  color: active ? "var(--primary)" : "var(--muted)",
-                  transition: "all .12s ease",
+                  fontWeight: active ? 600 : 500,
+                  fontSize: 15,
+                  textAlign: "left",
+                  background: active ? "var(--verde-suave)" : "transparent",
+                  color: active ? "var(--verde-oscuro)" : "var(--tinta-2)",
+                  transition: "background .12s ease, color .12s ease",
                 }}
               >
-                <Icon name={n.icon} size={25} stroke={active ? 2.4 : 2} />
-                {n.label}
+                <Icon name={n.icon} size={20} stroke={active ? 2.1 : 1.8} />
+                <span className="cdv-nav-label">{n.label}</span>
                 {n.badge > 0 && (
-                  <span style={{ position: "absolute", top: 6, right: 14, minWidth: 19, height: 19, padding: "0 5px", borderRadius: 999, background: "var(--gold)", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span
+                    className="cdv-badge"
+                    style={{
+                      minWidth: 20,
+                      height: 20,
+                      padding: "0 6px",
+                      borderRadius: 999,
+                      background: "var(--cafe)",
+                      color: "#fff",
+                      fontSize: 11.5,
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
                     {n.badge}
                   </span>
                 )}
@@ -565,57 +615,97 @@ export default function App() {
             );
           })}
         </div>
-        <div style={{ fontFamily: "var(--jp)", fontSize: 10, color: "var(--gold)", letterSpacing: 1, writingMode: "vertical-rl", marginTop: 12, opacity: 0.7 }}>ふわふわ</div>
+
+        {/* Cerrar sesión: ocupa el lugar que el diseño reserva al pie de la
+            barra. "Cerrar caja" sigue siendo una pantalla propia del menú. */}
+        <button
+          onClick={logout}
+          className="cdv-nav-item cdv-foot"
+          title="Cerrar sesión"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            width: "100%",
+            marginTop: 12,
+            paddingTop: 16,
+            padding: "16px 13px 4px",
+            borderTop: "1px solid var(--borde)",
+            borderLeft: "none",
+            borderRight: "none",
+            borderBottom: "none",
+            background: "transparent",
+            color: "var(--tinta-4)",
+            fontFamily: "var(--ui)",
+            fontSize: 14,
+            fontWeight: 500,
+            textAlign: "left",
+            cursor: "pointer",
+            flexShrink: 0,
+            borderRadius: 0,
+          }}
+        >
+          <Icon name="logout" size={19} stroke={1.8} />
+          <span className="cdv-nav-label">Cerrar sesión</span>
+        </button>
       </nav>
 
       {/* ---- Topbar + contenido ---- */}
       <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <header style={{ height: 64, background: "#fff", borderBottom: "2px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 26px", flexShrink: 0 }}>
-          <Logo size={30} />
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            {/* Sin conexión: la app sigue cobrando y encola; se avisa aquí. */}
-            {!online && (
-              <div
-                title={data.pendingCount > 0 ? `${data.pendingCount} operación(es) pendientes de sincronizar` : "Sin conexión con el servidor"}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 999, fontWeight: 800, fontSize: 12.5, background: "oklch(0.95 0.06 85)", color: "oklch(0.45 0.1 70)" }}
-              >
-                <Icon name="report" size={15} /> Sin conexión{data.pendingCount > 0 ? ` · ${data.pendingCount}` : ""}
-              </div>
-            )}
+        <header
+          style={{
+            background: "var(--superficie)",
+            borderBottom: "1px solid var(--borde)",
+            display: "flex",
+            alignItems: "center",
+            gap: 18,
+            padding: "14px 24px",
+            flexShrink: 0,
+          }}
+        >
+          {/* Sin conexión: la app sigue cobrando y encola; se avisa aquí. */}
+          {!online && (
             <div
-              title={shift.open ? "Caja abierta" : "Caja cerrada"}
+              title={data.pendingCount > 0 ? `${data.pendingCount} operación(es) pendientes de sincronizar` : "Sin conexión con el servidor"}
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "6px 12px",
-                borderRadius: 999,
-                fontWeight: 800,
-                fontSize: 12.5,
-                background: shift.open ? "var(--primary-soft)" : "oklch(0.94 0.05 25)",
-                color: shift.open ? "var(--primary)" : "oklch(0.5 0.16 25)",
+                display: "flex", alignItems: "center", gap: 7, padding: "7px 13px", borderRadius: 10,
+                fontWeight: 600, fontSize: 13, background: "var(--aviso-suave)", color: "var(--aviso)",
               }}
             >
-              <Icon name={shift.open ? "unlock" : "lock"} size={15} /> {shift.open ? "Caja abierta" : "Caja cerrada"}
+              <Icon name="report" size={15} /> Sin conexión{data.pendingCount > 0 ? ` · ${data.pendingCount}` : ""}
             </div>
+          )}
+          <div
+            title={shift.open ? "Caja abierta" : "Caja cerrada"}
+            style={{
+              display: "flex", alignItems: "center", gap: 7, padding: "7px 13px", borderRadius: 10,
+              fontWeight: 600, fontSize: 13,
+              background: shift.open ? "var(--verde-suave)" : "var(--error-suave)",
+              color: shift.open ? "var(--verde-oscuro)" : "var(--error)",
+            }}
+          >
+            <Icon name={shift.open ? "unlock" : "lock"} size={15} /> {shift.open ? "Caja abierta" : "Caja cerrada"}
+          </div>
+
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 22 }}>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontWeight: 800, fontSize: 14, color: "var(--navy)", whiteSpace: "nowrap", lineHeight: 1.25 }}>{user.name}</div>
-              <div style={{ fontSize: 12.5, color: "var(--muted)", whiteSpace: "nowrap", lineHeight: 1.25 }}>{role.label} · Caja 1</div>
+              <div style={{ fontWeight: 600, fontSize: 15, color: "var(--tinta)", whiteSpace: "nowrap", lineHeight: 1.3 }}>{user.name}</div>
+              <div style={{ fontSize: 12.5, color: "var(--tinta-3)", whiteSpace: "nowrap", lineHeight: 1.3, letterSpacing: ".03em" }}>
+                {role.label} · Caja 1
+              </div>
             </div>
             <Avatar user={user} size={42} />
-            <button
-              onClick={logout}
-              title="Cerrar sesión"
-              style={{ width: 44, height: 44, borderRadius: 12, border: "2px solid var(--line)", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)" }}
-            >
-              <Icon name="logout" size={20} />
-            </button>
+            <div style={{ width: 1, height: 34, background: "var(--borde)" }} />
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 16, fontWeight: 600, color: "var(--tinta)", fontVariantNumeric: "tabular-nums", lineHeight: 1.3 }}>{hora}</div>
+              <div style={{ fontSize: 12.5, color: "var(--tinta-3)", whiteSpace: "nowrap", lineHeight: 1.3 }}>{fecha}</div>
+            </div>
           </div>
         </header>
 
         {/* Aviso de respaldo: alerta del riesgo de perder datos si hace varios días que no se respalda. */}
         {backupStale && (
-          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 22px", background: "oklch(0.95 0.06 85)", borderBottom: "2px solid oklch(0.85 0.1 85)", color: "oklch(0.42 0.09 70)", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 22px", background: "oklch(0.95 0.06 85)", borderBottom: "1px solid oklch(0.85 0.1 85)", color: "oklch(0.42 0.09 70)", flexShrink: 0 }}>
             <Icon name="note" size={20} />
             <div style={{ flex: 1, fontSize: 13.5, fontWeight: 700, lineHeight: 1.35 }}>
               {lastBackup ? `Hace ${Math.floor(daysSince(lastBackup))} días que no respaldas.` : "Aún no has respaldado los datos."} Los datos viven en el servidor (SQLite): descarga un respaldo por si falla el disco.

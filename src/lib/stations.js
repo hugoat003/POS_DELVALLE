@@ -1,4 +1,4 @@
-/* FUWA POS — a dónde va cada item de una orden.
+/* Café del Valle POS — a dónde va cada item de una orden.
 
    Hay dos destinos de preparación y se comportan de forma DISTINTA a propósito:
 

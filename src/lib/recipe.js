@@ -1,4 +1,4 @@
-/* FUWA POS — recetas: cuánto ingrediente consume cada línea de una orden.
+/* Café del Valle POS — recetas: cuánto ingrediente consume cada línea de una orden.
 
    Este módulo lo importan el cliente (avisos de faltantes, costo y margen) y
    el SERVIDOR (descuento real al cobrar). El servidor calcula el consumo sobre

@@ -1,4 +1,4 @@
-/* FUWA POS — comprobante del cliente + comanda imprimible para cocina. */
+/* Café del Valle POS — comprobante del cliente + comanda imprimible para cocina. */
 import { Icon } from "../components/Icon.jsx";
 import { Mascot } from "../components/Mascot.jsx";
 import { Btn } from "../components/ui.jsx";
@@ -28,7 +28,7 @@ const vivas = (order) => (order.lines || []).filter((l) => !l.voided);
 function KitchenComanda({ order }) {
   return (
     <div className="fuwa-comanda" style={{ width: 320, background: "#fff", padding: "22px 24px 26px", color: "#000" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "2px solid #000", paddingBottom: 8 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "1px solid #000", paddingBottom: 8 }}>
         <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 22 }}>COMANDA</div>
         <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 22 }}>#{order.number}{order.pending ? "·P" : ""}</div>
       </div>
@@ -60,7 +60,7 @@ function KitchenComanda({ order }) {
           );
         })}
       </div>
-      <div style={{ textAlign: "center", marginTop: 8, fontSize: 12 }}>FUWA · {vivas(order).reduce((s, l) => s + l.qty, 0)} productos</div>
+      <div style={{ textAlign: "center", marginTop: 8, fontSize: 12 }}>Café del Valle · {vivas(order).reduce((s, l) => s + l.qty, 0)} productos</div>
     </div>
   );
 }
@@ -89,8 +89,8 @@ export function ReceiptTicket({ order }) {
     <div className="fuwa-ticket" style={{ width: 340, background: "#fff", borderRadius: 18, padding: "26px 26px 30px", boxShadow: "0 20px 50px -22px rgba(40,44,60,.4)", position: "relative" }}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, paddingBottom: 16, borderBottom: "2px dashed var(--line)" }}>
         <Mascot size={42} />
-        <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 22, color: "var(--navy)", letterSpacing: 1 }}>FUWA</div>
-        <div style={{ fontFamily: "var(--jp)", fontSize: 11, color: "var(--gold)", letterSpacing: 2 }}>日本のコーヒー</div>
+        <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 24, color: "var(--tinta)", letterSpacing: "-.01em" }}>Café del Valle</div>
+        <div style={{ fontSize: 10.5, color: "var(--cafe)", letterSpacing: 2.5, textTransform: "uppercase" }}>Cafetería · Antigua Guatemala</div>
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--muted)", padding: "14px 0 4px" }}>
@@ -149,9 +149,9 @@ export function ReceiptTicket({ order }) {
       </div>
 
       <div style={{ textAlign: "center", marginTop: 18, fontSize: 12, color: "var(--muted)", lineHeight: 1.5 }}>
-        ¡Gracias por tu visita! 🤍
+        ¡Gracias por tu visita!
         <br />
-        ふわふわ — suave como una nube
+        Café del Valle — de la finca a tu taza
       </div>
     </div>
   );
@@ -177,7 +177,7 @@ export function Receipt({ order, onNew }) {
           <div style={{ width: 70, height: 70, borderRadius: 999, background: "var(--primary-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
             <Icon name="check" size={40} stroke={2.6} />
           </div>
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 26, color: "var(--navy)" }}>¡Pago recibido!</div>
+          <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 29, letterSpacing: "-.01em", color: "var(--tinta)"}}>¡Pago recibido!</div>
           <div style={{ color: "var(--muted)", fontSize: 15 }}>Entrega el comprobante al cliente e imprime la comanda para cocina.</div>
         </div>
 

@@ -1,4 +1,4 @@
-/* FUWA POS — cliente de la API del servidor (SQLite + sesiones).
+/* Café del Valle POS — cliente de la API del servidor (SQLite + sesiones).
    - Token de sesión en localStorage; todas las llamadas van con Bearer.
    - Estado de conexión compartido (online/offline) con suscriptores.
    - Outbox: escrituras transaccionales hechas sin conexión se encolan y se
@@ -147,7 +147,7 @@ export async function flushOutbox() {
       await apiFetch(head.path, { method: head.method, body: head.body });
     } catch (err) {
       if (err.offline) return false; // sigue sin conexión: se reintenta luego
-      console.warn("FUWA outbox: entrada descartada", head.path, err.message);
+      console.warn("Café del Valle outbox: entrada descartada", head.path, err.message);
     }
     list = rest;
     setOutbox(list);

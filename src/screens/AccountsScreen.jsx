@@ -1,4 +1,4 @@
-/* FUWA POS — cuentas de mesa abiertas.
+/* Café del Valle POS — cuentas de mesa abiertas.
 
    Es la pantalla desde la que trabaja el mesero: ve el salón, cuáles mesas
    tienen cuenta viva y por cuánto van, y entra a cualquiera para agregarle
@@ -77,7 +77,7 @@ function SinMesa({ order, ahora, onTap }) {
       onClick={() => onTap(null, order)}
       style={{
         display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
-        borderRadius: "var(--r)", border: "2px solid var(--line)", background: "#fff",
+        borderRadius: "var(--r)", border: "1px solid var(--line)", background: "#fff",
         cursor: "pointer", fontFamily: "var(--ui)", textAlign: "left",
       }}
     >
@@ -129,7 +129,7 @@ export function AccountsScreen({ openOrders, areas, onAbrir, onNueva }) {
               key={a.id}
               onClick={() => setAreaId(a.id)}
               style={{
-                border: "2px solid " + (a.id === area.id ? "var(--primary)" : "var(--line)"),
+                border: "1px solid " + (a.id === area.id ? "var(--primary)" : "var(--line)"),
                 background: a.id === area.id ? "var(--primary-soft)" : "#fff",
                 color: a.id === area.id ? "var(--primary)" : "var(--navy)",
                 borderRadius: 999, padding: "6px 16px", fontWeight: 800, fontSize: 13,

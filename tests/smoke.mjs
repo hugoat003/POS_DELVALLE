@@ -28,8 +28,13 @@ const ctx = await navegador.newContext({ viewport: { width: 1440, height: 900 } 
 const p = await ctx.newPage();
 
 const errores = [];
+const red = [];
 p.on("pageerror", (e) => errores.push(String(e)));
 p.on("console", (m) => m.type() === "error" && errores.push(m.text()));
+// Guardar la URL real de cada respuesta fallida: "Failed to load resource" a
+// secas no dice nada útil cuando hay que diagnosticar.
+p.on("response", (r) => { if (r.status() >= 400) red.push(`${r.status()} ${r.request().method()} ${r.url()}`); });
+p.on("requestfailed", (r) => red.push(`sin respuesta ${r.url()} — ${r.failure()?.errorText ?? ""}`));
 
 const foto = async (nombre) => {
   if (FOTOS) await p.screenshot({ path: `${DIR}/${nombre}.png` });
@@ -40,9 +45,9 @@ try {
   seccion("Login");
   await p.goto(BASE, { waitUntil: "networkidle" });
   await foto("01-login");
-  ok("carga la pantalla de login", await p.getByText("Mariko Tanaka").isVisible());
+  ok("carga la pantalla de login", await p.getByText("María José Estrada").isVisible());
 
-  await p.getByText("Mariko Tanaka").click();
+  await p.getByText("María José Estrada").click();
   await p.waitForTimeout(400);
   await p.keyboard.type("1234", { delay: 90 });
   await p.waitForTimeout(1400);
@@ -114,9 +119,11 @@ try {
     }
   }
 
-  seccion("Consola del navegador");
+  seccion("Consola y red");
   ok("sin errores de JavaScript", errores.length === 0);
   if (errores.length) errores.slice(0, 5).forEach((e) => console.log("      " + e.slice(0, 160)));
+  ok("sin peticiones fallidas", red.length === 0);
+  if (red.length) [...new Set(red)].slice(0, 8).forEach((e) => console.log("      " + e));
 } catch (e) {
   falla++;
   console.log("\n  ✗ excepción: " + e.message);

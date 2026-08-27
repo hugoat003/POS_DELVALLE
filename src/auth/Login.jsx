@@ -1,4 +1,4 @@
-/* FUWA POS — pantalla de login: selección de usuario y teclado de PIN.
+/* Café del Valle POS — pantalla de login: selección de usuario y teclado de PIN.
    El PIN se verifica en el SERVIDOR (POST /api/login con scrypt + rate limit);
    el navegador nunca ve hashes. Requiere conexión para iniciar sesión nueva. */
 import { useEffect, useState } from "react";
@@ -15,7 +15,7 @@ function KeyBtn({ children, onClick, ghost }) {
         height: 64,
         borderRadius: 18,
         cursor: "pointer",
-        border: "2px solid var(--line)",
+        border: "1px solid var(--line)",
         background: ghost ? "transparent" : "#fff",
         color: "var(--navy)",
         fontFamily: "var(--display)",
@@ -65,8 +65,13 @@ export function Login({ onLogin, users: usersProp }) {
     if (usersProp && usersProp.length) setUsers((u) => (u.length ? u : usersProp));
   }, [usersProp]);
 
-  const hora = now.toLocaleTimeString("es-GT", { hour: "2-digit", minute: "2-digit" });
-  const fecha = now.toLocaleDateString("es-GT", { weekday: "long", day: "numeric", month: "long" });
+  // 24h: es lo que espera el personal de caja y evita el "p. m." de es-GT.
+  const hora = now.toLocaleTimeString("es-GT", { hour: "2-digit", minute: "2-digit", hour12: false });
+  // Solo la inicial en mayúscula: `capitalize` de CSS ponía "27 De Agosto".
+  const fecha = (() => {
+    const t = now.toLocaleDateString("es-GT", { weekday: "long", day: "numeric", month: "long" });
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  })();
 
   function press(d) {
     if (busy) return;
@@ -120,8 +125,8 @@ export function Login({ onLogin, users: usersProp }) {
         style={{
           width: 420,
           flexShrink: 0,
-          background: "var(--navy)",
-          color: "#fff",
+          background: "var(--verde)",
+          color: "var(--verde-claro)",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
@@ -130,28 +135,34 @@ export function Login({ onLogin, users: usersProp }) {
           overflow: "hidden",
         }}
       >
-        <div style={{ position: "absolute", right: -80, top: -60, width: 320, height: 320, borderRadius: 999, background: "rgba(255,255,255,.04)" }} />
-        <div style={{ position: "absolute", right: 40, bottom: -120, width: 260, height: 260, borderRadius: 999, background: "rgba(191,163,119,.12)" }} />
-        <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
-          <Mascot size={48} color="#fff" />
-          <div>
-            <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 32, letterSpacing: 1 }}>FUWA</div>
-            <div style={{ fontFamily: "var(--jp)", fontSize: 12, color: "var(--gold)", letterSpacing: 3 }}>日本のコーヒー</div>
+        {/* Textura de fondo: dos discos muy tenues en el verde de la marca. */}
+        <div style={{ position: "absolute", right: -90, top: -70, width: 340, height: 340, borderRadius: 999, background: "rgba(255,255,255,.045)" }} />
+        <div style={{ position: "absolute", right: 30, bottom: -130, width: 280, height: 280, borderRadius: 999, background: "rgba(139,90,43,.16)" }} />
+
+        <div style={{ position: "relative" }}>
+          <Mascot size={54} color="rgba(255,255,255,.95)" />
+          <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 40, lineHeight: 1.05, marginTop: 16, letterSpacing: "-.01em" }}>
+            Café del Valle
+          </div>
+          <div style={{ fontSize: 12.5, color: "rgba(244,248,230,.62)", letterSpacing: 3, textTransform: "uppercase", marginTop: 6 }}>
+            Cafetería
           </div>
         </div>
+
         <div style={{ position: "relative" }}>
-          <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: "rgba(191,163,119,.9)" }}>Caja 1 · Punto de venta</div>
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 52, lineHeight: 1.05, letterSpacing: 0.5, marginTop: 12, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{hora}</div>
-          <div style={{ color: "rgba(255,255,255,.62)", fontSize: 16.5, marginTop: 10, textTransform: "capitalize" }}>{fecha}</div>
+          <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: "rgba(244,248,230,.55)" }}>Caja 1 · Punto de venta</div>
+          <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 60, lineHeight: 1.02, letterSpacing: "-.02em", marginTop: 12, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{hora}</div>
+          <div style={{ color: "rgba(255,255,255,.6)", fontSize: 16.5, marginTop: 8 }}>{fecha}</div>
         </div>
-        <div style={{ fontFamily: "var(--jp)", fontSize: 13, color: "rgba(191,163,119,.8)", letterSpacing: 2, position: "relative" }}>ふわふわ</div>
+
+        <div style={{ fontSize: 12.5, color: "rgba(244,248,230,.45)", letterSpacing: 1.5, position: "relative" }}>Antigua Guatemala</div>
       </div>
 
       {/* panel de acceso */}
       <div style={{ flex: 1, background: "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center", padding: 40, minWidth: 0 }}>
         {!sel ? (
           <div style={{ width: "100%", maxWidth: 460 }}>
-            <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 30, color: "var(--navy)", margin: "0 0 4px" }}>¿Quién está en caja?</h1>
+            <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 34, letterSpacing: "-.01em", color: "var(--tinta)", margin: "0 0 4px" }}>¿Quién está en caja?</h1>
             <p style={{ color: "var(--muted)", margin: "0 0 26px", fontSize: 15.5 }}>Selecciona tu usuario para continuar.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {users.map((u) => (
@@ -167,7 +178,7 @@ export function Login({ onLogin, users: usersProp }) {
                     alignItems: "center",
                     gap: 16,
                     background: "#fff",
-                    border: "2px solid var(--line)",
+                    border: "1px solid var(--line)",
                     borderRadius: "var(--r)",
                     padding: "14px 18px",
                     cursor: "pointer",
@@ -210,7 +221,7 @@ export function Login({ onLogin, users: usersProp }) {
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, marginBottom: 22 }}>
               <Avatar user={sel} size={72} ring />
               <div>
-                <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 22, color: "var(--navy)" }}>{sel.name}</div>
+                <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 25, letterSpacing: "-.01em", color: "var(--tinta)"}}>{sel.name}</div>
                 <div style={{ marginTop: 4 }}>
                   <RoleBadge role={sel.role} />
                 </div>

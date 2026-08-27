@@ -1,4 +1,4 @@
-/* FUWA POS — avatar de usuario e insignia de rol (reutilizados por login y topbar). */
+/* Café del Valle POS — avatar de usuario e insignia de rol (reutilizados por login y topbar). */
 import { ROLES, initials } from "./users.js";
 
 export function Avatar({ user, size = 56, ring }) {

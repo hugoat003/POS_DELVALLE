@@ -1,4 +1,4 @@
-/* FUWA POS — costo de ventas y ganancia neta.
+/* Café del Valle POS — costo de ventas y ganancia neta.
 
    La ganancia neta se arma sobre las recetas del menú: cada línea vendida se
    traduce a consumo de ingredientes (src/lib/recipe.js) y se valora con el

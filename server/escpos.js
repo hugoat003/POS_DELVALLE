@@ -1,4 +1,4 @@
-/* FUWA POS — codificador ESC/POS para impresoras térmicas de 80 mm.
+/* Café del Valle POS — codificador ESC/POS para impresoras térmicas de 80 mm.
 
    Por qué propio y no `node-thermal-printer`: esa librería resuelve la parte
    fácil (TCP, que son bytes crudos por un socket) y para USB en Windows depende

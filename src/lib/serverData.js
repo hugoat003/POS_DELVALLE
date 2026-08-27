@@ -1,4 +1,4 @@
-/* FUWA POS — estado transaccional del servidor (turno, órdenes, gastos,
+/* Café del Valle POS — estado transaccional del servidor (turno, órdenes, gastos,
    usuarios, historial) y sus acciones.
 
    Multi-tablet: cada escritura del servidor incrementa una revisión global;

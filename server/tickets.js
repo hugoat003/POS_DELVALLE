@@ -1,4 +1,4 @@
-/* FUWA POS — armado de los dos papeles que salen del sistema.
+/* Café del Valle POS — armado de los dos papeles que salen del sistema.
 
    comanda  → cocina. Qué preparar y para qué mesa. SIN precios: al cocinero no
               le sirven y ocupan la columna donde va la cantidad.
@@ -66,7 +66,7 @@ export function buildComanda(p) {
 export function buildTicket(p) {
   const t = new Ticket(COLS_80);
 
-  t.align("center").bold(true).size(0x11).line(p.business || "FUWA").size(0x00);
+  t.align("center").bold(true).size(0x11).line(p.business || "Café del Valle").size(0x00);
   if (p.tagline) t.line(p.tagline);
   if (p.address) t.wrap(p.address);
   if (p.nit) t.line("NIT: " + p.nit);

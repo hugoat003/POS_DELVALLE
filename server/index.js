@@ -1,4 +1,4 @@
-/* FUWA POS — servidor de datos: SQLite (better-sqlite3) + auth por sesión.
+/* Café del Valle POS — servidor de datos: SQLite (better-sqlite3) + auth por sesión.
    - Los datos viven en server/data/fuwa.db (WAL); la primera vez importa los
      JSON legacy de server/data/*.json y los archiva en json-importado/.
    - Login server-side con PIN (scrypt); el cliente nunca ve hashes.
@@ -36,14 +36,14 @@ const PROD = process.env.NODE_ENV === "production";
 
 // ---------------------------------------------------------------- arranque
 const boot = bootstrapDb();
-if (boot.migrated) console.log(`FUWA POS · datos JSON importados a SQLite (${boot.shifts} turnos, ${boot.users} usuarios)`);
+if (boot.migrated) console.log(`Café del Valle POS · datos JSON importados a SQLite (${boot.shifts} turnos, ${boot.users} usuarios)`);
 
 // Instalación desde cero (sin JSON legacy): siembra los empleados demo para
 // poder entrar la primera vez (mismos PINs que documenta el README).
 if (listUsers().length === 0) {
   const { DEFAULT_USERS } = await import("../src/auth/users.js");
   for (const u of DEFAULT_USERS) upsertUser(u);
-  console.log("FUWA POS · usuarios demo sembrados (PINs 1234/1111/2222) — cámbialos en Empleados");
+  console.log("Café del Valle POS · usuarios demo sembrados (PINs 1234/1111/2222) — cámbialos en Empleados");
 }
 
 /* Worker de impresión. Se le pasan solo las funciones que necesita en vez del
@@ -424,7 +424,7 @@ if (existsSync(DIST_DIR)) {
    conecta"— no apunta a NODE_ENV por ningún lado. */
 const HOST = process.env.HOST || (PROD ? "127.0.0.1" : "0.0.0.0");
 app.listen(PORT, HOST, () => {
-  console.log(`FUWA POS · servidor de datos en http://${HOST}:${PORT} (rev ${getRev()})`);
+  console.log(`Café del Valle POS · servidor de datos en http://${HOST}:${PORT} (rev ${getRev()})`);
   if (existsSync(DIST_DIR)) console.log("  sirviendo la app compilada (dist/)");
   else console.warn("  OJO: no existe dist/ — corre `npm run build` o las tablets verán un 404");
 

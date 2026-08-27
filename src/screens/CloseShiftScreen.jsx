@@ -1,4 +1,4 @@
-/* FUWA POS — cierre de caja: arqueo de efectivo, disponible para cualquier rol con turno abierto.
+/* Café del Valle POS — cierre de caja: arqueo de efectivo, disponible para cualquier rol con turno abierto.
 
    El arqueo cuenta SOLO efectivo. Los cobros con tarjeta se muestran aparte
    porque no hay billetes que contar por ellos: mezclarlos haría aparecer
@@ -24,7 +24,7 @@ function Row({ label, value, strong, tone }) {
 const inputStyle = {
   width: "100%",
   padding: "13px 16px",
-  border: "2px solid var(--line)",
+  border: "1px solid var(--line)",
   borderRadius: 14,
   fontFamily: "var(--display)",
   fontSize: 22,
@@ -60,10 +60,10 @@ export function CloseShiftScreen({ shiftOpen, openingCash, orders, expenses, onC
   return (
     <div style={{ height: "100%", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 40, overflowY: "auto" }}>
       <div style={{ width: "100%", maxWidth: 460 }}>
-        <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 28, color: "var(--navy)", margin: "0 0 4px" }}>Cierre de caja</h1>
+        <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 31, letterSpacing: "-.01em", color: "var(--tinta)", margin: "0 0 4px" }}>Cierre de caja</h1>
         <p style={{ color: "var(--muted)", margin: "0 0 22px", fontSize: 15 }}>{validOrders.length} órdenes cobradas en este turno. Cuenta el efectivo de la caja antes de cerrar.</p>
 
-        <div style={{ background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", padding: "20px 22px" }}>
+        <div style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "20px 22px" }}>
           <Row label="Fondo de apertura" value={money(openingCash)} />
           <Row label="+ Ventas en efectivo" value={money(cashSales)} />
           {cashIn > 0 && <Row label="+ Entradas de dinero" value={money(cashIn)} />}
@@ -94,7 +94,7 @@ export function CloseShiftScreen({ shiftOpen, openingCash, orders, expenses, onC
 
         {/* Tarjeta: fuera del arqueo a propósito. Va aquí para cuadrar contra el
             voucher del datáfono sin ensuciar la cuenta del efectivo. */}
-        <div style={{ background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", padding: "16px 22px", marginTop: 14 }}>
+        <div style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "16px 22px", marginTop: 14 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
             <Icon name="card" size={17} color="var(--muted)" />
             <span style={{ ...labelStyle, marginBottom: 0 }}>Cobros con tarjeta</span>
@@ -106,7 +106,7 @@ export function CloseShiftScreen({ shiftOpen, openingCash, orders, expenses, onC
         </div>
 
         {/* Traspaso al siguiente turno. */}
-        <div style={{ background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", padding: "18px 22px", marginTop: 14 }}>
+        <div style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "18px 22px", marginTop: 14 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
             <Icon name="note" size={17} color="var(--muted)" />
             <span style={{ ...labelStyle, marginBottom: 0 }}>Para el siguiente turno</span>
@@ -131,7 +131,7 @@ export function CloseShiftScreen({ shiftOpen, openingCash, orders, expenses, onC
             rows={3}
             placeholder="Ej. Se dejaron Q300 en sencillo, el resto va al banco."
             style={{
-              width: "100%", padding: "12px 14px", border: "2px solid var(--line)", borderRadius: 14,
+              width: "100%", padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 14,
               fontFamily: "var(--ui)", fontSize: 14.5, color: "var(--ink)", outline: "none",
               boxSizing: "border-box", resize: "vertical", lineHeight: 1.45,
             }}

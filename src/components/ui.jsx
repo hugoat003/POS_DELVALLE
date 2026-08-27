@@ -1,4 +1,8 @@
-/* FUWA POS — átomos de UI: botón, chip/pill y piezas de dashboard. */
+/* Café del Valle POS — átomos de UI: botón, chip y piezas de dashboard.
+
+   Café del Valle es fino donde FUWA era grueso: bordes de 1px en vez de 2px,
+   pesos de 600/700 en vez de 800 y chips rectangulares en vez de píldoras.
+   Las alturas táctiles NO cambian: la tablet de caja las necesita. */
 import { Icon } from "./Icon.jsx";
 import { money } from "../lib/format.js";
 
@@ -7,11 +11,11 @@ export function Btn({ children, kind = "primary", size = "md", icon, onClick, di
   const pads = { sm: "11px 16px", md: "13px 22px", lg: "16px 26px" };
   const fonts = { sm: 14, md: 16, lg: 19 };
   const kinds = {
-    primary: { background: "var(--primary)", color: "#fff", border: "none" },
-    ghost: { background: "transparent", color: "var(--navy)", border: "2px solid var(--line)" },
-    soft: { background: "var(--primary-soft)", color: "var(--primary)", border: "none" },
-    danger: { background: "transparent", color: "oklch(0.55 0.16 25)", border: "2px solid oklch(0.85 0.07 25)" },
-    dark: { background: "var(--navy)", color: "#fff", border: "none" },
+    primary: { background: "var(--verde)", color: "var(--verde-claro)", border: "none" },
+    ghost: { background: "var(--superficie)", color: "var(--tinta-2)", border: "1px solid var(--borde-fuerte)" },
+    soft: { background: "var(--verde-suave)", color: "var(--verde-oscuro)", border: "none" },
+    danger: { background: "var(--superficie)", color: "var(--error)", border: "1px solid var(--error-suave)" },
+    dark: { background: "var(--verde-oscuro)", color: "var(--verde-claro)", border: "none" },
   };
   return (
     <button
@@ -21,9 +25,9 @@ export function Btn({ children, kind = "primary", size = "md", icon, onClick, di
         ...kinds[kind],
         padding: pads[size],
         fontSize: fonts[size],
-        fontWeight: 800,
+        fontWeight: 700,
         fontFamily: "var(--ui)",
-        borderRadius: "calc(var(--r) * 0.7)",
+        borderRadius: "calc(var(--r) * 0.8)",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.4 : 1,
         display: "inline-flex",
@@ -49,15 +53,15 @@ export function Pill({ children, active, color, onClick, style }) {
     <button
       onClick={onClick}
       style={{
-        padding: "11px 18px" /* ~46px de alto: target táctil cómodo en tablet */,
-        borderRadius: 999,
-        fontWeight: 800,
-        fontSize: 15.5,
+        padding: "12px 18px" /* ~46px de alto: target táctil cómodo en tablet */,
+        borderRadius: 11,
+        fontWeight: 600,
+        fontSize: 14.5,
         fontFamily: "var(--ui)",
         cursor: "pointer",
-        border: "2px solid " + (active ? "transparent" : "var(--line)"),
-        background: active ? color || "var(--navy)" : "#fff",
-        color: active ? "#fff" : "var(--ink)",
+        border: "1px solid " + (active ? "transparent" : "var(--borde)"),
+        background: active ? color || "var(--verde)" : "var(--superficie)",
+        color: active ? "var(--verde-claro)" : "var(--tinta-2)",
         transition: "all .12s ease",
         ...style,
       }}
@@ -76,7 +80,7 @@ export function Pill({ children, active, color, onClick, style }) {
 export const overlay = {
   position: "fixed",
   inset: 0,
-  background: "rgba(40,44,60,.45)",
+  background: "rgba(42,33,24,.42)",
   backdropFilter: "blur(3px)",
   display: "flex",
   overflowY: "auto",
@@ -84,8 +88,8 @@ export const overlay = {
   padding: 20,
 };
 export const sheet = {
-  background: "var(--cream)",
-  borderRadius: "calc(var(--r) * 1.2)",
+  background: "var(--fondo)",
+  borderRadius: "calc(var(--r) * 1.15)",
   width: "100%",
   /* `margin: auto` y NO `alignItems: center` en el contenedor: con centrado por
      flex, un hijo más alto que la pantalla se recorta por ARRIBA y esa parte
@@ -93,31 +97,31 @@ export const sheet = {
      cuando cabe y se comporta bien cuando no. */
   margin: "auto",
   overflow: "hidden",
-  boxShadow: "0 30px 70px -20px rgba(40,44,60,.5)",
+  boxShadow: "0 30px 70px -20px rgba(42,33,24,.35)",
 };
 export const iconBtn = {
   width: 44,
   height: 44,
-  borderRadius: 999,
+  borderRadius: 12,
   border: "none",
   background: "rgba(255,255,255,.6)",
   cursor: "pointer",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  color: "var(--navy)",
+  color: "var(--tinta-2)",
 };
 export const qtyBtn = {
   width: 44,
   height: 44,
-  borderRadius: 999,
-  border: "none",
-  background: "var(--cream)",
+  borderRadius: 11,
+  border: "1px solid var(--borde)",
+  background: "var(--superficie)",
   cursor: "pointer",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  color: "var(--navy)",
+  color: "var(--tinta-2)",
 };
 
 /* ---------------------------------------------------- piezas de dashboard
@@ -127,24 +131,24 @@ export const qtyBtn = {
 export function Kpi({ icon, label, value, accent, tone }) {
   const fondo = accent ? tone || "var(--navy)" : "#fff";
   return (
-    <div style={{ background: fondo, border: "2px solid " + (accent ? fondo : "var(--line)"), borderRadius: "var(--r)", padding: "16px 18px" }}>
+    <div style={{ background: fondo, border: "1px solid " + (accent ? fondo : "var(--borde)"), borderRadius: "var(--r)", padding: "16px 18px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
         <div style={{ width: 32, height: 32, borderRadius: 9, background: accent ? "rgba(255,255,255,.14)" : "var(--primary-soft)", color: accent ? "#fff" : "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Icon name={icon} size={18} />
         </div>
-        <div style={{ fontSize: 12.5, fontWeight: 800, color: accent ? "rgba(255,255,255,.72)" : "var(--muted)", textTransform: "uppercase", letterSpacing: 0.4, lineHeight: 1.1 }}>{label}</div>
+        <div style={{ fontSize: 11.5, fontWeight: 700, color: accent ? "rgba(255,255,255,.72)" : "var(--tinta-3)", textTransform: "uppercase", letterSpacing: 0.6, lineHeight: 1.1 }}>{label}</div>
       </div>
-      <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 27, color: accent ? "#fff" : "var(--navy)" }}>{value}</div>
+      <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 32, letterSpacing: "-.01em", fontVariantNumeric: "tabular-nums", color: accent ? "#fff" : "var(--verde-oscuro)" }}>{value}</div>
     </div>
   );
 }
 
 export function DashCard({ title, hint, children }) {
   return (
-    <div style={{ background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", padding: "18px 20px" }}>
+    <div style={{ background: "var(--superficie)", border: "1px solid var(--borde)", borderRadius: "var(--r)", padding: "18px 20px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-        <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 17, color: "var(--navy)" }}>{title}</div>
-        {hint && <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--gold)", background: "color-mix(in oklch, var(--gold) 14%, white)", padding: "3px 10px", borderRadius: 999 }}>{hint}</div>}
+        <div style={{ fontFamily: "var(--ui)", fontWeight: 600, fontSize: 16.5, color: "var(--tinta)" }}>{title}</div>
+        {hint && <div style={{ fontSize: 12, fontWeight: 700, color: "var(--cafe)", background: "var(--superficie-baja)", border: "1px solid var(--borde)", padding: "3px 10px", borderRadius: 999 }}>{hint}</div>}
       </div>
       {children}
     </div>
@@ -178,7 +182,7 @@ export function MiniBars({ data, height = 96 }) {
                   right: 0,
                   height: alto,
                   top: negativo ? cero : cero - alto,
-                  background: negativo ? "oklch(0.6 0.16 25)" : "var(--primary)",
+                  background: negativo ? "var(--error)" : "var(--verde)",
                   borderRadius: negativo ? "0 0 5px 5px" : "5px 5px 0 0",
                   transition: "height .3s ease",
                 }}
@@ -188,7 +192,7 @@ export function MiniBars({ data, height = 96 }) {
         })}
       </div>
       {/* Solo primera y última etiqueta: con 30 días no cabe más. */}
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--muted)", fontWeight: 700, marginTop: 7 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--tinta-3)", fontWeight: 500, marginTop: 7 }}>
         <span>{data[0].label}</span>
         {data.length > 1 && <span>{data[data.length - 1].label}</span>}
       </div>
@@ -202,11 +206,11 @@ export function MiniBars({ data, height = 96 }) {
 export function BreakdownRow({ label, value, strong, tone, hint }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: 14, padding: "5px 0", gap: 12 }}>
-      <span style={{ fontWeight: strong ? 800 : 400, color: strong ? "var(--navy)" : "var(--muted)" }}>
+      <span style={{ fontWeight: strong ? 600 : 400, color: strong ? "var(--tinta)" : "var(--tinta-3)" }}>
         {label}
         {hint && <span style={{ fontSize: 12, color: "var(--muted)", fontWeight: 400 }}> · {hint}</span>}
       </span>
-      <span style={{ fontWeight: 800, color: tone || "var(--ink)", fontFamily: strong ? "var(--display)" : "var(--ui)", fontSize: strong ? 19 : 14, whiteSpace: "nowrap" }}>{value}</span>
+      <span style={{ fontWeight: strong ? 400 : 600, color: tone || "var(--tinta)", fontFamily: strong ? "var(--serif)" : "var(--ui)", fontSize: strong ? 23 : 14, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{value}</span>
     </div>
   );
 }

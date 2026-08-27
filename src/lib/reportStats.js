@@ -1,4 +1,4 @@
-/* FUWA POS — cálculos compartidos para la pantalla Reportes y el PDF.
+/* Café del Valle POS — cálculos compartidos para la pantalla Reportes y el PDF.
    Misma semántica que el dashboard (SummaryScreen): solo órdenes no anuladas,
    y los pagos divididos reparten el total entre métodos vía payment.parts. */
 import { money } from "./format.js";

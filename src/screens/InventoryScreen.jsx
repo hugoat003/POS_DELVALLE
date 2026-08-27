@@ -1,4 +1,4 @@
-/* FUWA POS — inventario: existencias, entradas/mermas/conteos y kardex.
+/* Café del Valle POS — inventario: existencias, entradas/mermas/conteos y kardex.
 
    Las existencias NO se editan como un campo de texto: todo cambio pasa por un
    movimiento (compra, merma o conteo físico) para que el kardex explique
@@ -13,7 +13,7 @@ import { BASE_UNITS, presetsFor, CHULETA, costPerBase, fromBase, purchaseLabel, 
 const inp = {
   width: "100%",
   padding: "11px 14px",
-  border: "2px solid var(--line)",
+  border: "1px solid var(--line)",
   borderRadius: 12,
   fontFamily: "var(--ui)",
   fontSize: 15,
@@ -125,7 +125,7 @@ function IngredientForm({ initial, onCancel, onSave, onDelete }) {
 
           {/* Cómo se compra: aquí está el precio real de la factura, y de aquí
               sale el costo por unidad base sin que nadie divida a mano. */}
-          <div style={{ background: "var(--cream)", border: "2px solid var(--line)", borderRadius: 14, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ background: "var(--cream)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
             <Field label="Cómo lo compras" hint="Elige el empaque tal como te lo vende el proveedor.">
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {presets.map((p) => (
@@ -200,7 +200,7 @@ function IngredientForm({ initial, onCancel, onSave, onDelete }) {
             </div>
           )}
         </div>
-        <div style={{ borderTop: "2px solid var(--line)", padding: "16px 24px", display: "flex", gap: 12, alignItems: "center" }}>
+        <div style={{ borderTop: "1px solid var(--line)", padding: "16px 24px", display: "flex", gap: 12, alignItems: "center" }}>
           {!isNew && (
             <Btn kind="danger" size="md" icon="trash" onClick={() => onDelete(initial.id)}>
               Eliminar
@@ -367,7 +367,7 @@ function MoveForm({ ingredient, canManage, onCancel, onSave }) {
             </div>
           )}
         </div>
-        <div style={{ borderTop: "2px solid var(--line)", padding: "16px 24px", display: "flex", gap: 12, justifyContent: "flex-end" }}>
+        <div style={{ borderTop: "1px solid var(--line)", padding: "16px 24px", display: "flex", gap: 12, justifyContent: "flex-end" }}>
           <Btn kind="ghost" size="md" onClick={onCancel}>
             Cancelar
           </Btn>
@@ -407,7 +407,7 @@ function IngredientRow({ ing, canManage, onMove, onEdit }) {
   const tone = negative ? "oklch(0.55 0.16 25)" : low ? "oklch(0.62 0.13 70)" : "oklch(0.55 0.10 150)";
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 16, background: "#fff", border: "2px solid " + (negative ? "oklch(0.85 0.08 25)" : "var(--line)"), borderRadius: "var(--r)", padding: "13px 18px" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 16, background: "#fff", border: "1px solid " + (negative ? "oklch(0.85 0.08 25)" : "var(--line)"), borderRadius: "var(--r)", padding: "13px 18px" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 800, fontSize: 15.5, color: "var(--ink)" }}>{ing.name}</span>
@@ -440,7 +440,7 @@ function IngredientRow({ ing, canManage, onMove, onEdit }) {
           {canManage ? "Movimiento" : "Merma"}
         </Btn>
         {canManage && (
-          <button onClick={() => onEdit(ing)} title="Editar ingrediente" style={{ width: 40, height: 40, borderRadius: 12, border: "2px solid var(--line)", background: "#fff", cursor: "pointer", color: "var(--muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button onClick={() => onEdit(ing)} title="Editar ingrediente" style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid var(--line)", background: "#fff", cursor: "pointer", color: "var(--muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Icon name="edit" size={18} />
           </button>
         )}
@@ -491,7 +491,7 @@ export function InventoryScreen({ ingredients, canManage, onSaveIngredient, onDe
     <div style={{ height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }}>
       <div style={{ padding: "22px 32px 12px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 6 }}>
-          <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 28, color: "var(--navy)", margin: 0 }}>Inventario</h1>
+          <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 31, letterSpacing: "-.01em", color: "var(--tinta)", margin: 0 }}>Inventario</h1>
           {canManage && tab === "stock" && (
             <Btn kind="primary" size="md" icon="plus" onClick={() => setEditing({})}>
               Nuevo ingrediente
@@ -508,20 +508,20 @@ export function InventoryScreen({ ingredients, canManage, onSaveIngredient, onDe
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
           {/* El valor del inventario es información de gestión: solo gerente. */}
           {canManage && (
-            <div style={{ background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", padding: "12px 20px" }}>
+            <div style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "12px 20px" }}>
               <div style={{ fontSize: 12, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>Valor del inventario</div>
-              <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 24, color: "var(--navy)" }}>{money(totalValue)}</div>
+              <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 27, letterSpacing: "-.01em", fontVariantNumeric: "tabular-nums", color: "var(--verde-oscuro)"}}>{money(totalValue)}</div>
             </div>
           )}
-          <div style={{ background: lowCount ? "oklch(0.95 0.06 85)" : "#fff", border: "2px solid " + (lowCount ? "oklch(0.85 0.1 85)" : "var(--line)"), borderRadius: "var(--r)", padding: "12px 20px" }}>
+          <div style={{ background: lowCount ? "oklch(0.95 0.06 85)" : "#fff", border: "1px solid " + (lowCount ? "oklch(0.85 0.1 85)" : "var(--line)"), borderRadius: "var(--r)", padding: "12px 20px" }}>
             <div style={{ fontSize: 12, fontWeight: 800, color: lowCount ? "oklch(0.45 0.1 70)" : "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>Por reponer</div>
-            <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 24, color: lowCount ? "oklch(0.45 0.1 70)" : "var(--navy)" }}>
+            <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 27, letterSpacing: "-.01em", color: "var(--tinta)"}}>
               {lowCount} {lowCount === 1 ? "ingrediente" : "ingredientes"}
             </div>
           </div>
-          <div style={{ background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", padding: "12px 20px" }}>
+          <div style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "12px 20px" }}>
             <div style={{ fontSize: 12, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>Ingredientes</div>
-            <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 24, color: "var(--navy)" }}>{ingredients.length}</div>
+            <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 27, letterSpacing: "-.01em", color: "var(--tinta)"}}>{ingredients.length}</div>
           </div>
         </div>
 
@@ -585,7 +585,7 @@ export function InventoryScreen({ ingredients, canManage, onSaveIngredient, onDe
             ) : moves.length === 0 ? (
               <div style={{ textAlign: "center", color: "var(--muted)", padding: 60, fontSize: 15.5 }}>Todavía no hay movimientos registrados.</div>
             ) : (
-              <div style={{ background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", overflow: "hidden" }}>
+              <div style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", overflow: "hidden" }}>
                 {moves.map((m) => {
                   const ing = ingById[m.ingredientId];
                   const meta = REASONS[m.reason] || REASONS.ajuste;

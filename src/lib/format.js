@@ -1,4 +1,4 @@
-/* FUWA POS — helpers de formato y cálculo de líneas del carrito. */
+/* Café del Valle POS — helpers de formato y cálculo de líneas del carrito. */
 
 // Moneda (Quetzal)
 export function money(n) {

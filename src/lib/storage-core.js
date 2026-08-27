@@ -1,4 +1,4 @@
-/* FUWA POS — helper mínimo de localStorage (módulo aparte para que api.js y
+/* Café del Valle POS — helper mínimo de localStorage (módulo aparte para que api.js y
    storage.js puedan compartirlo sin imports circulares). */
 export const LS = {
   get(k, fallback) {

@@ -1,4 +1,4 @@
-/* FUWA POS — cobro: una cuenta o pago dividido por productos (método por persona). */
+/* Café del Valle POS — cobro: una cuenta o pago dividido por productos (método por persona). */
 import { useMemo, useRef, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
 import { Btn } from "../components/ui.jsx";
@@ -57,7 +57,7 @@ function CashInput({ value, onChange }) {
       onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ""))}
       inputMode="decimal"
       placeholder="Efectivo recibido…"
-      style={{ width: "100%", padding: "11px 14px", border: "2px solid var(--line)", borderRadius: 12, fontFamily: "var(--display)", fontSize: 18, fontWeight: 800, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
+      style={{ width: "100%", padding: "11px 14px", border: "1px solid var(--line)", borderRadius: 12, fontFamily: "var(--display)", fontSize: 18, fontWeight: 800, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
     />
   );
 }
@@ -117,7 +117,7 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
                     fontFamily: "var(--ui)",
                     fontWeight: 800,
                     fontSize: 16,
-                    border: "2px solid " + (tipPct === p ? "var(--primary)" : "var(--line)"),
+                    border: "1px solid " + (tipPct === p ? "var(--primary)" : "var(--line)"),
                     background: tipPct === p ? "var(--primary)" : "#fff",
                     color: tipPct === p ? "#fff" : "var(--ink)",
                     transition: "all .1s ease",
@@ -147,7 +147,7 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
                     fontFamily: "var(--ui)",
                     fontWeight: 800,
                     fontSize: 16,
-                    border: "2px solid " + (recNum === q ? "var(--primary)" : "var(--line)"),
+                    border: "1px solid " + (recNum === q ? "var(--primary)" : "var(--line)"),
                     background: recNum === q ? "var(--primary-soft)" : "#fff",
                     color: recNum === q ? "var(--primary)" : "var(--ink)",
                   }}
@@ -161,14 +161,14 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
               onChange={(e) => setReceived(e.target.value.replace(/[^0-9.]/g, ""))}
               inputMode="decimal"
               placeholder="Otro monto…"
-              style={{ width: "100%", padding: "14px 18px", border: "2px solid var(--line)", borderRadius: 14, fontFamily: "var(--display)", fontSize: 22, fontWeight: 800, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "14px 18px", border: "1px solid var(--line)", borderRadius: 14, fontFamily: "var(--display)", fontSize: 22, fontWeight: 800, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
             />
           </>
         )}
       </div>
 
       {/* derecha: resumen */}
-      <div style={{ background: "#fff", borderLeft: "2px solid var(--line)", display: "flex", flexDirection: "column", minHeight: 0 }}>
+      <div style={{ background: "#fff", borderLeft: "1px solid var(--line)", display: "flex", flexDirection: "column", minHeight: 0 }}>
         <div style={{ flex: 1, overflowY: "auto", padding: "20px 26px 0" }}>
           {cart.map((l) => (
             <div key={l.uid} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "9px 0", borderBottom: "1.5px dashed var(--line)", fontSize: 14.5 }}>
@@ -180,17 +180,17 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
             </div>
           ))}
         </div>
-        <div style={{ padding: "18px 26px 24px", borderTop: "2px solid var(--line)", flexShrink: 0 }}>
+        <div style={{ padding: "18px 26px 24px", borderTop: "1px solid var(--line)", flexShrink: 0 }}>
           <Row label="Subtotal" value={money(subtotal)} />
           {tipEnabled && tipAmt > 0 && <Row label={"Propina " + tipPct + "%"} value={money(tipAmt)} />}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "10px 0 16px", paddingTop: 12, borderTop: "2px solid var(--line)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "10px 0 16px", paddingTop: 12, borderTop: "1px solid var(--line)" }}>
             <span style={{ fontWeight: 800, fontSize: 18, color: "var(--navy)" }}>Total</span>
-            <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 30, color: "var(--navy)" }}>{money(total)}</span>
+            <span style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 33, letterSpacing: "-.01em", fontVariantNumeric: "tabular-nums", color: "var(--verde-oscuro)"}}>{money(total)}</span>
           </div>
           {method === "efectivo" && recNum > 0 && (
             <div style={{ background: change >= 0 ? "var(--primary-soft)" : "oklch(0.94 0.05 25)", borderRadius: 14, padding: "12px 16px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontWeight: 800, color: change >= 0 ? "var(--primary)" : "oklch(0.5 0.16 25)" }}>{change >= 0 ? "Cambio" : "Faltan"}</span>
-              <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 22, color: change >= 0 ? "var(--primary)" : "oklch(0.5 0.16 25)" }}>{money(Math.abs(change))}</span>
+              <span style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 25, letterSpacing: "-.01em", fontVariantNumeric: "tabular-nums", color: "var(--verde-oscuro)"}}>{money(Math.abs(change))}</span>
             </div>
           )}
           <Btn kind="primary" size="lg" full disabled={!canCash} onClick={confirm} icon="check">
@@ -206,7 +206,7 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
 const amountInp = {
   width: "100%",
   padding: "10px 14px 10px 28px",
-  border: "2px solid var(--line)",
+  border: "1px solid var(--line)",
   borderRadius: 12,
   fontFamily: "var(--display)",
   fontSize: 18,
@@ -221,7 +221,7 @@ function PersonCard({ index, person, total, showAmount, onMethod, onReceived, on
   const hasRec = person.method === "efectivo" && person.received !== "";
   const change = recNum - total;
   return (
-    <div style={{ border: "2px solid var(--line)", borderRadius: "var(--r)", padding: "14px 16px", background: "#fff" }}>
+    <div style={{ border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "14px 16px", background: "#fff" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, gap: 8 }}>
         <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 17, color: "var(--navy)" }}>Persona {index}</span>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -386,7 +386,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 13.5, fontWeight: 800, color: "var(--muted)" }}>Personas</span>
-            <div style={{ display: "flex", alignItems: "center", gap: 4, border: "2px solid var(--line)", borderRadius: 999, padding: 3 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, border: "1px solid var(--line)", borderRadius: 999, padding: 3 }}>
               <button onClick={() => removePerson(people[people.length - 1].id)} disabled={people.length <= 2} style={{ width: 44, height: 44, borderRadius: 999, border: "none", background: "var(--cream)", cursor: people.length <= 2 ? "not-allowed" : "pointer", color: "var(--navy)", opacity: people.length <= 2 ? 0.4 : 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Icon name="minus" size={17} />
               </button>
@@ -412,7 +412,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
                   fontFamily: "var(--ui)",
                   fontWeight: 800,
                   fontSize: 14.5,
-                  border: "2px solid " + (tipPct === p ? "var(--primary)" : "var(--line)"),
+                  border: "1px solid " + (tipPct === p ? "var(--primary)" : "var(--line)"),
                   background: tipPct === p ? "var(--primary)" : "#fff",
                   color: tipPct === p ? "#fff" : "var(--ink)",
                   transition: "all .1s ease",
@@ -429,7 +429,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
             <SectionLabel>Asigna cada producto a una persona</SectionLabel>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {cart.map((l) => (
-                <div key={l.uid} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: "2px solid var(--line)", borderRadius: 14 }}>
+                <div key={l.uid} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 14 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 800, fontSize: 14.5, color: "var(--ink)" }}>
                       {l.qty}× {l.name}
@@ -467,7 +467,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
         ) : (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
             <SectionLabel>Escribe cuánto paga cada persona</SectionLabel>
-            <button onClick={splitEqually} style={{ background: "none", border: "2px solid var(--line)", borderRadius: 999, padding: "11px 16px", cursor: "pointer", fontWeight: 800, fontSize: 14, color: "var(--primary)", fontFamily: "var(--ui)", marginBottom: 12 }}>
+            <button onClick={splitEqually} style={{ background: "none", border: "1px solid var(--line)", borderRadius: 999, padding: "11px 16px", cursor: "pointer", fontWeight: 800, fontSize: 14, color: "var(--primary)", fontFamily: "var(--ui)", marginBottom: 12 }}>
               Partes iguales
             </button>
           </div>
@@ -492,7 +492,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
       </div>
 
       {/* derecha: resumen */}
-      <div style={{ background: "#fff", borderLeft: "2px solid var(--line)", display: "flex", flexDirection: "column", minHeight: 0 }}>
+      <div style={{ background: "#fff", borderLeft: "1px solid var(--line)", display: "flex", flexDirection: "column", minHeight: 0 }}>
         <div style={{ padding: "24px 26px 14px" }}>
           <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 19, color: "var(--navy)" }}>Resumen dividido</div>
           <div style={{ fontSize: 13.5, color: "var(--muted)", marginTop: 2 }}>{people.length} personas</div>
@@ -505,11 +505,11 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
             <Row label={remaining > 0 ? "Falta por asignar" : "Te pasaste por"} value={money(Math.abs(remaining))} />
           )}
         </div>
-        <div style={{ padding: "18px 26px 24px", borderTop: "2px solid var(--line)", flexShrink: 0 }}>
+        <div style={{ padding: "18px 26px 24px", borderTop: "1px solid var(--line)", flexShrink: 0 }}>
           {tipAmt > 0 && <Row label={"Propina " + tipPct + "%"} value={money(tipAmt)} />}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0 0 16px" }}>
             <span style={{ fontWeight: 800, fontSize: 18, color: "var(--navy)" }}>Total</span>
-            <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 30, color: "var(--navy)" }}>{money(totalWithTip)}</span>
+            <span style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 33, letterSpacing: "-.01em", fontVariantNumeric: "tabular-nums", color: "var(--verde-oscuro)"}}>{money(totalWithTip)}</span>
           </div>
           {!amountsOk && <div style={{ fontSize: 13, color: "oklch(0.55 0.16 25)", fontWeight: 800, marginBottom: 10, textAlign: "center" }}>Los montos deben sumar exactamente el total.</div>}
           {amountsOk && !allCashOk && <div style={{ fontSize: 13, color: "oklch(0.55 0.16 25)", fontWeight: 800, marginBottom: 10, textAlign: "center" }}>El efectivo recibido no cubre el total de alguna persona.</div>}
@@ -537,7 +537,7 @@ export function PayScreen({ cart, orderType, table, tipEnabled, onBack, onConfir
         </button>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <div>
-            <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 30, color: "var(--navy)", margin: "0 0 4px" }}>Cobrar</h1>
+            <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 33, letterSpacing: "-.01em", color: "var(--tinta)", margin: "0 0 4px" }}>Cobrar</h1>
             <p style={{ color: "var(--muted)", margin: 0, fontSize: 15 }}>
               {orderType}
               {table ? ` · Mesa ${table.label} (${table.areaName})` : ""} · {cart.reduce((s, l) => s + l.qty, 0)} productos · el cliente paga antes de consumir.

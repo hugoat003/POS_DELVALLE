@@ -1,4 +1,4 @@
-/* FUWA POS — historial: órdenes del turno actual + turnos anteriores archivados. */
+/* Café del Valle POS — historial: órdenes del turno actual + turnos anteriores archivados. */
 import { useState } from "react";
 import { Icon } from "../components/Icon.jsx";
 import { money, lineTotal } from "../lib/format.js";
@@ -10,7 +10,7 @@ function payLabel(p) {
 
 function OrderRow({ order: o, isOpen, onToggle, onVoid, onReprint }) {
   return (
-    <div style={{ background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", overflow: "hidden", opacity: o.voided ? 0.6 : 1 }}>
+    <div style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", overflow: "hidden", opacity: o.voided ? 0.6 : 1 }}>
       <button
         onClick={onToggle}
         style={{ width: "100%", display: "flex", alignItems: "center", gap: 16, padding: "16px 20px", background: "none", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "var(--ui)" }}
@@ -77,7 +77,7 @@ function OrderRow({ order: o, isOpen, onToggle, onVoid, onReprint }) {
                     e.stopPropagation();
                     onReprint(o);
                   }}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "2px solid var(--line)", color: "var(--navy)", borderRadius: 999, padding: "6px 14px", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "var(--ui)" }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "1px solid var(--line)", color: "var(--navy)", borderRadius: 999, padding: "6px 14px", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "var(--ui)" }}
                 >
                   <Icon name="print" size={15} /> Reimprimir
                 </button>
@@ -88,7 +88,7 @@ function OrderRow({ order: o, isOpen, onToggle, onVoid, onReprint }) {
                     e.stopPropagation();
                     onVoid(o);
                   }}
-                  style={{ background: "none", border: "2px solid oklch(0.85 0.07 25)", color: "oklch(0.55 0.16 25)", borderRadius: 999, padding: "6px 14px", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "var(--ui)" }}
+                  style={{ background: "none", border: "1px solid oklch(0.85 0.07 25)", color: "oklch(0.55 0.16 25)", borderRadius: 999, padding: "6px 14px", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "var(--ui)" }}
                 >
                   Anular orden
                 </button>
@@ -108,7 +108,7 @@ function ShiftCard({ shift, isOpen, onToggle, openOrder, onToggleOrder, onReprin
   const shiftTotal = shift.compacted ? shift.totals?.total || 0 : validOrders.reduce((s, o) => s + o.payment.total, 0);
   const ok = Math.abs(shift.diff) < 0.01;
   return (
-    <div style={{ background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", overflow: "hidden" }}>
+    <div style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", overflow: "hidden" }}>
       <button
         onClick={onToggle}
         style={{ width: "100%", display: "flex", alignItems: "center", gap: 16, padding: "16px 20px", background: "none", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "var(--ui)" }}
@@ -139,7 +139,7 @@ function ShiftCard({ shift, isOpen, onToggle, openOrder, onToggleOrder, onReprin
           )}
           {/* Lo que dejó escrito quien cerró: queda con el turno como registro. */}
           {shift.closeNote && (
-            <div style={{ marginTop: 12, background: "oklch(0.97 0.03 85)", border: "2px solid oklch(0.9 0.05 85)", borderRadius: 12, padding: "10px 14px" }}>
+            <div style={{ marginTop: 12, background: "oklch(0.97 0.03 85)", border: "1px solid oklch(0.9 0.05 85)", borderRadius: 12, padding: "10px 14px" }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "oklch(0.45 0.1 70)", textTransform: "uppercase", letterSpacing: 0.7, marginBottom: 4 }}>Nota del cierre</div>
               <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.45 }}>{shift.closeNote}</div>
               {shift.cashLeft != null && (
@@ -154,7 +154,7 @@ function ShiftCard({ shift, isOpen, onToggle, openOrder, onToggleOrder, onReprin
                   e.stopPropagation();
                   onReopen(shift.id);
                 }}
-                style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "2px solid var(--line)", color: "var(--navy)", borderRadius: 999, padding: "7px 16px", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "var(--ui)" }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "1px solid var(--line)", color: "var(--navy)", borderRadius: 999, padding: "7px 16px", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "var(--ui)" }}
               >
                 <Icon name="unlock" size={15} /> Reabrir turno para corregir
               </button>
@@ -185,7 +185,7 @@ export function HistoryScreen({ orders, shiftHistory = [], onVoid, onReprint, on
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }}>
       <div style={{ padding: "22px 32px 14px", flexShrink: 0 }}>
-        <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 28, color: "var(--navy)", margin: "0 0 4px" }}>Historial</h1>
+        <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 31, letterSpacing: "-.01em", color: "var(--tinta)", margin: "0 0 4px" }}>Historial</h1>
         <p style={{ color: "var(--muted)", margin: 0, fontSize: 15 }}>{orders.length} órdenes en el turno actual · {shiftHistory.length} turnos archivados.</p>
       </div>
       <div style={{ flex: 1, overflowY: "auto", padding: "8px 32px 32px" }}>

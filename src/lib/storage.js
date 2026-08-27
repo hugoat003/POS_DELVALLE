@@ -1,4 +1,4 @@
-/* FUWA POS — persistencia de CONFIG (menú, modificadores, categorías, tweaks,
+/* Café del Valle POS — persistencia de CONFIG (menú, modificadores, categorías, tweaks,
    marca de último respaldo) con localStorage como caché y fallback offline.
 
    Desde la migración a SQLite, este módulo solo maneja las claves kv de baja

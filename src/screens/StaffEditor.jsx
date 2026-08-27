@@ -1,4 +1,4 @@
-/* FUWA POS — administración de empleados: agregar / editar / eliminar usuarios.
+/* Café del Valle POS — administración de empleados: agregar / editar / eliminar usuarios.
    Guarda contra la API del servidor (el PIN viaja plano y el server lo hashea
    con scrypt; en producción siempre detrás de HTTPS). */
 import { useState } from "react";
@@ -10,7 +10,7 @@ import { Avatar, RoleBadge } from "../auth/Avatar.jsx";
 const inp = {
   width: "100%",
   padding: "11px 14px",
-  border: "2px solid var(--line)",
+  border: "1px solid var(--line)",
   borderRadius: 12,
   fontFamily: "var(--ui)",
   fontSize: 15,
@@ -46,7 +46,7 @@ function StaffForm({ initial, onCancel, onSave, onDelete, canDelete }) {
     <div onClick={onCancel} style={overlay}>
       <div onClick={(e) => e.stopPropagation()} style={{ ...sheet, maxWidth: 460, display: "flex", flexDirection: "column" }}>
         <div style={{ background: `oklch(0.92 0.05 ${hue})`, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 22, color: "var(--navy)" }}>{isNew ? "Nuevo empleado" : "Editar empleado"}</div>
+          <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 25, letterSpacing: "-.01em", color: "var(--tinta)"}}>{isNew ? "Nuevo empleado" : "Editar empleado"}</div>
           <button onClick={onCancel} style={iconBtn}>
             <Icon name="x" size={22} />
           </button>
@@ -87,7 +87,7 @@ function StaffForm({ initial, onCancel, onSave, onDelete, canDelete }) {
             </Field>
           </div>
         </div>
-        <div style={{ borderTop: "2px solid var(--line)", padding: "16px 24px", display: "flex", gap: 12, alignItems: "center", flexShrink: 0 }}>
+        <div style={{ borderTop: "1px solid var(--line)", padding: "16px 24px", display: "flex", gap: 12, alignItems: "center", flexShrink: 0 }}>
           {!isNew && (
             <Btn kind="danger" size="md" icon="trash" disabled={!canDelete} onClick={() => onDelete(initial.id)}>
               Eliminar
@@ -129,12 +129,12 @@ export function StaffEditor({ users, onSave, onDelete, currentUser }) {
     <div style={{ height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }}>
       <div style={{ padding: "22px 32px 14px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-          <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 28, color: "var(--navy)", margin: 0 }}>Empleados</h1>
+          <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 31, letterSpacing: "-.01em", color: "var(--tinta)", margin: 0 }}>Empleados</h1>
           <Btn kind="primary" size="md" icon="plus" onClick={() => setEditing({})}>
             Agregar empleado
           </Btn>
         </div>
-        <p style={{ color: "var(--muted)", margin: 0, fontSize: 15 }}>Administra el equipo de FUWA: nombre, rol, PIN y color. {users.length} empleados.</p>
+        <p style={{ color: "var(--muted)", margin: 0, fontSize: 15 }}>Administra el equipo de Café del Valle: nombre, rol, PIN y color. {users.length} empleados.</p>
       </div>
       <div style={{ flex: 1, overflowY: "auto", padding: "8px 32px 32px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(330px, 1fr))", gap: 14 }}>
@@ -142,7 +142,7 @@ export function StaffEditor({ users, onSave, onDelete, currentUser }) {
             <button
               key={u.id}
               onClick={() => setEditing(u)}
-              style={{ display: "flex", alignItems: "center", gap: 16, background: "#fff", border: "2px solid var(--line)", borderRadius: "var(--r)", padding: 16, cursor: "pointer", textAlign: "left", transition: "border-color .12s ease, transform .1s ease" }}
+              style={{ display: "flex", alignItems: "center", gap: 16, background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: 16, cursor: "pointer", textAlign: "left", transition: "border-color .12s ease, transform .1s ease" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "var(--navy)";
                 e.currentTarget.style.transform = "translateY(-2px)";

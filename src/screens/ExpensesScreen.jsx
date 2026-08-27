@@ -1,4 +1,4 @@
-/* FUWA POS — movimientos de dinero del turno.
+/* Café del Valle POS — movimientos de dinero del turno.
 
    Dos tipos: SALIDAS (compras y pagos, lo tradicional) y ENTRADAS (dinero que
    entra a la caja aparte de las ventas: un aporte del dueño, un reembolso, un
@@ -71,7 +71,7 @@ function MethodPicker({ value, onChange, disabledCash }) {
               borderRadius: 12,
               cursor: disabled ? "not-allowed" : "pointer",
               fontFamily: "var(--ui)",
-              border: "2px solid " + (value === m.id ? "var(--primary)" : "var(--line)"),
+              border: "1px solid " + (value === m.id ? "var(--primary)" : "var(--line)"),
               background: value === m.id ? "var(--primary-soft)" : "#fff",
               color: value === m.id ? "var(--primary)" : "var(--ink)",
               opacity: disabled ? 0.4 : 1,
@@ -136,9 +136,9 @@ export function ExpensesScreen({ expenses, onAdd, onRemove, availableCash = 0 })
 
   return (
     <div className="fuwa-split" style={{ height: "100%", display: "grid", gridTemplateColumns: "1fr 380px", minHeight: 0 }}>
-      <div style={{ display: "flex", flexDirection: "column", minHeight: 0, borderRight: "2px solid var(--line)" }}>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: 0, borderRight: "1px solid var(--line)" }}>
         <div style={{ padding: "22px 32px 14px", flexShrink: 0 }}>
-          <h1 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 28, color: "var(--navy)", margin: "0 0 4px" }}>Gastos y movimientos</h1>
+          <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 31, letterSpacing: "-.01em", color: "var(--tinta)", margin: "0 0 4px" }}>Gastos y movimientos</h1>
           <p style={{ color: "var(--muted)", margin: 0, fontSize: 15 }}>
             Compras y pagos del turno, y también el dinero que entra a caja aparte de las ventas. Se archiva junto con el turno al cerrar caja.
           </p>
@@ -151,7 +151,7 @@ export function ExpensesScreen({ expenses, onAdd, onRemove, availableCash = 0 })
               {sorted.map((e) => {
                 const entrada = (e.kind || "salida") === "entrada";
                 return (
-                <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 14, background: "#fff", border: "2px solid " + (entrada ? "oklch(0.88 0.06 150)" : "var(--line)"), borderRadius: "var(--r)", padding: "14px 16px" }}>
+                <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 14, background: "#fff", border: "1px solid " + (entrada ? "oklch(0.88 0.06 150)" : "var(--line)"), borderRadius: "var(--r)", padding: "14px 16px" }}>
                   <div style={{ width: 40, height: 40, borderRadius: 11, background: entrada ? VERDE_SUAVE : "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center", color: entrada ? VERDE : "var(--navy)", flexShrink: 0 }}>
                     <Icon name={entrada ? "plus" : e.method === "efectivo" ? "cash" : "card"} size={18} />
                   </div>
@@ -184,7 +184,7 @@ export function ExpensesScreen({ expenses, onAdd, onRemove, availableCash = 0 })
               value={concept}
               onChange={(e) => setConcept(e.target.value)}
               placeholder={esEntrada ? "Concepto · ej. Aporte, reembolso, cambio…" : "Concepto · ej. Hielo, leche, gas…"}
-              style={{ width: "100%", padding: "12px 14px", border: "2px solid var(--line)", borderRadius: 12, fontFamily: "var(--ui)", fontSize: 15, color: "var(--ink)", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 12, fontFamily: "var(--ui)", fontSize: 15, color: "var(--ink)", outline: "none", boxSizing: "border-box" }}
             />
             <div style={{ position: "relative" }}>
               <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", fontFamily: "var(--display)", fontWeight: 800, fontSize: 18 }}>Q</span>
@@ -193,7 +193,7 @@ export function ExpensesScreen({ expenses, onAdd, onRemove, availableCash = 0 })
                 onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
                 inputMode="decimal"
                 placeholder="0.00"
-                style={{ width: "100%", padding: "12px 14px 12px 34px", border: "2px solid var(--line)", borderRadius: 12, fontFamily: "var(--display)", fontSize: 18, fontWeight: 800, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
+                style={{ width: "100%", padding: "12px 14px 12px 34px", border: "1px solid var(--line)", borderRadius: 12, fontFamily: "var(--display)", fontSize: 18, fontWeight: 800, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
               />
               <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 6 }}>Efectivo disponible en caja: {money(Math.max(0, availableCash))}</div>
             </div>
@@ -213,7 +213,7 @@ export function ExpensesScreen({ expenses, onAdd, onRemove, availableCash = 0 })
             </Btn>
           </div>
         </div>
-        <div style={{ padding: "18px 26px 24px", borderTop: "2px solid var(--line)" }}>
+        <div style={{ padding: "18px 26px 24px", borderTop: "1px solid var(--line)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, color: "var(--muted)", padding: "4px 0" }}>
             <span>Gastos en efectivo</span>
             <span style={{ fontWeight: 800, color: "var(--ink)" }}>{money(totalCash)}</span>
@@ -226,7 +226,7 @@ export function ExpensesScreen({ expenses, onAdd, onRemove, availableCash = 0 })
           )}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 6 }}>
             <span style={{ fontWeight: 800, fontSize: 16, color: "var(--navy)" }}>Gastos del turno</span>
-            <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 24, color: "var(--navy)" }}>{money(total)}</span>
+            <span style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 27, letterSpacing: "-.01em", fontVariantNumeric: "tabular-nums", color: "var(--verde-oscuro)"}}>{money(total)}</span>
           </div>
         </div>
       </div>
