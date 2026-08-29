@@ -527,7 +527,7 @@ export default function App() {
           style={{
             position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 200,
             background: "var(--navy)", color: "#fff", borderRadius: 999, padding: "12px 24px",
-            fontFamily: "var(--ui)", fontWeight: 800, fontSize: 14.5,
+            fontFamily: "var(--ui)", fontWeight: 700, fontSize: 14.5,
             boxShadow: "0 14px 34px -12px rgba(58,65,88,.6)", display: "flex", alignItems: "center", gap: 9,
           }}
         >
@@ -711,7 +711,7 @@ export default function App() {
               {lastBackup ? `Hace ${Math.floor(daysSince(lastBackup))} días que no respaldas.` : "Aún no has respaldado los datos."} Los datos viven en el servidor (SQLite): descarga un respaldo por si falla el disco.
             </div>
             {canManage && (
-              <button onClick={exportBackup} style={{ border: "none", background: "var(--navy)", color: "#fff", borderRadius: 999, padding: "8px 16px", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "var(--ui)", whiteSpace: "nowrap" }}>
+              <button onClick={exportBackup} style={{ border: "none", background: "var(--navy)", color: "#fff", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "var(--ui)", whiteSpace: "nowrap" }}>
                 Respaldar ahora
               </button>
             )}

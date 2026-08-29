@@ -5,7 +5,7 @@ import { Btn } from "../components/ui.jsx";
 import { money, lineTotal } from "../lib/format.js";
 
 function SectionLabel({ children }) {
-  return <div style={{ fontWeight: 800, fontSize: 13.5, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 12 }}>{children}</div>;
+  return <div style={{ fontWeight: 700, fontSize: 13.5, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 12 }}>{children}</div>;
 }
 function Row({ label, value, strong }) {
   return (
@@ -43,7 +43,7 @@ function MethodPicker({ value, onChange, compact }) {
           }}
         >
           <Icon name={m.icon} size={compact ? 20 : 34} stroke={1.8} />
-          <span style={{ fontWeight: 800, fontSize: compact ? 14 : 18 }}>{m.label}</span>
+          <span style={{ fontWeight: 700, fontSize: compact ? 14 : 18 }}>{m.label}</span>
         </button>
       ))}
     </div>
@@ -57,7 +57,7 @@ function CashInput({ value, onChange }) {
       onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ""))}
       inputMode="decimal"
       placeholder="Efectivo recibido…"
-      style={{ width: "100%", padding: "11px 14px", border: "1px solid var(--line)", borderRadius: 12, fontFamily: "var(--display)", fontSize: 18, fontWeight: 800, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
+      style={{ width: "100%", padding: "11px 14px", border: "1px solid var(--line)", borderRadius: 12, fontFamily: "var(--display)", fontSize: 18, fontWeight: 700, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
     />
   );
 }
@@ -115,7 +115,7 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
                     borderRadius: 14,
                     cursor: "pointer",
                     fontFamily: "var(--ui)",
-                    fontWeight: 800,
+                    fontWeight: 700,
                     fontSize: 16,
                     border: "1px solid " + (tipPct === p ? "var(--primary)" : "var(--line)"),
                     background: tipPct === p ? "var(--primary)" : "#fff",
@@ -145,7 +145,7 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
                     borderRadius: 14,
                     cursor: "pointer",
                     fontFamily: "var(--ui)",
-                    fontWeight: 800,
+                    fontWeight: 700,
                     fontSize: 16,
                     border: "1px solid " + (recNum === q ? "var(--primary)" : "var(--line)"),
                     background: recNum === q ? "var(--primary-soft)" : "#fff",
@@ -161,7 +161,7 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
               onChange={(e) => setReceived(e.target.value.replace(/[^0-9.]/g, ""))}
               inputMode="decimal"
               placeholder="Otro monto…"
-              style={{ width: "100%", padding: "14px 18px", border: "1px solid var(--line)", borderRadius: 14, fontFamily: "var(--display)", fontSize: 22, fontWeight: 800, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "14px 18px", border: "1px solid var(--line)", borderRadius: 14, fontFamily: "var(--display)", fontSize: 22, fontWeight: 700, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
             />
           </>
         )}
@@ -176,7 +176,7 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
                 <b style={{ color: "var(--navy)" }}>{l.qty}×</b> {l.name}
                 {l.size ? " · " + l.size.name : ""}
               </span>
-              <span style={{ fontWeight: 800, color: "var(--navy)", whiteSpace: "nowrap" }}>{money(lineTotal(l))}</span>
+              <span style={{ fontWeight: 700, color: "var(--navy)", whiteSpace: "nowrap" }}>{money(lineTotal(l))}</span>
             </div>
           ))}
         </div>
@@ -184,12 +184,12 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
           <Row label="Subtotal" value={money(subtotal)} />
           {tipEnabled && tipAmt > 0 && <Row label={"Propina " + tipPct + "%"} value={money(tipAmt)} />}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "10px 0 16px", paddingTop: 12, borderTop: "1px solid var(--line)" }}>
-            <span style={{ fontWeight: 800, fontSize: 18, color: "var(--navy)" }}>Total</span>
+            <span style={{ fontWeight: 700, fontSize: 18, color: "var(--navy)" }}>Total</span>
             <span style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 33, letterSpacing: "-.01em", fontVariantNumeric: "tabular-nums", color: "var(--verde-oscuro)"}}>{money(total)}</span>
           </div>
           {method === "efectivo" && recNum > 0 && (
             <div style={{ background: change >= 0 ? "var(--primary-soft)" : "oklch(0.94 0.05 25)", borderRadius: 14, padding: "12px 16px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontWeight: 800, color: change >= 0 ? "var(--primary)" : "oklch(0.5 0.16 25)" }}>{change >= 0 ? "Cambio" : "Faltan"}</span>
+              <span style={{ fontWeight: 700, color: change >= 0 ? "var(--primary)" : "oklch(0.5 0.16 25)" }}>{change >= 0 ? "Cambio" : "Faltan"}</span>
               <span style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 25, letterSpacing: "-.01em", fontVariantNumeric: "tabular-nums", color: "var(--verde-oscuro)"}}>{money(Math.abs(change))}</span>
             </div>
           )}
@@ -210,7 +210,7 @@ const amountInp = {
   borderRadius: 12,
   fontFamily: "var(--display)",
   fontSize: 18,
-  fontWeight: 800,
+  fontWeight: 700,
   color: "var(--navy)",
   outline: "none",
   boxSizing: "border-box",
@@ -223,9 +223,9 @@ function PersonCard({ index, person, total, showAmount, onMethod, onReceived, on
   return (
     <div style={{ border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "14px 16px", background: "#fff" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, gap: 8 }}>
-        <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 17, color: "var(--navy)" }}>Persona {index}</span>
+        <span style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 17, color: "var(--navy)" }}>Persona {index}</span>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 20, color: "var(--navy)" }}>{money(total)}</span>
+          <span style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 20, color: "var(--navy)" }}>{money(total)}</span>
           {canRemove && (
             <button onClick={onRemove} title="Quitar persona" style={{ width: 36, height: 36, borderRadius: 999, border: "none", background: "var(--cream)", cursor: "pointer", color: "var(--muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Icon name="x" size={18} />
@@ -235,7 +235,7 @@ function PersonCard({ index, person, total, showAmount, onMethod, onReceived, on
       </div>
       {showAmount && (
         <div style={{ position: "relative", marginBottom: 10 }}>
-          <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", fontWeight: 800, fontSize: 14 }}>Q</span>
+          <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", fontWeight: 700, fontSize: 14 }}>Q</span>
           <input value={person.amount} onChange={(e) => onAmount(e.target.value.replace(/[^0-9.]/g, ""))} inputMode="decimal" placeholder="Monto a pagar" style={amountInp} />
         </div>
       )}
@@ -244,7 +244,7 @@ function PersonCard({ index, person, total, showAmount, onMethod, onReceived, on
         <div style={{ marginTop: 10 }}>
           <CashInput value={person.received} onChange={onReceived} />
           {hasRec && (
-            <div style={{ marginTop: 8, padding: "8px 12px", borderRadius: 10, background: change >= 0 ? "var(--primary-soft)" : "oklch(0.94 0.05 25)", display: "flex", justifyContent: "space-between", fontWeight: 800, fontSize: 14, color: change >= 0 ? "var(--primary)" : "oklch(0.5 0.16 25)" }}>
+            <div style={{ marginTop: 8, padding: "8px 12px", borderRadius: 10, background: change >= 0 ? "var(--primary-soft)" : "oklch(0.94 0.05 25)", display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 14, color: change >= 0 ? "var(--primary)" : "oklch(0.5 0.16 25)" }}>
               <span>{change >= 0 ? "Cambio" : "Faltan"}</span>
               <span>{money(Math.abs(change))}</span>
             </div>
@@ -363,7 +363,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
         border: "none",
         cursor: "pointer",
         fontFamily: "var(--ui)",
-        fontWeight: 800,
+        fontWeight: 700,
         fontSize: 14.5,
         background: mode === id ? "#fff" : "transparent",
         color: mode === id ? "var(--navy)" : "var(--muted)",
@@ -380,17 +380,17 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
       <div style={{ padding: "0 32px 26px", overflowY: "auto", minHeight: 0 }}>
         {/* controles: modo + número de personas */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
-          <div style={{ display: "flex", gap: 6, background: "var(--cream)", padding: 5, borderRadius: 999 }}>
+          <div style={{ display: "flex", gap: 6, background: "var(--cream)", padding: 4, borderRadius: 12 }}>
             {tabBtn("productos", "Por productos")}
             {tabBtn("montos", "Por montos")}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 13.5, fontWeight: 800, color: "var(--muted)" }}>Personas</span>
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--muted)" }}>Personas</span>
             <div style={{ display: "flex", alignItems: "center", gap: 4, border: "1px solid var(--line)", borderRadius: 999, padding: 3 }}>
               <button onClick={() => removePerson(people[people.length - 1].id)} disabled={people.length <= 2} style={{ width: 44, height: 44, borderRadius: 999, border: "none", background: "var(--cream)", cursor: people.length <= 2 ? "not-allowed" : "pointer", color: "var(--navy)", opacity: people.length <= 2 ? 0.4 : 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Icon name="minus" size={17} />
               </button>
-              <span style={{ width: 32, textAlign: "center", fontWeight: 800, fontSize: 16, fontFamily: "var(--display)" }}>{people.length}</span>
+              <span style={{ width: 32, textAlign: "center", fontWeight: 700, fontSize: 16, fontFamily: "var(--display)" }}>{people.length}</span>
               <button onClick={addPerson} disabled={people.length >= 8} style={{ width: 44, height: 44, borderRadius: 999, border: "none", background: "var(--cream)", cursor: people.length >= 8 ? "not-allowed" : "pointer", color: "var(--navy)", opacity: people.length >= 8 ? 0.4 : 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Icon name="plus" size={17} />
               </button>
@@ -400,7 +400,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
 
         {tipEnabled && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 13.5, fontWeight: 800, color: "var(--muted)", marginRight: 4 }}>Propina</span>
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--muted)", marginRight: 4 }}>Propina</span>
             {[0, 10, 15, 20].map((p) => (
               <button
                 key={p}
@@ -410,7 +410,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
                   borderRadius: 999,
                   cursor: "pointer",
                   fontFamily: "var(--ui)",
-                  fontWeight: 800,
+                  fontWeight: 700,
                   fontSize: 14.5,
                   border: "1px solid " + (tipPct === p ? "var(--primary)" : "var(--line)"),
                   background: tipPct === p ? "var(--primary)" : "#fff",
@@ -431,7 +431,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
               {cart.map((l) => (
                 <div key={l.uid} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: "1px solid var(--line)", borderRadius: 14 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 800, fontSize: 14.5, color: "var(--ink)" }}>
+                    <div style={{ fontWeight: 700, fontSize: 14.5, color: "var(--ink)" }}>
                       {l.qty}× {l.name}
                       {l.size ? " · " + l.size.name : ""}
                     </div>
@@ -449,7 +449,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
                           border: "none",
                           cursor: "pointer",
                           fontFamily: "var(--display)",
-                          fontWeight: 800,
+                          fontWeight: 700,
                           fontSize: 17,
                           background: assign[l.uid] === p.id ? "var(--primary)" : "transparent",
                           color: assign[l.uid] === p.id ? "#fff" : "var(--muted)",
@@ -467,7 +467,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
         ) : (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
             <SectionLabel>Escribe cuánto paga cada persona</SectionLabel>
-            <button onClick={splitEqually} style={{ background: "none", border: "1px solid var(--line)", borderRadius: 999, padding: "11px 16px", cursor: "pointer", fontWeight: 800, fontSize: 14, color: "var(--primary)", fontFamily: "var(--ui)", marginBottom: 12 }}>
+            <button onClick={splitEqually} style={{ background: "none", border: "1px solid var(--line)", borderRadius: 999, padding: "11px 16px", cursor: "pointer", fontWeight: 700, fontSize: 14, color: "var(--primary)", fontFamily: "var(--ui)", marginBottom: 12 }}>
               Partes iguales
             </button>
           </div>
@@ -494,7 +494,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
       {/* derecha: resumen */}
       <div style={{ background: "#fff", borderLeft: "1px solid var(--line)", display: "flex", flexDirection: "column", minHeight: 0 }}>
         <div style={{ padding: "24px 26px 14px" }}>
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 19, color: "var(--navy)" }}>Resumen dividido</div>
+          <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 19, color: "var(--navy)" }}>Resumen dividido</div>
           <div style={{ fontSize: 13.5, color: "var(--muted)", marginTop: 2 }}>{people.length} personas</div>
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "0 26px" }}>
@@ -508,11 +508,11 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
         <div style={{ padding: "18px 26px 24px", borderTop: "1px solid var(--line)", flexShrink: 0 }}>
           {tipAmt > 0 && <Row label={"Propina " + tipPct + "%"} value={money(tipAmt)} />}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0 0 16px" }}>
-            <span style={{ fontWeight: 800, fontSize: 18, color: "var(--navy)" }}>Total</span>
+            <span style={{ fontWeight: 700, fontSize: 18, color: "var(--navy)" }}>Total</span>
             <span style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 33, letterSpacing: "-.01em", fontVariantNumeric: "tabular-nums", color: "var(--verde-oscuro)"}}>{money(totalWithTip)}</span>
           </div>
-          {!amountsOk && <div style={{ fontSize: 13, color: "oklch(0.55 0.16 25)", fontWeight: 800, marginBottom: 10, textAlign: "center" }}>Los montos deben sumar exactamente el total.</div>}
-          {amountsOk && !allCashOk && <div style={{ fontSize: 13, color: "oklch(0.55 0.16 25)", fontWeight: 800, marginBottom: 10, textAlign: "center" }}>El efectivo recibido no cubre el total de alguna persona.</div>}
+          {!amountsOk && <div style={{ fontSize: 13, color: "oklch(0.55 0.16 25)", fontWeight: 700, marginBottom: 10, textAlign: "center" }}>Los montos deben sumar exactamente el total.</div>}
+          {amountsOk && !allCashOk && <div style={{ fontSize: 13, color: "oklch(0.55 0.16 25)", fontWeight: 700, marginBottom: 10, textAlign: "center" }}>El efectivo recibido no cubre el total de alguna persona.</div>}
           <Btn kind="primary" size="lg" full disabled={!canConfirm} onClick={confirm} icon="check">
             Confirmar pago dividido
           </Btn>
@@ -531,7 +531,7 @@ export function PayScreen({ cart, orderType, table, tipEnabled, onBack, onConfir
       <div style={{ padding: "26px 32px 14px", flexShrink: 0 }}>
         <button
           onClick={onBack}
-          style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", color: "var(--muted)", fontWeight: 800, fontSize: 15, fontFamily: "var(--ui)", padding: "10px 12px", margin: "-10px 0 4px -12px" }}
+          style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", color: "var(--muted)", fontWeight: 700, fontSize: 15, fontFamily: "var(--ui)", padding: "10px 12px", margin: "-10px 0 4px -12px" }}
         >
           <Icon name="back" size={20} /> Volver a la orden
         </button>
@@ -543,7 +543,7 @@ export function PayScreen({ cart, orderType, table, tipEnabled, onBack, onConfir
               {table ? ` · Mesa ${table.label} (${table.areaName})` : ""} · {cart.reduce((s, l) => s + l.qty, 0)} productos · el cliente paga antes de consumir.
             </p>
           </div>
-          <div style={{ display: "flex", gap: 6, background: "var(--cream)", padding: 5, borderRadius: 999 }}>
+          <div style={{ display: "flex", gap: 6, background: "var(--cream)", padding: 4, borderRadius: 12 }}>
             {[
               ["single", "Una cuenta"],
               ["split", "Dividir cuenta"],
@@ -553,11 +553,11 @@ export function PayScreen({ cart, orderType, table, tipEnabled, onBack, onConfir
                 onClick={() => setMode(id)}
                 style={{
                   padding: "12px 22px",
-                  borderRadius: 999,
+                  borderRadius: 8,
                   border: "none",
                   cursor: "pointer",
                   fontFamily: "var(--ui)",
-                  fontWeight: 800,
+                  fontWeight: 700,
                   fontSize: 14.5,
                   background: mode === id ? "#fff" : "transparent",
                   color: mode === id ? "var(--navy)" : "var(--muted)",

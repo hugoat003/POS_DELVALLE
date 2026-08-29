@@ -34,7 +34,7 @@ export function ProfitCard({ profit, porDia, hint, turnosSinDetalle = 0 }) {
 
       {porDia && porDia.length > 1 && (
         <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1.5px solid var(--line)" }}>
-          <div style={{ fontSize: 12, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 10 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 10 }}>
             Ganancia por día
           </div>
           <MiniBars data={porDia.map((d) => ({ label: d.label, value: d.net }))} />

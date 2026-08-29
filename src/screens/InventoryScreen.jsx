@@ -47,7 +47,7 @@ const REASONS = {
 function Field({ label, children, hint }) {
   return (
     <div>
-      <div style={{ fontWeight: 800, fontSize: 13, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>{label}</div>
+      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>{label}</div>
       {children}
       {hint && <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 6, lineHeight: 1.4 }}>{hint}</div>}
     </div>
@@ -101,7 +101,7 @@ function IngredientForm({ initial, onCancel, onSave, onDelete }) {
     <div style={overlay} onClick={onCancel}>
       <div className="fuwa-sheet-tall" style={{ ...sheet, maxWidth: 460, display: "flex", flexDirection: "column" }} onClick={(e) => e.stopPropagation()}>
         <div style={{ background: "var(--primary-soft)", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 21, color: "var(--navy)" }}>{isNew ? "Nuevo ingrediente" : "Editar ingrediente"}</div>
+          <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 21, color: "var(--navy)" }}>{isNew ? "Nuevo ingrediente" : "Editar ingrediente"}</div>
           <button onClick={onCancel} style={iconBtn} aria-label="Cerrar">
             <Icon name="x" size={20} />
           </button>
@@ -157,11 +157,11 @@ function IngredientForm({ initial, onCancel, onSave, onDelete }) {
                   onChange={(e) => setPFactor(e.target.value.replace(/[^0-9.]/g, ""))}
                   inputMode="decimal"
                   readOnly={!esPersonalizado}
-                  style={{ ...inp, fontFamily: "var(--display)", fontWeight: 800, background: esPersonalizado ? "#fff" : "var(--line)", cursor: esPersonalizado ? "text" : "not-allowed" }}
+                  style={{ ...inp, fontFamily: "var(--display)", fontWeight: 700, background: esPersonalizado ? "#fff" : "var(--line)", cursor: esPersonalizado ? "text" : "not-allowed" }}
                 />
               </Field>
               <Field label={`Precio por ${pUnit || "empaque"} (Q)`} hint="Lo que pagas por uno, tal como viene en la factura.">
-                <input value={pPrice} onChange={(e) => setPPrice(e.target.value.replace(/[^0-9.]/g, ""))} inputMode="decimal" style={{ ...inp, fontFamily: "var(--display)", fontWeight: 800 }} />
+                <input value={pPrice} onChange={(e) => setPPrice(e.target.value.replace(/[^0-9.]/g, ""))} inputMode="decimal" style={{ ...inp, fontFamily: "var(--display)", fontWeight: 700 }} />
               </Field>
             </div>
 
@@ -173,12 +173,12 @@ function IngredientForm({ initial, onCancel, onSave, onDelete }) {
                   <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--primary)" }}>
                     {money(precioNum)} por {pUnit || "empaque"} =
                   </span>
-                  <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 17, color: "var(--primary)" }}>
+                  <span style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 17, color: "var(--primary)" }}>
                     {unitCost(costoBase)} por {unit}
                   </span>
                 </>
               ) : (
-                <span style={{ fontSize: 13, fontWeight: 800, color: "oklch(0.5 0.16 25)" }}>El contenido debe ser mayor que cero.</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "oklch(0.5 0.16 25)" }}>El contenido debe ser mayor que cero.</span>
               )}
             </div>
           </div>
@@ -188,14 +188,14 @@ function IngredientForm({ initial, onCancel, onSave, onDelete }) {
               label={`Alerta bajo (${unit})`}
               hint={factorOk && pUnit !== unit ? `Avisa cuando baje de aquí · ≈ ${qty(fromBase(parseFloat(minStock) || 0, { purchaseFactor: factorNum }))} ${pUnit}` : "Avisa cuando el stock baje de aquí."}
             >
-              <input value={minStock} onChange={(e) => setMinStock(e.target.value.replace(/[^0-9.]/g, ""))} inputMode="decimal" style={{ ...inp, fontFamily: "var(--display)", fontWeight: 800 }} />
+              <input value={minStock} onChange={(e) => setMinStock(e.target.value.replace(/[^0-9.]/g, ""))} inputMode="decimal" style={{ ...inp, fontFamily: "var(--display)", fontWeight: 700 }} />
             </Field>
             {isNew && (
               <Field
                 label={`Existencia inicial (${pUnit || unit})`}
                 hint={factorOk && pUnit !== unit ? `= ${qty((parseFloat(stock) || 0) * factorNum)} ${unit}. Queda como primer movimiento del kardex.` : "Queda registrada como primer movimiento del kardex."}
               >
-                <input value={stock} onChange={(e) => setStock(e.target.value.replace(/[^0-9.]/g, ""))} inputMode="decimal" style={{ ...inp, fontFamily: "var(--display)", fontWeight: 800 }} />
+                <input value={stock} onChange={(e) => setStock(e.target.value.replace(/[^0-9.]/g, ""))} inputMode="decimal" style={{ ...inp, fontFamily: "var(--display)", fontWeight: 700 }} />
               </Field>
             )}
           </div>
@@ -284,7 +284,7 @@ function MoveForm({ ingredient, canManage, onCancel, onSave }) {
       <div className="fuwa-sheet-tall" style={{ ...sheet, maxWidth: 440, display: "flex", flexDirection: "column" }} onClick={(e) => e.stopPropagation()}>
         <div style={{ background: "var(--primary-soft)", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 20, color: "var(--navy)" }}>{ingredient.name}</div>
+            <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 20, color: "var(--navy)" }}>{ingredient.name}</div>
             <div style={{ fontSize: 13, color: "var(--muted)", fontWeight: 700 }}>
               Existencia actual: {qty(ingredient.stock)} {ingredient.unit}
             </div>
@@ -331,7 +331,7 @@ function MoveForm({ ingredient, canManage, onCancel, onSave }) {
               inputMode="decimal"
               placeholder="0"
               autoFocus
-              style={{ ...inp, fontFamily: "var(--display)", fontWeight: 800, fontSize: 22 }}
+              style={{ ...inp, fontFamily: "var(--display)", fontWeight: 700, fontSize: 22 }}
             />
           </Field>
           <Field label="Nota (opcional)">
@@ -347,7 +347,7 @@ function MoveForm({ ingredient, canManage, onCancel, onSave }) {
                   <span style={{ fontWeight: 700, color: "var(--muted)" }}>
                     {qty(n)} {ingredient.purchaseUnit} =
                   </span>
-                  <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 17, color: "var(--primary)" }}>
+                  <span style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 17, color: "var(--primary)" }}>
                     {qty(enBase)} {ingredient.unit}
                   </span>
                 </div>
@@ -357,14 +357,14 @@ function MoveForm({ ingredient, canManage, onCancel, onSave }) {
               {reason === "ajuste" && enCompra && (
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}>
                   <span style={{ fontWeight: 700, color: "var(--muted)" }}>Ajuste que se registrará</span>
-                  <span style={{ fontWeight: 800, color: deltaConteo < 0 ? "oklch(0.55 0.16 25)" : "oklch(0.5 0.11 150)" }}>
+                  <span style={{ fontWeight: 700, color: deltaConteo < 0 ? "oklch(0.55 0.16 25)" : "oklch(0.5 0.11 150)" }}>
                     {deltaConteo > 0 ? "+" : ""}{qty(deltaConteo)} {ingredient.unit}
                   </span>
                 </div>
               )}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: enCompra ? "1px dashed var(--line)" : "none", paddingTop: enCompra ? 8 : 0 }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: "var(--muted)" }}>Existencia resultante</span>
-                <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 20, color: preview < 0 ? "oklch(0.55 0.16 25)" : "var(--navy)" }}>
+                <span style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 20, color: preview < 0 ? "oklch(0.55 0.16 25)" : "var(--navy)" }}>
                   {qty(preview)} {ingredient.unit}
                   {dual && <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 700 }}> · ≈ {purchaseLabel(preview, ingredient)}</span>}
                 </span>
@@ -415,9 +415,9 @@ function IngredientRow({ ing, canManage, onMove, onEdit }) {
     <div style={{ display: "flex", alignItems: "center", gap: 16, background: "#fff", border: "1px solid " + (negative ? "oklch(0.85 0.08 25)" : "var(--line)"), borderRadius: "var(--r)", padding: "13px 18px" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontWeight: 800, fontSize: 15.5, color: "var(--ink)" }}>{ing.name}</span>
+          <span style={{ fontWeight: 700, fontSize: 15.5, color: "var(--ink)" }}>{ing.name}</span>
           {low && (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 800, color: tone, background: negative ? "oklch(0.94 0.05 25)" : "oklch(0.95 0.06 85)", padding: "2px 9px", borderRadius: 999 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, color: tone, background: negative ? "oklch(0.94 0.05 25)" : "oklch(0.95 0.06 85)", padding: "2px 9px", borderRadius: 999 }}>
               <Icon name="alert" size={12} /> {negative ? "En negativo" : "Bajo"}
             </span>
           )}
@@ -435,7 +435,7 @@ function IngredientRow({ ing, canManage, onMove, onEdit }) {
         </div>
       </div>
       <div style={{ textAlign: "right", width: 130, flexShrink: 0 }}>
-        <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 21, color: negative ? "oklch(0.5 0.16 25)" : "var(--navy)", lineHeight: 1.1 }}>{qty(ing.stock)}</div>
+        <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 21, color: negative ? "oklch(0.5 0.16 25)" : "var(--navy)", lineHeight: 1.1 }}>{qty(ing.stock)}</div>
         <div style={{ fontSize: 12.5, color: "var(--muted)", fontWeight: 700 }}>{ing.unit}</div>
         {/* Lo que se cuenta físicamente son empaques, no gramos. */}
         {dual && <div style={{ fontSize: 11.5, color: "var(--muted)", fontWeight: 700, marginTop: 2 }}>≈ {purchaseLabel(ing.stock, ing)}</div>}
@@ -510,27 +510,27 @@ export function InventoryScreen({ ingredients, canManage, onSaveIngredient, onDe
         </p>
 
         {/* Resumen */}
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, marginBottom: 14, maxWidth: 780 }}>
           {/* El valor del inventario es información de gestión: solo gerente. */}
           {canManage && (
             <div style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "12px 20px" }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>Valor del inventario</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>Valor del inventario</div>
               <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 27, letterSpacing: "-.01em", fontVariantNumeric: "tabular-nums", color: "var(--verde-oscuro)"}}>{money(totalValue)}</div>
             </div>
           )}
           <div style={{ background: lowCount ? "oklch(0.95 0.06 85)" : "#fff", border: "1px solid " + (lowCount ? "oklch(0.85 0.1 85)" : "var(--line)"), borderRadius: "var(--r)", padding: "12px 20px" }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: lowCount ? "oklch(0.45 0.1 70)" : "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>Por reponer</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: lowCount ? "oklch(0.45 0.1 70)" : "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>Por reponer</div>
             <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 27, letterSpacing: "-.01em", color: "var(--tinta)"}}>
               {lowCount} {lowCount === 1 ? "ingrediente" : "ingredientes"}
             </div>
           </div>
           <div style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "12px 20px" }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>Ingredientes</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>Ingredientes</div>
             <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 27, letterSpacing: "-.01em", color: "var(--tinta)"}}>{ingredients.length}</div>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 6, background: "var(--cream)", padding: 5, borderRadius: 999, width: "fit-content", marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 6, background: "var(--cream)", padding: 4, borderRadius: 12, width: "fit-content", marginBottom: 14 }}>
           {[
             ["stock", "Existencias"],
             ["moves", "Movimientos"],
@@ -540,11 +540,11 @@ export function InventoryScreen({ ingredients, canManage, onSaveIngredient, onDe
               onClick={() => setTab(id)}
               style={{
                 padding: "9px 20px",
-                borderRadius: 999,
+                borderRadius: 8,
                 border: "none",
                 cursor: "pointer",
                 fontFamily: "var(--ui)",
-                fontWeight: 800,
+                fontWeight: 700,
                 fontSize: 14,
                 background: tab === id ? "#fff" : "transparent",
                 color: tab === id ? "var(--navy)" : "var(--muted)",
@@ -598,10 +598,10 @@ export function InventoryScreen({ ingredients, canManage, onSaveIngredient, onDe
                   return (
                     <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 18px", borderBottom: "1.5px dashed var(--line)" }}>
                       <div style={{ width: 96, flexShrink: 0 }}>
-                        <span style={{ fontSize: 11, fontWeight: 800, color: meta.color, background: "var(--cream)", padding: "3px 9px", borderRadius: 999, whiteSpace: "nowrap" }}>{meta.label}</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: meta.color, background: "var(--cream)", padding: "3px 9px", borderRadius: 999, whiteSpace: "nowrap" }}>{meta.label}</span>
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 800, fontSize: 14.5, color: "var(--ink)" }}>{ing ? ing.name : "(ingrediente eliminado)"}</div>
+                        <div style={{ fontWeight: 700, fontSize: 14.5, color: "var(--ink)" }}>{ing ? ing.name : "(ingrediente eliminado)"}</div>
                         <div style={{ fontSize: 12, color: "var(--muted)" }}>
                           {new Date(m.ts).toLocaleString("es-GT", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                           {m.user ? " · " + m.user : ""}
@@ -613,7 +613,7 @@ export function InventoryScreen({ ingredients, canManage, onSaveIngredient, onDe
                           poder cuadrar contra la factura del proveedor. Sin
                           `enteredUnit` (histórico y ventas) se ve como siempre. */}
                       <div style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                        <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 16, color: positive ? "oklch(0.5 0.11 150)" : "oklch(0.5 0.14 25)" }}>
+                        <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 16, color: positive ? "oklch(0.5 0.11 150)" : "oklch(0.5 0.14 25)" }}>
                           {positive ? "+" : "−"}
                           {m.enteredUnit ? `${qty(Math.abs(m.enteredQty))} ${m.enteredUnit}` : `${qty(Math.abs(m.delta))} ${ing ? ing.unit : ""}`}
                         </div>

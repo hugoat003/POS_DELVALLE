@@ -51,7 +51,7 @@ function ProductCard({ product, cat, showEmoji, stockLeft, onClick }) {
               padding: "3px 9px",
               borderRadius: 999,
               fontSize: 11,
-              fontWeight: 800,
+              fontWeight: 700,
               background: out ? "oklch(0.94 0.05 25)" : "oklch(0.95 0.06 85)",
               color: out ? "oklch(0.5 0.16 25)" : "oklch(0.45 0.1 70)",
             }}
@@ -97,8 +97,8 @@ function CartLine({ line, cat, onQty, onRemove, onEdit }) {
       <div style={{ width: 6, alignSelf: "stretch", borderRadius: 4, background: cat ? cat.ink : "var(--gold)", opacity: 0.55, flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-          <span style={{ fontWeight: 800, fontSize: 15.5, color: "var(--ink)" }}>{line.name}</span>
-          <span style={{ fontWeight: 800, fontSize: 15.5, color: "var(--navy)" }}>{money(lineTotal(line))}</span>
+          <span style={{ fontWeight: 700, fontSize: 15.5, color: "var(--ink)" }}>{line.name}</span>
+          <span style={{ fontWeight: 700, fontSize: 15.5, color: "var(--navy)" }}>{money(lineTotal(line))}</span>
         </div>
         {subtitle && <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 2 }}>{subtitle}</div>}
         {line.note && <div style={{ fontSize: 12.5, color: cat ? cat.ink : "var(--gold)", marginTop: 3, fontStyle: "italic" }}>“{line.note}”</div>}
@@ -108,7 +108,7 @@ function CartLine({ line, cat, onQty, onRemove, onEdit }) {
             <button onClick={() => onQty(line.qty - 1)} style={qtyBtn}>
               <Icon name="minus" size={17} />
             </button>
-            <span style={{ width: 32, textAlign: "center", fontWeight: 800, fontSize: 16 }}>{line.qty}</span>
+            <span style={{ width: 32, textAlign: "center", fontWeight: 700, fontSize: 16 }}>{line.qty}</span>
             <button onClick={() => onQty(line.qty + 1)} style={qtyBtn}>
               <Icon name="plus" size={17} />
             </button>
@@ -141,10 +141,10 @@ function SentLine({ line, cat, onAnular }) {
       <div style={{ width: 6, alignSelf: "stretch", borderRadius: 4, background: cat ? cat.ink : "var(--gold)", opacity: 0.3, flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
-          <span style={{ fontWeight: 800, fontSize: 14.5, color: "var(--ink)", textDecoration: line.voided ? "line-through" : "none" }}>
+          <span style={{ fontWeight: 700, fontSize: 14.5, color: "var(--ink)", textDecoration: line.voided ? "line-through" : "none" }}>
             {line.qty} · {line.name}
           </span>
-          <span style={{ fontWeight: 800, fontSize: 14.5, color: "var(--navy)", textDecoration: line.voided ? "line-through" : "none" }}>
+          <span style={{ fontWeight: 700, fontSize: 14.5, color: "var(--navy)", textDecoration: line.voided ? "line-through" : "none" }}>
             {money(lineTotal(line))}
           </span>
         </div>
@@ -161,7 +161,7 @@ function SentLine({ line, cat, onAnular }) {
               style={{
                 background: "none", border: "none", cursor: "pointer", color: "var(--muted)",
                 display: "flex", alignItems: "center", gap: 5, height: 36, padding: "0 4px",
-                fontFamily: "var(--ui)", fontWeight: 800, fontSize: 12,
+                fontFamily: "var(--ui)", fontWeight: 700, fontSize: 12,
               }}
             >
               <Icon name="trash" size={16} />
@@ -184,14 +184,14 @@ function CancelLineModal({ line, onClose, onConfirm }) {
     <div style={overlay} onClick={onClose}>
       <div style={{ ...sheet, maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
         <div style={{ padding: "22px 24px 0" }}>
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 20, color: "var(--navy)" }}>¿Quitar este producto?</div>
+          <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 20, color: "var(--navy)" }}>¿Quitar este producto?</div>
           <div style={{ fontSize: 14, color: "var(--muted)", marginTop: 6, lineHeight: 1.5 }}>
             <b style={{ color: "var(--ink)" }}>{line.qty} · {line.name}</b> ya se mandó a preparar. Se avisará a quien lo esté
             haciendo y el ingrediente volverá al inventario.
           </div>
         </div>
         <div style={{ padding: "16px 24px" }}>
-          <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Motivo</div>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Motivo</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 10 }}>
             {motivos.map((m) => (
               <Pill key={m} active={motivo === m} onClick={() => setMotivo(m)}>{m}</Pill>
@@ -338,17 +338,17 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
       <div style={{ display: "flex", flexDirection: "column", minHeight: 0, background: "#fff" }}>
         <div style={{ padding: "20px 22px 14px", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-            <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 20, color: "var(--navy)", display: "flex", alignItems: "center", gap: 9 }}>
+            <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 20, color: "var(--navy)", display: "flex", alignItems: "center", gap: 9 }}>
               <Icon name="bag" size={22} /> Orden{" "}
               {count > 0 && <span style={{ fontSize: 13, background: "var(--primary-soft)", color: "var(--primary)", padding: "2px 10px", borderRadius: 999 }}>{count}</span>}
             </div>
             {cart.length > 0 && (
-              <button onClick={clearCart} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontWeight: 800, fontSize: 14, fontFamily: "var(--ui)", padding: "10px 12px", minHeight: 44 }}>
+              <button onClick={clearCart} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontWeight: 700, fontSize: 14, fontFamily: "var(--ui)", padding: "10px 12px", minHeight: 44 }}>
                 Vaciar
               </button>
             )}
           </div>
-          <div style={{ display: "flex", gap: 8, background: "var(--cream)", padding: 5, borderRadius: 999 }}>
+          <div style={{ display: "flex", gap: 8, background: "var(--cream)", padding: 4, borderRadius: 12 }}>
             {["Aquí", "Para llevar"].map((o) => (
               <button
                 key={o}
@@ -362,10 +362,10 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
                 style={{
                   flex: 1,
                   padding: "13px 8px",
-                  borderRadius: 999,
+                  borderRadius: 8,
                   border: "none",
                   cursor: "pointer",
-                  fontWeight: 800,
+                  fontWeight: 700,
                   fontSize: 15,
                   fontFamily: "var(--ui)",
                   background: orderType === o ? "#fff" : "transparent",
@@ -393,7 +393,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
                 borderRadius: 14,
                 cursor: "pointer",
                 fontFamily: "var(--ui)",
-                fontWeight: 800,
+                fontWeight: 700,
                 fontSize: 14.5,
                 border: "1px " + (table ? "solid var(--verde)" : avisoMesa ? "solid var(--aviso)" : "dashed var(--borde)"),
                 background: table ? "var(--verde-suave)" : avisoMesa ? "var(--aviso-suave)" : "var(--superficie)",
@@ -413,7 +413,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0 4px" }}>
                 <Icon name="check" size={15} />
-                <span style={{ fontSize: 11.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>
                   Ya enviado a preparar
                 </span>
               </div>
@@ -426,7 +426,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
           {enviadas.length > 0 && cart.length > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "14px 0 2px" }}>
               <span style={{ width: 8, height: 8, borderRadius: 999, background: "oklch(0.72 0.16 70)", flexShrink: 0 }} />
-              <span style={{ fontSize: 11.5, fontWeight: 800, color: "oklch(0.52 0.12 70)", textTransform: "uppercase", letterSpacing: 0.5 }}>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: "oklch(0.52 0.12 70)", textTransform: "uppercase", letterSpacing: 0.5 }}>
                 Por enviar
               </span>
             </div>
@@ -511,7 +511,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
               )}
               <button
                 onClick={onCerrarCuenta}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", fontFamily: "var(--ui)", fontWeight: 800, fontSize: 12.5, padding: "6px 0" }}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", fontFamily: "var(--ui)", fontWeight: 700, fontSize: 12.5, padding: "6px 0" }}
               >
                 Volver a las cuentas
               </button>

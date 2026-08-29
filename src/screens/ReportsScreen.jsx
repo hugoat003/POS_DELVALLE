@@ -37,7 +37,7 @@ const dateInputStyle = {
   background: "#fff",
 };
 
-const thStyle = { padding: "10px 12px", fontSize: 12, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.4, textAlign: "right", borderBottom: "1px solid var(--line)" };
+const thStyle = { padding: "10px 12px", fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.4, textAlign: "right", borderBottom: "1px solid var(--line)" };
 const tdStyle = { padding: "10px 12px", fontWeight: 700, fontSize: 14, color: "var(--ink)", textAlign: "right", borderBottom: "1px solid var(--line)" };
 
 export function ReportsScreen({ orders, expenses = [], shiftHistory = [], menu = [], mods = {}, ingredients = [] }) {
@@ -105,7 +105,7 @@ export function ReportsScreen({ orders, expenses = [], shiftHistory = [], menu =
               <button
                 key={p.id}
                 onClick={() => pickPreset(p.id)}
-                style={{ padding: "8px 16px", borderRadius: 999, fontFamily: "var(--ui)", fontWeight: 800, fontSize: 13.5, cursor: "pointer", border: "1px solid " + (active ? "var(--primary)" : "var(--line)"), background: active ? "var(--primary)" : "#fff", color: active ? "#fff" : "var(--ink)", transition: "all .12s ease" }}
+                style={{ padding: "8px 16px", borderRadius: 11, fontFamily: "var(--ui)", fontWeight: 700, fontSize: 13.5, cursor: "pointer", border: "1px solid " + (active ? "var(--primary)" : "var(--line)"), background: active ? "var(--primary)" : "#fff", color: active ? "#fff" : "var(--ink)", transition: "all .12s ease" }}
               >
                 {p.label}
               </button>
@@ -115,11 +115,11 @@ export function ReportsScreen({ orders, expenses = [], shiftHistory = [], menu =
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 22 }}>
-        <label style={{ fontSize: 13, fontWeight: 800, color: "var(--muted)" }}>
+        <label style={{ fontSize: 13, fontWeight: 700, color: "var(--muted)" }}>
           Desde{" "}
           <input type="date" value={fromStr} max={toStr || undefined} onChange={onDateChange(setFromStr)} style={dateInputStyle} />
         </label>
-        <label style={{ fontSize: 13, fontWeight: 800, color: "var(--muted)" }}>
+        <label style={{ fontSize: 13, fontWeight: 700, color: "var(--muted)" }}>
           Hasta{" "}
           <input type="date" value={toStr} min={fromStr || undefined} max={today} onChange={onDateChange(setToStr)} style={dateInputStyle} />
         </label>
@@ -136,7 +136,7 @@ export function ReportsScreen({ orders, expenses = [], shiftHistory = [], menu =
             color: empty ? "var(--muted)" : "#fff",
             borderRadius: 999,
             padding: "11px 22px",
-            fontWeight: 800,
+            fontWeight: 700,
             fontSize: 14.5,
             fontFamily: "var(--ui)",
             cursor: empty ? "not-allowed" : "pointer",
@@ -151,7 +151,7 @@ export function ReportsScreen({ orders, expenses = [], shiftHistory = [], menu =
       ) : empty ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 0", gap: 14 }}>
           <Mascot size={90} />
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 20, color: "var(--navy)" }}>Sin movimientos en este período</div>
+          <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 20, color: "var(--navy)" }}>Sin movimientos en este período</div>
           <div style={{ color: "var(--muted)", fontWeight: 700, fontSize: 14 }}>Prueba con otro rango de fechas.</div>
         </div>
       ) : (
@@ -174,7 +174,7 @@ export function ReportsScreen({ orders, expenses = [], shiftHistory = [], menu =
 
           {/* ---- arqueos ---- */}
           <div style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "18px 20px" }}>
-            <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 17, color: "var(--navy)", marginBottom: 10 }}>Arqueos de caja</div>
+            <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 17, color: "var(--navy)", marginBottom: 10 }}>Arqueos de caja</div>
             {shifts.length === 0 ? (
               <div style={{ color: "var(--muted)", fontWeight: 700, fontSize: 14, padding: "10px 0" }}>Sin cierres de caja en el período.</div>
             ) : (

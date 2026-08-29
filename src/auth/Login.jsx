@@ -19,7 +19,7 @@ function KeyBtn({ children, onClick, ghost }) {
         background: ghost ? "transparent" : "#fff",
         color: "var(--navy)",
         fontFamily: "var(--display)",
-        fontWeight: 800,
+        fontWeight: 700,
         fontSize: 26,
         display: "flex",
         alignItems: "center",
@@ -196,7 +196,7 @@ export function Login({ onLogin, users: usersProp }) {
                 >
                   <Avatar user={u} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 800, fontSize: 17, color: "var(--ink)" }}>{u.name}</div>
+                    <div style={{ fontWeight: 700, fontSize: 17, color: "var(--ink)" }}>{u.name}</div>
                     <div style={{ marginTop: 4 }}>
                       <RoleBadge role={u.role} small />
                     </div>
@@ -214,7 +214,7 @@ export function Login({ onLogin, users: usersProp }) {
                 setPin("");
                 setErr("");
               }}
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", color: "var(--muted)", fontWeight: 800, fontSize: 14.5, fontFamily: "var(--ui)", marginBottom: 22 }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", color: "var(--muted)", fontWeight: 700, fontSize: 14.5, fontFamily: "var(--ui)", marginBottom: 22 }}
             >
               <Icon name="back" size={20} /> Cambiar usuario
             </button>
@@ -243,7 +243,7 @@ export function Login({ onLogin, users: usersProp }) {
                 />
               ))}
             </div>
-            <div style={{ height: 22, color: "oklch(0.6 0.16 25)", fontWeight: 800, fontSize: 13.5, marginBottom: 14 }}>{err}</div>
+            <div style={{ height: 22, color: "oklch(0.6 0.16 25)", fontWeight: 700, fontSize: 13.5, marginBottom: 14 }}>{err}</div>
             {/* teclado */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, maxWidth: 280, margin: "0 auto" }}>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (

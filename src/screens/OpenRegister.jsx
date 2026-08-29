@@ -42,12 +42,12 @@ export function OpenRegister({ onOpen, lastClose, lastCloseNote, lastCashLeft })
           >
             <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
               <Icon name="note" size={15} color="oklch(0.45 0.1 70)" />
-              <span style={{ fontSize: 11.5, fontWeight: 800, color: "oklch(0.45 0.1 70)", textTransform: "uppercase", letterSpacing: 0.7 }}>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: "oklch(0.45 0.1 70)", textTransform: "uppercase", letterSpacing: 0.7 }}>
                 Del turno anterior
               </span>
             </div>
             {lastCashLeft != null && (
-              <div style={{ fontSize: 14, color: "var(--ink)", fontWeight: 800, marginBottom: lastCloseNote ? 5 : 0 }}>
+              <div style={{ fontSize: 14, color: "var(--ink)", fontWeight: 700, marginBottom: lastCloseNote ? 5 : 0 }}>
                 Dejaron {money(lastCashLeft)} en caja — cuenta que cuadre antes de abrir.
               </div>
             )}
@@ -56,16 +56,16 @@ export function OpenRegister({ onOpen, lastClose, lastCloseNote, lastCashLeft })
         )}
 
         <div style={{ textAlign: "left", marginBottom: 14 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>Fondo de apertura</div>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>Fondo de apertura</div>
           <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", fontFamily: "var(--display)", fontWeight: 800, fontSize: 22 }}>Q</span>
+            <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", fontFamily: "var(--display)", fontWeight: 700, fontSize: 22 }}>Q</span>
             <input
               value={fondo}
               onChange={(e) => setFondo(e.target.value.replace(/[^0-9.]/g, ""))}
               inputMode="decimal"
               placeholder="0.00"
               autoFocus
-              style={{ width: "100%", padding: "14px 18px 14px 40px", border: "1px solid var(--line)", borderRadius: 14, fontFamily: "var(--display)", fontSize: 24, fontWeight: 800, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "14px 18px 14px 40px", border: "1px solid var(--line)", borderRadius: 14, fontFamily: "var(--display)", fontSize: 24, fontWeight: 700, color: "var(--navy)", outline: "none", boxSizing: "border-box" }}
             />
           </div>
           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
@@ -79,7 +79,7 @@ export function OpenRegister({ onOpen, lastClose, lastCloseNote, lastCashLeft })
                   borderRadius: 12,
                   cursor: "pointer",
                   fontFamily: "var(--ui)",
-                  fontWeight: 800,
+                  fontWeight: 700,
                   fontSize: 14,
                   border: "1px solid " + (amount === q ? "var(--primary)" : "var(--line)"),
                   background: amount === q ? "var(--primary-soft)" : "#fff",

@@ -54,10 +54,10 @@ function Ticket({ order, ahora, onAvanzar, onRetroceder }) {
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: listo ? "var(--primary-soft)" : "var(--cream)" }}>
         <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 25, letterSpacing: "-.01em", color: "var(--tinta)"}}>#{order.number}</div>
-        <div style={{ flex: 1, fontSize: 12.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>
+        <div style={{ flex: 1, fontSize: 12.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>
           {order.orderType === "Aquí" ? "Para aquí" : "Para llevar"}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5, fontWeight: 800, fontSize: 13.5, color: colorEspera(min) }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5, fontWeight: 700, fontSize: 13.5, color: colorEspera(min) }}>
           <Icon name="clock" size={15} />
           {min}m
         </div>
@@ -67,12 +67,12 @@ function Ticket({ order, ahora, onAvanzar, onRetroceder }) {
       {order.table ? (
         <div style={{ margin: "12px 16px 0", border: "2.5px solid var(--navy)", borderRadius: 12, textAlign: "center", padding: "8px 10px" }}>
           <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 27, letterSpacing: "-.01em", color: "var(--tinta)", lineHeight: 1.1 }}>MESA {order.table.label}</div>
-          <div style={{ fontSize: 11.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 1 }}>{order.table.areaName}</div>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 1 }}>{order.table.areaName}</div>
         </div>
       ) : (
         <div style={{ margin: "12px 16px 0", border: "2.5px dashed var(--line)", borderRadius: 12, textAlign: "center", padding: "8px 10px" }}>
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 18, color: "var(--gold)" }}>PARA LLEVAR</div>
-          <div style={{ fontSize: 11.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 1 }}>Entregar en barra</div>
+          <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 18, color: "var(--gold)" }}>PARA LLEVAR</div>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 1 }}>Entregar en barra</div>
         </div>
       )}
 
@@ -81,13 +81,13 @@ function Ticket({ order, ahora, onAvanzar, onRetroceder }) {
           const sub = lineSub(l);
           return (
             <div key={l.uid} style={{ padding: "7px 0", borderBottom: "1px dashed var(--line)" }}>
-              <div style={{ display: "flex", gap: 8, fontSize: 16.5, fontWeight: 800, color: "var(--ink)", lineHeight: 1.25, alignItems: "baseline" }}>
+              <div style={{ display: "flex", gap: 8, fontSize: 16.5, fontWeight: 700, color: "var(--ink)", lineHeight: 1.25, alignItems: "baseline" }}>
                 <span style={{ minWidth: 26, color: "var(--primary)" }}>{l.qty}×</span>
                 <span style={{ flex: 1 }}>{l.name}</span>
                 {marcarNuevas && (l.sentSeq || 0) === order.sendSeq && (
                   <span
                     style={{
-                      flexShrink: 0, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.5,
+                      flexShrink: 0, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.5,
                       background: "oklch(0.72 0.16 70)", color: "#fff",
                       borderRadius: 999, padding: "2px 8px", textTransform: "uppercase",
                     }}
@@ -105,7 +105,7 @@ function Ticket({ order, ahora, onAvanzar, onRetroceder }) {
               )}
               {sub && <div style={{ fontSize: 13, color: "var(--muted)", paddingLeft: 34 }}>{sub}</div>}
               {l.note && (
-                <div style={{ fontSize: 13, fontWeight: 800, color: "oklch(0.5 0.16 25)", paddingLeft: 34, marginTop: 2 }}>⚠ {l.note}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "oklch(0.5 0.16 25)", paddingLeft: 34, marginTop: 2 }}>⚠ {l.note}</div>
               )}
             </div>
           );
@@ -143,8 +143,8 @@ function Columna({ titulo, hint, tickets, children }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 12, flexShrink: 0 }}>
-        <h2 style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 19, color: "var(--navy)", margin: 0 }}>{titulo}</h2>
-        <span style={{ fontWeight: 800, fontSize: 13, color: "var(--muted)" }}>{tickets}</span>
+        <h2 style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 19, color: "var(--navy)", margin: 0 }}>{titulo}</h2>
+        <span style={{ fontWeight: 700, fontSize: 13, color: "var(--muted)" }}>{tickets}</span>
         {hint && <span style={{ fontSize: 12.5, color: "var(--muted)" }}>· {hint}</span>}
       </div>
       <div style={{ flex: 1, overflowY: "auto", paddingRight: 4, paddingBottom: 12 }}>{children}</div>
@@ -254,14 +254,14 @@ export function KdsScreen({ orders, shiftOpen, onSetPrep }) {
               boxShadow: "0 18px 40px -18px rgba(40,44,60,.6)",
             }}
           >
-            <span style={{ fontWeight: 800, fontSize: 14 }}>
+            <span style={{ fontWeight: 700, fontSize: 14 }}>
               Orden #{ultimo.number} · {ultimo.hacia === "entregado" ? "entregada" : ultimo.hacia === "listo" ? "lista" : "de vuelta a preparación"}
             </span>
             <button
               onClick={deshacer}
               style={{
                 background: "rgba(255,255,255,.16)", border: "none", color: "#fff",
-                borderRadius: 999, padding: "7px 16px", fontWeight: 800, fontSize: 13.5,
+                borderRadius: 999, padding: "7px 16px", fontWeight: 700, fontSize: 13.5,
                 cursor: "pointer", fontFamily: "var(--ui)",
               }}
             >

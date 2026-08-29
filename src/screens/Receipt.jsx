@@ -29,18 +29,18 @@ function KitchenComanda({ order }) {
   return (
     <div className="fuwa-comanda" style={{ width: 320, background: "#fff", padding: "22px 24px 26px", color: "#000" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "1px solid #000", paddingBottom: 8 }}>
-        <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 22 }}>COMANDA</div>
-        <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 22 }}>#{order.number}{order.pending ? "·P" : ""}</div>
+        <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 22 }}>COMANDA</div>
+        <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 22 }}>#{order.number}{order.pending ? "·P" : ""}</div>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 800, margin: "10px 0 4px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 700, margin: "10px 0 4px" }}>
         <span style={{ textTransform: "uppercase" }}>{order.orderType === "Aquí" ? "🍽️ PARA AQUÍ" : "🥡 PARA LLEVAR"}</span>
         <span>{order.time}</span>
       </div>
       {/* Mesa destino: grande, es lo primero que busca quien lleva el pedido. */}
       {order.table && (
         <div style={{ border: "3px solid #000", borderRadius: 8, textAlign: "center", padding: "6px 8px", margin: "8px 0 4px" }}>
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 26, lineHeight: 1.1 }}>MESA {order.table.label}</div>
-          <div style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1 }}>{order.table.areaName}</div>
+          <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 26, lineHeight: 1.1 }}>MESA {order.table.label}</div>
+          <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{order.table.areaName}</div>
         </div>
       )}
       <div style={{ fontSize: 13, marginBottom: 12 }}>Atendió: {order.cashier || "Barista"}</div>
@@ -50,12 +50,12 @@ function KitchenComanda({ order }) {
           const sub = lineSub(l);
           return (
             <div key={l.uid} style={{ marginBottom: 12, borderBottom: "1px dashed #aaa", paddingBottom: 8 }}>
-              <div style={{ display: "flex", gap: 8, fontSize: 18, fontWeight: 800, lineHeight: 1.2 }}>
+              <div style={{ display: "flex", gap: 8, fontSize: 18, fontWeight: 700, lineHeight: 1.2 }}>
                 <span style={{ minWidth: 28 }}>{l.qty}×</span>
                 <span>{l.name}</span>
               </div>
               {sub && <div style={{ fontSize: 14, paddingLeft: 36, marginTop: 2 }}>{sub}</div>}
-              {l.note && <div style={{ fontSize: 14, fontWeight: 800, paddingLeft: 36, marginTop: 3 }}>⚠ {l.note}</div>}
+              {l.note && <div style={{ fontSize: 14, fontWeight: 700, paddingLeft: 36, marginTop: 3 }}>⚠ {l.note}</div>}
             </div>
           );
         })}
@@ -126,13 +126,13 @@ export function ReceiptTicket({ order }) {
       <div style={{ borderTop: "2px dashed var(--line)", marginTop: 8, paddingTop: 12 }}>
         <TRow label="Subtotal" value={money(order.payment.subtotal)} />
         {order.payment.tip > 0 && <TRow label={"Propina"} value={money(order.payment.tip)} />}
-        <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 800, fontSize: 17, color: "var(--navy)", margin: "6px 0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 17, color: "var(--navy)", margin: "6px 0" }}>
           <span>TOTAL</span>
           <span>{money(order.payment.total)}</span>
         </div>
         {split ? (
           <div style={{ marginTop: 6 }}>
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--navy)", marginBottom: 4 }}>Pago dividido</div>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--navy)", marginBottom: 4 }}>Pago dividido</div>
             {order.payment.parts.map((p, i) => (
               <div key={i} style={{ marginBottom: 4 }}>
                 <TRow label={`Persona ${i + 1} · ${p.method === "efectivo" ? "Efectivo" : "Tarjeta"}`} value={money(p.total)} />

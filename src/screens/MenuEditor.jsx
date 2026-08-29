@@ -34,7 +34,7 @@ const inp = {
 function Field({ label, children }) {
   return (
     <div>
-      <div style={{ fontWeight: 800, fontSize: 13, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>{label}</div>
+      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>{label}</div>
       {children}
     </div>
   );
@@ -100,9 +100,9 @@ function RecipeEditor({ value, onChange, ingredients, allowNegative, compact, em
                 setRow(i, { qty: clean === "" || clean === "-" ? clean : parseFloat(clean) || 0 });
               }}
               inputMode="decimal"
-              style={{ ...inp, width: 82, flexShrink: 0, padding: compact ? "8px 10px" : "10px 12px", fontFamily: "var(--display)", fontWeight: 800, textAlign: "right" }}
+              style={{ ...inp, width: 82, flexShrink: 0, padding: compact ? "8px 10px" : "10px 12px", fontFamily: "var(--display)", fontWeight: 700, textAlign: "right" }}
             />
-            <span style={{ width: 34, flexShrink: 0, fontSize: 12.5, fontWeight: 800, color: "var(--muted)" }}>{ing ? ing.unit : ""}</span>
+            <span style={{ width: 34, flexShrink: 0, fontSize: 12.5, fontWeight: 700, color: "var(--muted)" }}>{ing ? ing.unit : ""}</span>
             <button onClick={() => delRow(i)} title="Quitar" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 2, display: "flex", flexShrink: 0 }}>
               <Icon name="trash" size={17} />
             </button>
@@ -112,7 +112,7 @@ function RecipeEditor({ value, onChange, ingredients, allowNegative, compact, em
       {free.length > 0 && (
         <button
           onClick={addRow}
-          style={{ marginTop: 8, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", background: "none", border: "2px dashed var(--line)", borderRadius: 12, padding: compact ? "7px 12px" : "9px 16px", cursor: "pointer", color: "var(--primary)", fontWeight: 800, fontFamily: "var(--ui)", fontSize: compact ? 13 : 14 }}
+          style={{ marginTop: 8, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", background: "none", border: "2px dashed var(--line)", borderRadius: 12, padding: compact ? "7px 12px" : "9px 16px", cursor: "pointer", color: "var(--primary)", fontWeight: 700, fontFamily: "var(--ui)", fontSize: compact ? 13 : 14 }}
         >
           <Icon name="plus" size={15} /> Agregar ingrediente
         </button>
@@ -228,7 +228,7 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
                 onChange={(e) => setPrice(e.target.value.replace(/[^0-9.]/g, ""))}
                 inputMode="decimal"
                 placeholder="0.00"
-                style={{ ...inp, fontFamily: "var(--display)", fontWeight: 800, fontSize: 19 }}
+                style={{ ...inp, fontFamily: "var(--display)", fontWeight: 700, fontSize: 19 }}
               />
             </Field>
           </div>
@@ -246,13 +246,13 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
                 <input value={icon} onChange={(e) => setIcon(e.target.value)} placeholder="Emoji, ej. 🍓 (vacío usa el de la categoría)" style={inp} />
                 <div style={{ display: "flex", gap: 8 }}>
                   <label
-                    style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 12, border: "1px solid var(--line)", cursor: "pointer", fontWeight: 800, fontSize: 13.5, color: "var(--navy)" }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 12, border: "1px solid var(--line)", cursor: "pointer", fontWeight: 700, fontSize: 13.5, color: "var(--navy)" }}
                   >
                     <Icon name="plus" size={16} /> Subir imagen
                     <input type="file" accept="image/*" onChange={onImageFile} style={{ display: "none" }} />
                   </label>
                   {image && (
-                    <button onClick={() => setImage("")} style={{ padding: "9px 14px", borderRadius: 12, border: "1px solid var(--line)", background: "#fff", cursor: "pointer", fontWeight: 800, fontSize: 13.5, color: "var(--muted)" }}>
+                    <button onClick={() => setImage("")} style={{ padding: "9px 14px", borderRadius: 12, border: "1px solid var(--line)", background: "#fff", cursor: "pointer", fontWeight: 700, fontSize: 13.5, color: "var(--muted)" }}>
                       Quitar imagen
                     </button>
                   )}
@@ -266,7 +266,7 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
             <CheckRow checked={hasSizes} onChange={() => setHasSizes((v) => !v)} label="Este producto tiene tamaños" />
             {hasSizes && (
               <div style={{ marginTop: 12, border: "1px solid var(--line)", borderRadius: 12, padding: "6px 14px 12px" }}>
-                <div style={{ display: "flex", gap: 10, padding: "8px 0 4px", fontSize: 11.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>
+                <div style={{ display: "flex", gap: 10, padding: "8px 0 4px", fontSize: 11.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>
                   <span style={{ flex: 1 }}>Tamaño</span>
                   <span style={{ width: 130 }}>Precio vs. base</span>
                   <span style={{ width: 30 }} />
@@ -275,13 +275,13 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
                   <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", padding: "7px 0", borderTop: "1px dashed var(--line)" }}>
                     <input value={s.name} onChange={(e) => setSize(i, "name", e.target.value)} style={{ ...inp, flex: 1 }} />
                     <div style={{ position: "relative", width: 130, flexShrink: 0 }}>
-                      <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", fontWeight: 800, fontSize: 14 }}>Q</span>
+                      <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", fontWeight: 700, fontSize: 14 }}>Q</span>
                       <input
                         value={s.delta}
                         onChange={(e) => setSize(i, "delta", e.target.value.replace(/[^0-9.-]/g, ""))}
                         inputMode="decimal"
                         title="Diferencia respecto al precio base (puede ser negativa, ej. -3 para Chico)"
-                        style={{ ...inp, paddingLeft: 30, fontFamily: "var(--display)", fontWeight: 800 }}
+                        style={{ ...inp, paddingLeft: 30, fontFamily: "var(--display)", fontWeight: 700 }}
                       />
                     </div>
                     <button onClick={() => delSize(i)} title="Eliminar tamaño" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 4, display: "flex", width: 30 }}>
@@ -291,7 +291,7 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
                 ))}
                 <button
                   onClick={addSize}
-                  style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: "none", border: "2px dashed var(--line)", borderRadius: 12, padding: "9px 16px", cursor: "pointer", color: "var(--primary)", fontWeight: 800, fontFamily: "var(--ui)", fontSize: 14 }}
+                  style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: "none", border: "2px dashed var(--line)", borderRadius: 12, padding: "9px 16px", cursor: "pointer", color: "var(--primary)", fontWeight: 700, fontFamily: "var(--ui)", fontSize: 14 }}
                 >
                   <Icon name="plus" size={16} /> Agregar tamaño
                 </button>
@@ -316,7 +316,7 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
               <RecipeEditor value={recipe} onChange={setRecipe} ingredients={ingredients} />
               {recipe.length > 0 && (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, paddingTop: 10, borderTop: "1px solid var(--line)" }}>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: "var(--muted)" }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--muted)" }}>
                     Costo {money(cost)} · Margen{" "}
                     <b style={{ color: marginPct >= 60 ? "oklch(0.5 0.11 150)" : marginPct >= 35 ? "oklch(0.55 0.12 85)" : "oklch(0.5 0.16 25)" }}>{marginPct}%</b>
                   </span>
@@ -332,7 +332,7 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {sizes.map((s, i) => (
                   <div key={i} style={{ border: "1px solid var(--line)", borderRadius: 12, padding: "10px 14px 12px" }}>
-                    <div style={{ fontWeight: 800, fontSize: 14, color: "var(--navy)", marginBottom: 6 }}>{s.name || "Tamaño"}</div>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: "var(--navy)", marginBottom: 6 }}>{s.name || "Tamaño"}</div>
                     <RecipeEditor
                       value={s.recipe || []}
                       onChange={(next) => setSizes((prev) => prev.map((x, idx) => (idx === i ? { ...x, recipe: next } : x)))}
@@ -421,7 +421,7 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
   }
 
   return (
-    <div style={{ maxWidth: 720, display: "flex", flexDirection: "column", gap: 18 }}>
+    <div style={{ maxWidth: 980, display: "flex", flexDirection: "column", gap: 18 }}>
       <div style={{ background: "var(--primary-soft)", color: "var(--primary)", borderRadius: "var(--r)", padding: "14px 18px", fontSize: 14.5, fontWeight: 700, display: "flex", gap: 10, alignItems: "center", lineHeight: 1.4 }}>
         <span style={{ flexShrink: 0 }}>
           <Icon name="note" size={20} />
@@ -473,7 +473,7 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
               })()}
             </div>
             <div style={{ padding: "6px 20px 16px" }}>
-              <div style={{ display: "flex", gap: 10, padding: "8px 0 4px", fontSize: 11.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>
+              <div style={{ display: "flex", gap: 10, padding: "8px 0 4px", fontSize: 11.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>
                 <span style={{ flex: 1 }}>Opción</span>
                 <span style={{ width: 130 }}>Recargo</span>
                 <span style={{ width: 150 }}>Destino</span>
@@ -489,12 +489,12 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
                     <div style={{ display: "flex", gap: 10, alignItems: "center", padding: "7px 0" }}>
                       <input value={o.name} onChange={(e) => setOpt(gid, i, "name", e.target.value)} style={{ ...inp, flex: 1 }} />
                       <div style={{ position: "relative", width: 130, flexShrink: 0 }}>
-                        <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", fontWeight: 800, fontSize: 14 }}>+Q</span>
+                        <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", fontWeight: 700, fontSize: 14 }}>+Q</span>
                         <input
                           value={o.delta}
                           onChange={(e) => setOpt(gid, i, "delta", e.target.value.replace(/[^0-9.]/g, ""))}
                           inputMode="decimal"
-                          style={{ ...inp, paddingLeft: 40, fontFamily: "var(--display)", fontWeight: 800 }}
+                          style={{ ...inp, paddingLeft: 40, fontFamily: "var(--display)", fontWeight: 700 }}
                         />
                       </div>
                       {/* Destino propio del extra.
@@ -531,7 +531,7 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
                       <button
                         onClick={() => setOpenOpt(open ? null : key)}
                         title="Ingredientes que consume esta opción"
-                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 12px", borderRadius: 999, border: "1px solid " + (uses ? "var(--primary)" : "var(--line)"), background: uses ? "var(--primary-soft)" : "#fff", color: uses ? "var(--primary)" : "var(--muted)", cursor: "pointer", fontWeight: 800, fontSize: 12.5, fontFamily: "var(--ui)", whiteSpace: "nowrap", flexShrink: 0 }}
+                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 12px", borderRadius: 999, border: "1px solid " + (uses ? "var(--primary)" : "var(--line)"), background: uses ? "var(--primary-soft)" : "#fff", color: uses ? "var(--primary)" : "var(--muted)", cursor: "pointer", fontWeight: 700, fontSize: 12.5, fontFamily: "var(--ui)", whiteSpace: "nowrap", flexShrink: 0 }}
                       >
                         <Icon name="box" size={15} /> {uses ? (isSwap ? "Reemplaza" : uses) : "—"}
                       </button>
@@ -603,7 +603,7 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
                   padding: "10px 16px",
                   cursor: "pointer",
                   color: "var(--primary)",
-                  fontWeight: 800,
+                  fontWeight: 700,
                   fontFamily: "var(--ui)",
                   fontSize: 14.5,
                 }}
@@ -695,7 +695,7 @@ function CategoriesEditor({ cats, setCats, counts, onDelete }) {
       ))}
       <button
         onClick={addCat}
-        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: "none", border: "2px dashed var(--line)", borderRadius: "var(--r)", padding: "12px 16px", cursor: "pointer", color: "var(--primary)", fontWeight: 800, fontFamily: "var(--ui)", fontSize: 14.5 }}
+        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: "none", border: "2px dashed var(--line)", borderRadius: "var(--r)", padding: "12px 16px", cursor: "pointer", color: "var(--primary)", fontWeight: 700, fontFamily: "var(--ui)", fontSize: 14.5 }}
       >
         <Icon name="plus" size={18} /> Agregar categoría
       </button>
@@ -762,18 +762,18 @@ export function MenuEditor({ menu, setMenu, mods, setMods, cats, setCats, ingred
           )}
         </div>
         <p style={{ color: "var(--muted)", margin: "0 0 14px", fontSize: 15 }}>Administra los productos, precios, tamaños, opciones y categorías de Café del Valle. Los cambios se guardan automáticamente.</p>
-        <div style={{ display: "flex", gap: 6, background: "var(--cream)", padding: 5, borderRadius: 999, width: "fit-content", marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 6, background: "var(--cream)", padding: 4, borderRadius: 12, width: "fit-content", marginBottom: 16 }}>
           {TABS.map(([id, lbl]) => (
             <button
               key={id}
               onClick={() => setTab(id)}
               style={{
                 padding: "9px 20px",
-                borderRadius: 999,
+                borderRadius: 8,
                 border: "none",
                 cursor: "pointer",
                 fontFamily: "var(--ui)",
-                fontWeight: 800,
+                fontWeight: 700,
                 fontSize: 14,
                 background: tab === id ? "#fff" : "transparent",
                 color: tab === id ? "var(--navy)" : "var(--muted)",
@@ -835,26 +835,26 @@ export function MenuEditor({ menu, setMenu, mods, setMods, cats, setCats, ingred
                       {p.image ? <img src={p.image} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : p.icon || c.icon}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 800, fontSize: 16, color: "var(--ink)" }}>{p.name}</div>
+                      <div style={{ fontWeight: 700, fontSize: 16, color: "var(--ink)" }}>{p.name}</div>
                       <div style={{ fontSize: 12.5, color: "var(--muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{opts.length ? opts.join(" · ") : "Sin opciones"}</div>
                     </div>
                     <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 18, color: "var(--navy)" }}>{money(p.price)}</div>
+                      <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 18, color: "var(--navy)" }}>{money(p.price)}</div>
                       {/* Margen: el dato que de verdad decide si el precio está bien. */}
                       {p.recipe && p.recipe.length > 0 ? (
                         (() => {
                           const cost = productCost(p, ingById);
                           const pct = p.price > 0 ? Math.round(((p.price - cost) / p.price) * 100) : 0;
                           return (
-                            <div style={{ fontSize: 12, fontWeight: 800, color: pct >= 60 ? "oklch(0.5 0.11 150)" : pct >= 35 ? "oklch(0.55 0.12 85)" : "oklch(0.5 0.16 25)" }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: pct >= 60 ? "oklch(0.5 0.11 150)" : pct >= 35 ? "oklch(0.55 0.12 85)" : "oklch(0.5 0.16 25)" }}>
                               margen {pct}%
                             </div>
                           );
                         })()
                       ) : (
-                        <div style={{ fontSize: 12, fontWeight: 800, color: "var(--muted)" }}>sin receta</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)" }}>sin receta</div>
                       )}
-                      <div style={{ display: "flex", alignItems: "center", gap: 4, color: c.ink, fontSize: 12.5, fontWeight: 800, justifyContent: "flex-end" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, color: c.ink, fontSize: 12.5, fontWeight: 700, justifyContent: "flex-end" }}>
                         <Icon name="edit" size={14} /> Editar
                       </div>
                     </div>

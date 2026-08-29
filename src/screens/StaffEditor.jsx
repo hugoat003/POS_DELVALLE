@@ -22,7 +22,7 @@ const inp = {
 function Field({ label, children }) {
   return (
     <div>
-      <div style={{ fontWeight: 800, fontSize: 13, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>{label}</div>
+      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>{label}</div>
       {children}
     </div>
   );
@@ -79,7 +79,7 @@ function StaffForm({ initial, onCancel, onSave, onDelete, canDelete }) {
                 onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
                 inputMode="numeric"
                 placeholder={isNew ? "0000" : "••••"}
-                style={{ ...inp, fontFamily: "var(--display)", fontWeight: 800, fontSize: 20, letterSpacing: 4, textAlign: "center" }}
+                style={{ ...inp, fontFamily: "var(--display)", fontWeight: 700, fontSize: 20, letterSpacing: 4, textAlign: "center" }}
               />
             </Field>
             <Field label={`Color · tono ${hue}`}>
@@ -154,16 +154,16 @@ export function StaffEditor({ users, onSave, onDelete, currentUser }) {
             >
               <Avatar user={u} size={52} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 800, fontSize: 16, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ fontWeight: 700, fontSize: 16, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
                   {u.name}
-                  {currentUser && u.id === currentUser.id && <span style={{ fontSize: 11, fontWeight: 800, color: "var(--gold)", background: "color-mix(in oklch, var(--gold) 16%, white)", padding: "1px 8px", borderRadius: 999 }}>tú</span>}
+                  {currentUser && u.id === currentUser.id && <span style={{ fontSize: 11, fontWeight: 700, color: "var(--gold)", background: "color-mix(in oklch, var(--gold) 16%, white)", padding: "1px 8px", borderRadius: 999 }}>tú</span>}
                 </div>
                 <div style={{ marginTop: 5, display: "flex", alignItems: "center", gap: 8 }}>
                   <RoleBadge role={u.role} small />
                   <span style={{ fontSize: 12.5, color: "var(--muted)", fontWeight: 700 }}>PIN ••••</span>
                 </div>
               </div>
-              <span style={{ color: "var(--muted)", display: "flex", alignItems: "center", gap: 4, fontSize: 12.5, fontWeight: 800 }}>
+              <span style={{ color: "var(--muted)", display: "flex", alignItems: "center", gap: 4, fontSize: 12.5, fontWeight: 700 }}>
                 <Icon name="edit" size={14} /> Editar
               </span>
             </button>

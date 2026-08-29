@@ -60,9 +60,9 @@ function Mesa({ table, cuenta, ahora, onTap }) {
           }}
         />
       )}
-      <span style={{ fontSize: 10, fontWeight: 800, opacity: 0.75, textTransform: "uppercase", letterSpacing: 0.5 }}>Mesa</span>
-      <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 21, lineHeight: 1 }}>{table.label}</span>
-      {ocupada && <span style={{ fontSize: 11, fontWeight: 800, opacity: 0.9 }}>{money(cuentaTotal(cuenta))}</span>}
+      <span style={{ fontSize: 10, fontWeight: 700, opacity: 0.75, textTransform: "uppercase", letterSpacing: 0.5 }}>Mesa</span>
+      <span style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 21, lineHeight: 1 }}>{table.label}</span>
+      {ocupada && <span style={{ fontSize: 11, fontWeight: 700, opacity: 0.9 }}>{money(cuentaTotal(cuenta))}</span>}
       {ocupada && <span style={{ fontSize: 9.5, opacity: 0.7 }}>{minutos(cuenta, ahora)}m</span>}
     </button>
   );
@@ -81,13 +81,13 @@ function SinMesa({ order, ahora, onTap }) {
         cursor: "pointer", fontFamily: "var(--ui)", textAlign: "left",
       }}
     >
-      <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 17, color: "var(--navy)" }}>#{order.number}</div>
+      <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 17, color: "var(--navy)" }}>#{order.number}</div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--navy)" }}>{order.orderType}</div>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--navy)" }}>{order.orderType}</div>
         <div style={{ fontSize: 11, color: "var(--muted)" }}>{minutos(order, ahora)}m · {activeLines(order.lines).length} items</div>
       </div>
       {porEnviar && <span style={{ width: 10, height: 10, borderRadius: 999, background: "oklch(0.72 0.16 70)" }} />}
-      <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 15, color: "var(--navy)" }}>{money(cuentaTotal(order))}</div>
+      <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 15, color: "var(--navy)" }}>{money(cuentaTotal(order))}</div>
     </button>
   );
 }
@@ -112,7 +112,7 @@ export function AccountsScreen({ openOrders, areas, onAbrir, onNueva }) {
     <div style={{ height: "100%", display: "flex", flexDirection: "column", padding: 16, gap: 12, overflow: "auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 21, color: "var(--navy)" }}>Cuentas abiertas</div>
+          <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 21, color: "var(--navy)" }}>Cuentas abiertas</div>
           <div style={{ fontSize: 12.5, color: "var(--muted)" }}>
             {openOrders.length === 0
               ? "Ninguna mesa tiene cuenta ahora mismo"
@@ -132,7 +132,7 @@ export function AccountsScreen({ openOrders, areas, onAbrir, onNueva }) {
                 border: "1px solid " + (a.id === area.id ? "var(--primary)" : "var(--line)"),
                 background: a.id === area.id ? "var(--primary-soft)" : "#fff",
                 color: a.id === area.id ? "var(--primary)" : "var(--navy)",
-                borderRadius: 999, padding: "6px 16px", fontWeight: 800, fontSize: 13,
+                borderRadius: 999, padding: "6px 16px", fontWeight: 700, fontSize: 13,
                 fontFamily: "var(--ui)", cursor: "pointer",
               }}
             >
@@ -163,7 +163,7 @@ export function AccountsScreen({ openOrders, areas, onAbrir, onNueva }) {
 
       {sinMesa.length > 0 && (
         <div>
-          <div style={{ fontSize: 12, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
             Sin mesa
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10 }}>

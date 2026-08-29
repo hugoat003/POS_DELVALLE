@@ -16,7 +16,7 @@ function Row({ label, value, strong, tone }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, padding: "4px 0", color: strong ? "var(--navy)" : "var(--muted)" }}>
       <span style={{ fontWeight: strong ? 800 : 400 }}>{label}</span>
-      <span style={{ fontWeight: 800, color: tone || "var(--ink)" }}>{value}</span>
+      <span style={{ fontWeight: 700, color: tone || "var(--ink)" }}>{value}</span>
     </div>
   );
 }
@@ -28,13 +28,13 @@ const inputStyle = {
   borderRadius: 14,
   fontFamily: "var(--display)",
   fontSize: 22,
-  fontWeight: 800,
+  fontWeight: 700,
   color: "var(--navy)",
   outline: "none",
   boxSizing: "border-box",
 };
 
-const labelStyle = { fontSize: 12, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 };
+const labelStyle = { fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 };
 
 export function CloseShiftScreen({ shiftOpen, openingCash, orders, expenses, onCloseShift }) {
   const [counted, setCounted] = useState("");
@@ -85,7 +85,7 @@ export function CloseShiftScreen({ shiftOpen, openingCash, orders, expenses, onC
           </div>
 
           {counted !== "" && (
-            <div style={{ marginTop: 14, padding: "12px 16px", borderRadius: 14, background: ok ? "var(--primary-soft)" : "oklch(0.94 0.05 25)", display: "flex", justifyContent: "space-between", fontWeight: 800, color: ok ? "var(--primary)" : "oklch(0.5 0.16 25)" }}>
+            <div style={{ marginTop: 14, padding: "12px 16px", borderRadius: 14, background: ok ? "var(--primary-soft)" : "oklch(0.94 0.05 25)", display: "flex", justifyContent: "space-between", fontWeight: 700, color: ok ? "var(--primary)" : "oklch(0.5 0.16 25)" }}>
               <span>{ok ? "Caja cuadrada ✓" : diff > 0 ? "Sobrante" : "Faltante"}</span>
               <span>{money(Math.abs(diff))}</span>
             </div>

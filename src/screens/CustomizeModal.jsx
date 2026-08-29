@@ -7,7 +7,7 @@ import { money } from "../lib/format.js";
 function Group({ label, children }) {
   return (
     <div>
-      <div style={{ fontWeight: 800, fontSize: 13.5, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>{label}</div>
+      <div style={{ fontWeight: 700, fontSize: 13.5, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>{label}</div>
       {children}
     </div>
   );
@@ -26,7 +26,7 @@ function OptBtn({ active, label, hint, onClick, color }) {
         border: "1px solid " + (active ? color || "var(--navy)" : "var(--line)"),
         background: active ? color || "var(--navy)" : "#fff",
         color: active ? "#fff" : "var(--ink)",
-        fontWeight: 800,
+        fontWeight: 700,
         fontSize: 15,
         transition: "all .1s ease",
         display: "flex",
@@ -122,7 +122,7 @@ export function CustomizeModal({ product, cat, modGroupsMap, initialLine, onClos
         {/* header */}
         <div style={{ background: cat.tint, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div>
-            <div style={{ fontSize: 12, fontWeight: 800, color: cat.ink, textTransform: "uppercase", letterSpacing: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: cat.ink, textTransform: "uppercase", letterSpacing: 1 }}>
               {cat.icon} {cat.name}
             </div>
             <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 29, letterSpacing: "-.01em", color: "var(--tinta)", lineHeight: 1.1, marginTop: 2 }}>{product.name}</div>
@@ -196,7 +196,7 @@ export function CustomizeModal({ product, cat, modGroupsMap, initialLine, onClos
             <button onClick={() => setQty((q) => Math.max(1, q - 1))} style={qtyBtn}>
               <Icon name="minus" size={18} />
             </button>
-            <span style={{ width: 30, textAlign: "center", fontWeight: 800, fontSize: 18 }}>{qty}</span>
+            <span style={{ width: 30, textAlign: "center", fontWeight: 700, fontSize: 18 }}>{qty}</span>
             <button onClick={() => setQty((q) => q + 1)} style={qtyBtn}>
               <Icon name="plus" size={18} />
             </button>

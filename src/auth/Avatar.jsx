@@ -15,7 +15,7 @@ export function Avatar({ user, size = 56, ring }) {
         alignItems: "center",
         justifyContent: "center",
         fontFamily: "var(--display)",
-        fontWeight: 800,
+        fontWeight: 700,
         fontSize: size * 0.36,
         border: ring ? `3px solid oklch(0.55 0.11 ${user.hue})` : "none",
       }}
@@ -39,7 +39,7 @@ export function RoleBadge({ role, small }) {
         borderRadius: 999,
         background: "color-mix(in oklch, " + r.color + " 14%, white)",
         color: r.color,
-        fontWeight: 800,
+        fontWeight: 700,
         fontSize: small ? 11.5 : 13,
       }}
     >

@@ -117,8 +117,8 @@ export function AreaMap({ area, selectedId, onTap, editable, onMove, minHeight =
               touchAction: "none",
             }}
           >
-            <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>Mesa</span>
-            <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 24, lineHeight: 1 }}>{t.label}</span>
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>Mesa</span>
+            <span style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 24, lineHeight: 1 }}>{t.label}</span>
           </button>
         );
       })}
@@ -140,7 +140,7 @@ export function TablePickerModal({ areas, value, onPick, onClose }) {
     <div style={overlay} onClick={onClose}>
       <div style={{ ...sheet, maxWidth: 720 }} onClick={(e) => e.stopPropagation()}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 22px 12px" }}>
-          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 21, color: "var(--navy)", display: "flex", alignItems: "center", gap: 9 }}>
+          <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 21, color: "var(--navy)", display: "flex", alignItems: "center", gap: 9 }}>
             <Icon name="table" size={22} /> ¿En qué mesa va la orden?
           </div>
           <button onClick={onClose} style={iconBtn} aria-label="Cerrar">
@@ -272,12 +272,12 @@ export function TablesEditor({ areas, setAreas }) {
             {/* Panel de la mesa seleccionada */}
             {selected ? (
               <div style={{ display: "flex", alignItems: "center", gap: 14, background: "#fff", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "14px 18px" }}>
-                <div style={{ fontWeight: 800, color: "var(--navy)", fontSize: 15.5, whiteSpace: "nowrap" }}>Mesa seleccionada</div>
+                <div style={{ fontWeight: 700, color: "var(--navy)", fontSize: 15.5, whiteSpace: "nowrap" }}>Mesa seleccionada</div>
                 <input
                   value={selected.label}
                   onChange={(e) => relabelTable(e.target.value.slice(0, 6))}
                   aria-label="Número o nombre de la mesa"
-                  style={{ width: 110, padding: "10px 14px", border: "1px solid var(--line)", borderRadius: 12, fontFamily: "var(--display)", fontSize: 19, fontWeight: 800, color: "var(--navy)", outline: "none", textAlign: "center" }}
+                  style={{ width: 110, padding: "10px 14px", border: "1px solid var(--line)", borderRadius: 12, fontFamily: "var(--display)", fontSize: 19, fontWeight: 700, color: "var(--navy)", outline: "none", textAlign: "center" }}
                 />
                 <span style={{ fontSize: 13, color: "var(--muted)", flex: 1 }}>Cambia el número (o usa un nombre corto, p. ej. “J1”) y arrastra la mesa en el mapa para moverla.</span>
                 <Btn kind="danger" size="sm" icon="trash" onClick={removeTable}>

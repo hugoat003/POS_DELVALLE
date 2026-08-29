@@ -64,10 +64,10 @@ function LegendRow({ color, label, value, sub }) {
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
       <span style={{ width: 12, height: 12, borderRadius: 4, background: color, flexShrink: 0 }} />
       <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 800, fontSize: 14.5, color: "var(--ink)" }}>{label}</div>
+        <div style={{ fontWeight: 700, fontSize: 14.5, color: "var(--ink)" }}>{label}</div>
         <div style={{ fontSize: 11.5, color: "var(--muted)", fontWeight: 700 }}>{sub}</div>
       </div>
-      <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 16, color: "var(--navy)" }}>{value}</div>
+      <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 16, color: "var(--navy)" }}>{value}</div>
     </div>
   );
 }
@@ -81,7 +81,7 @@ function PeriodSelector({ period, setPeriod }) {
           <button
             key={p.id}
             onClick={() => setPeriod(p.id)}
-            style={{ padding: "8px 16px", borderRadius: 999, fontFamily: "var(--ui)", fontWeight: 800, fontSize: 13.5, cursor: "pointer", border: "1px solid " + (active ? "var(--primary)" : "var(--line)"), background: active ? "var(--primary)" : "#fff", color: active ? "#fff" : "var(--ink)", transition: "all .12s ease" }}
+            style={{ padding: "8px 16px", borderRadius: 11, fontFamily: "var(--ui)", fontWeight: 700, fontSize: 13.5, cursor: "pointer", border: "1px solid " + (active ? "var(--primary)" : "var(--line)"), background: active ? "var(--primary)" : "#fff", color: active ? "#fff" : "var(--ink)", transition: "all .12s ease" }}
           >
             {p.label}
           </button>
@@ -281,7 +281,7 @@ export function SummaryScreen({ orders, expenses = [], cats, shiftHistory = [], 
                 const pk = h === peakHour && v > 0;
                 return (
                   <div key={h} title={`${fmtHour(h)} · ${money(v)}`} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 7, height: "100%", justifyContent: "flex-end" }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 800, color: pk ? "var(--gold)" : "transparent", height: 12 }}>{v > 0 ? Math.round(v) : ""}</div>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: pk ? "var(--gold)" : "transparent", height: 12 }}>{v > 0 ? Math.round(v) : ""}</div>
                     <div style={{ width: "100%", maxWidth: 30, height: Math.max(v > 0 ? 6 : 2, (v / maxHour) * 120), borderRadius: 8, background: pk ? "var(--gold)" : v > 0 ? "var(--primary)" : "var(--line)", transition: "height .4s ease" }} />
                     <div style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)" }}>{fmtHour(h)}</div>
                   </div>
@@ -296,16 +296,16 @@ export function SummaryScreen({ orders, expenses = [], cats, shiftHistory = [], 
                 const c = catById[p.catId];
                 return (
                   <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    <div style={{ width: 26, height: 26, borderRadius: 8, background: i === 0 ? "var(--gold)" : "var(--cream)", color: i === 0 ? "#fff" : "var(--muted)", fontWeight: 800, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</div>
+                    <div style={{ width: 26, height: 26, borderRadius: 8, background: i === 0 ? "var(--gold)" : "var(--cream)", color: i === 0 ? "#fff" : "var(--muted)", fontWeight: 700, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</div>
                     <div style={{ width: 30, height: 30, borderRadius: 9, background: c.tint, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>{c.icon}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 800, fontSize: 14.5, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</div>
+                      <div style={{ fontWeight: 700, fontSize: 14.5, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</div>
                       <div style={{ height: 6, background: "var(--cream)", borderRadius: 999, marginTop: 5, overflow: "hidden" }}>
                         <div style={{ height: "100%", width: (p.rev / stats.top[0].rev) * 100 + "%", background: c.ink, borderRadius: 999 }} />
                       </div>
                     </div>
                     <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 15.5, color: "var(--navy)" }}>{money(p.rev)}</div>
+                      <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 15.5, color: "var(--navy)" }}>{money(p.rev)}</div>
                       <div style={{ fontSize: 11.5, color: "var(--muted)", fontWeight: 700 }}>{p.qty} vendidos</div>
                     </div>
                   </div>
@@ -335,10 +335,10 @@ export function SummaryScreen({ orders, expenses = [], cats, shiftHistory = [], 
                 return (
                   <div key={c.id}>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, marginBottom: 5 }}>
-                      <span style={{ fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap" }}>
+                      <span style={{ fontWeight: 700, color: "var(--ink)", whiteSpace: "nowrap" }}>
                         {c.icon} {c.name}
                       </span>
-                      <span style={{ fontWeight: 800, color: "var(--navy)" }}>{money(v)}</span>
+                      <span style={{ fontWeight: 700, color: "var(--navy)" }}>{money(v)}</span>
                     </div>
                     <div style={{ height: 10, background: "var(--cream)", borderRadius: 999, overflow: "hidden" }}>
                       <div style={{ height: "100%", width: (v / maxCat) * 100 + "%", background: c.ink, borderRadius: 999, transition: "width .4s ease" }} />
@@ -367,8 +367,8 @@ export function SummaryScreen({ orders, expenses = [], cats, shiftHistory = [], 
                     return (
                       <div key={r.id} style={{ padding: "8px 0", borderBottom: "1px dashed var(--line)" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
-                          <span style={{ fontWeight: 800, fontSize: 14, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.label}</span>
-                          <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 15.5, color: "var(--navy)" }}>{money(r.total)}</span>
+                          <span style={{ fontWeight: 700, fontSize: 14, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.label}</span>
+                          <span style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 15.5, color: "var(--navy)" }}>{money(r.total)}</span>
                         </div>
                         <div style={{ height: 6, background: "var(--cream)", borderRadius: 999, margin: "5px 0", overflow: "hidden" }}>
                           <div style={{ height: "100%", width: (r.total / maxTotal) * 100 + "%", background: "var(--primary)", borderRadius: 999 }} />

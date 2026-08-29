@@ -10,7 +10,7 @@ function ToolCard({ icon, title, desc, danger, children }) {
         <div style={{ width: 38, height: 38, borderRadius: 11, background: danger ? "oklch(0.94 0.05 25)" : "var(--primary-soft)", color: danger ? "oklch(0.5 0.16 25)" : "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <Icon name={icon} size={19} />
         </div>
-        <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 16.5, color: "var(--navy)" }}>{title}</div>
+        <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 16.5, color: "var(--navy)" }}>{title}</div>
       </div>
       <p style={{ margin: 0, fontSize: 13.5, color: "var(--muted)", lineHeight: 1.5 }}>{desc}</p>
       {children}
@@ -51,7 +51,7 @@ function RespaldoAuto({ estado, onAhora, ocupado }) {
       title="Respaldo automático"
       desc={`Se guarda una copia completa al día y se conservan las últimas ${conservar}. Si la computadora estuvo apagada a la hora programada, la copia se hace al encenderla.`}
     >
-      <div style={{ fontSize: 12.5, fontWeight: 800, color: tono.fg, background: tono.bg, borderRadius: 10, padding: "8px 12px" }}>
+      <div style={{ fontSize: 12.5, fontWeight: 700, color: tono.fg, background: tono.bg, borderRadius: 10, padding: "8px 12px" }}>
         {!activo
           ? "Desactivado (BACKUP_AUTO=off)"
           : hoyListo
@@ -125,7 +125,7 @@ export function ToolsScreen({ onResetMenu, onClearOrders, onExport, onImport, la
         <RespaldoAuto estado={backupEstado} onAhora={onBackupAhora} ocupado={backupOcupado} />
 
         <ToolCard icon="cash" title="Descargar una copia" desc="Baja un .json a esta tablet, además del respaldo automático. Útil para llevarte una copia a mano antes de un cambio grande.">
-          <div style={{ fontSize: 12.5, fontWeight: 800, color: stale ? "oklch(0.5 0.13 70)" : "var(--primary)", background: stale ? "oklch(0.95 0.06 85)" : "var(--primary-soft)", borderRadius: 10, padding: "8px 12px" }}>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: stale ? "oklch(0.5 0.13 70)" : "var(--primary)", background: stale ? "oklch(0.95 0.06 85)" : "var(--primary-soft)", borderRadius: 10, padding: "8px 12px" }}>
             {backupLabel(lastBackup)}
           </div>
           <Btn kind="primary" size="sm" icon="check" onClick={onExport}>
