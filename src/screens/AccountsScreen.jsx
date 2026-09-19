@@ -103,8 +103,17 @@ export function AccountsScreen({ openOrders, areas, onAbrir, onNueva }) {
   }, []);
 
   const area = areas.find((a) => a.id === areaId) || areas[0];
+  /* Cuenta viva de cada mesa, indexada por id de mesa. Por label no sirve: dos
+     áreas pueden tener una mesa con el mismo rótulo y la segunda cuenta pisaba
+     a la primera, dejándola sin forma de abrirse ni cobrarse. Se guarda también
+     por label como respaldo, por si una cuenta vieja se abrió sin id. */
   const porMesa = new Map();
-  for (const o of openOrders) if (o.table && o.table.label) porMesa.set(o.table.label, o);
+  for (const o of openOrders) {
+    if (!o.table) continue;
+    if (o.table.id) porMesa.set(o.table.id, o);
+    else if (o.table.label) porMesa.set("label:" + o.table.label, o);
+  }
+  const cuentaDe = (t) => porMesa.get(t.id) || porMesa.get("label:" + t.label);
   const sinMesa = openOrders.filter((o) => !o.table);
   const totalAbierto = openOrders.reduce((s, o) => s + cuentaTotal(o), 0);
 
@@ -156,7 +165,7 @@ export function AccountsScreen({ openOrders, areas, onAbrir, onNueva }) {
           }}
         >
           {area.tables.map((t) => (
-            <Mesa key={t.id} table={t} cuenta={porMesa.get(t.label)} ahora={ahora} onTap={(tb, cta) => (cta ? onAbrir(cta) : onNueva({ ...tb, areaName: area.name }))} />
+            <Mesa key={t.id} table={t} cuenta={cuentaDe(t)} ahora={ahora} onTap={(tb, cta) => (cta ? onAbrir(cta) : onNueva({ ...tb, areaName: area.name }))} />
           ))}
         </div>
       )}

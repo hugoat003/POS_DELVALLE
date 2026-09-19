@@ -218,14 +218,148 @@ function CancelLineModal({ line, onClose, onConfirm }) {
   );
 }
 
+/* ---------- Cambiar el destino de una cuenta ya enviada ----------
+
+   Tocar el selector de mesa o el botón de "para llevar" mientras hay una cuenta
+   viva significa dos cosas muy distintas, y desde afuera se ven igual:
+
+     · Toca atender a otro cliente → la cuenta se queda donde está y el destino
+                                     nuevo arranca su propia cuenta. Es lo
+                                     frecuente, así que va primero y destacado.
+     · El cliente se movió         → la cuenta entera se muda al destino nuevo.
+
+   Antes las dos hacían lo segundo en silencio. La opción destacada es además la
+   que no toca nada de lo ya preparado: si el mesero elige de prisa, elige la
+   que no puede arruinar una cuenta.
+
+   El detalle de cada botón dice qué pasa con lo ya preparado, que es lo único
+   que hace falta saber para elegir bien. */
+function OpcionMesa({ titulo, detalle, icon, onClick, destacado }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 12,
+        width: "100%",
+        textAlign: "left",
+        padding: "14px 16px",
+        borderRadius: 14,
+        cursor: "pointer",
+        fontFamily: "var(--ui)",
+        border: "1px solid " + (destacado ? "var(--verde)" : "var(--borde-fuerte)"),
+        background: destacado ? "var(--verde-suave)" : "var(--superficie)",
+        color: destacado ? "var(--verde-oscuro)" : "var(--tinta-2)",
+      }}
+    >
+      <span style={{ flexShrink: 0, marginTop: 1 }}>
+        <Icon name={icon} size={19} />
+      </span>
+      <span>
+        <span style={{ display: "block", fontWeight: 700, fontSize: 15 }}>{titulo}</span>
+        <span style={{ display: "block", fontSize: 12.5, lineHeight: 1.45, marginTop: 3, opacity: 0.85 }}>{detalle}</span>
+      </span>
+    </button>
+  );
+}
+
+/* Aviso de mesa faltante. Nombra la acción que se frenó —enviar o cobrar—
+   porque el pie tiene los dos botones y "elegí una mesa" a secas no dice cuál
+   de los dos fue el que no salió. */
+function AvisoMesa({ accion }) {
+  return (
+    <div
+      role="status"
+      style={{
+        display: "flex", alignItems: "center", gap: 9, padding: "10px 13px",
+        borderRadius: 11, background: "var(--aviso-suave)", color: "var(--aviso)",
+        fontSize: 13, fontWeight: 600, lineHeight: 1.4,
+      }}
+    >
+      <span style={{ flexShrink: 0, display: "flex" }}>
+        <Icon name="alert" size={17} />
+      </span>
+      <span>
+        Elegí una mesa para {accion === "enviar" ? "mandar a preparar" : "cobrar"}, o cambiá la orden a <b>Para llevar</b>.
+      </span>
+    </div>
+  );
+}
+
+// Salidas discretas del pie de la cuenta: son escapes, no la acción principal.
+const enlaceBtn = {
+  background: "none",
+  border: "none",
+  cursor: "pointer",
+  color: "var(--muted)",
+  fontFamily: "var(--ui)",
+  fontWeight: 700,
+  fontSize: 12.5,
+  padding: "6px 8px",
+};
+
+function CambioDestinoModal({ destino, origen, enviadas, porEnviar, onMover, onNueva, onClose }) {
+  /* Tanto el origen como el destino pueden no tener mesa ("para llevar"), así
+     que cada uno se nombra aparte para que las frases salgan bien escritas en
+     las cuatro combinaciones. */
+  const sujeto = origen ? `La mesa ${origen.label}` : "Esta cuenta";
+  const enOrigen = origen ? `la mesa ${origen.label}` : "la cuenta actual";
+  const aDestino = destino ? `la mesa ${destino.label}` : "para llevar";
+  const arrastre = porEnviar
+    ? `${porEnviar === 1 ? "El producto que tenés" : `Los ${porEnviar} productos que tenés`} por enviar ${porEnviar === 1 ? "pasa" : "pasan"} a la orden nueva.`
+    : "La orden nueva empieza vacía.";
+
+  return (
+    <div style={overlay} onClick={onClose}>
+      <div style={{ ...sheet, maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ padding: "22px 24px 0" }}>
+          <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 20, color: "var(--navy)" }}>
+            {destino ? `Mesa ${destino.label} · ${destino.areaName}` : "Para llevar"}
+          </div>
+          <div style={{ fontSize: 14, color: "var(--muted)", marginTop: 6, lineHeight: 1.5 }}>
+            {sujeto} tiene <b style={{ color: "var(--ink)" }}>{enviadas} {enviadas === 1 ? "producto" : "productos"}</b> que ya
+            {enviadas === 1 ? " salió" : " salieron"} a preparar. ¿Qué querés hacer?
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "16px 24px 22px" }}>
+          <OpcionMesa
+            destacado
+            icon="plus"
+            titulo={destino ? `Abrir una cuenta nueva en la mesa ${destino.label}` : "Empezar una orden nueva para llevar"}
+            detalle={`Es otro cliente. Lo ya preparado se queda en ${enOrigen}. ${arrastre}`}
+            onClick={onNueva}
+          />
+          <OpcionMesa
+            icon="table"
+            titulo={destino ? `Mover esta cuenta a la mesa ${destino.label}` : "Pasar esta cuenta a para llevar"}
+            detalle={
+              `Es el mismo cliente, que se movió. La cuenta se va completa a ${aDestino}, incluido lo que ya está en preparación` +
+              (origen ? `, y la mesa ${origen.label} queda libre.` : ".")
+            }
+            onClick={onMover}
+          />
+          <Btn kind="ghost" full onClick={onClose}>
+            Cancelar
+          </Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ---------- Pantalla de Orden ----------
-export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], table, setTable, addLine, setLineQty, updateLine, removeLine, clearCart, onCheckout, orderType, setOrderType, showEmoji, account, onEnviar, onAnularEnviado, onCerrarCuenta, onDescartarCuenta, enviando }) {
+export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], openOrders = [], table, setTable, addLine, setLineQty, updateLine, removeLine, clearCart, onCheckout, orderType, setOrderType, showEmoji, account, accountId, onMoverCuenta, onNuevaCuentaConCarrito, onNuevaOrden, onEnviar, onAnularEnviado, onCerrarCuenta, onDescartarCuenta, enviando }) {
   const [activeCat, setActiveCat] = useState("all");
   const [query, setQuery] = useState("");
   const [modal, setModal] = useState(null);
   const [tablePicker, setTablePicker] = useState(false);
+  /* Destino pendiente de decisión. Se guarda envuelto en un objeto porque el
+     destino válido incluye `null` (para llevar), que como estado a secas sería
+     indistinguible de "no hay nada que decidir". */
+  const [cambioDestino, setCambioDestino] = useState(null); // { mesa } | null
   const [anulando, setAnulando] = useState(null);
-  const [avisoMesa, setAvisoMesa] = useState(false);
+  const [avisoMesa, setAvisoMesa] = useState(null); // null | "enviar" | "cobrar"
 
   /* Una orden "para aquí" sin mesa deja la comanda sin destino: cocina y barra
      no saben a quién entregarle, y en el historial la venta queda sin ubicar.
@@ -235,17 +369,24 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
   const hayMesas = areas.some((a) => a.tables.length > 0);
   const faltaMesa = orderType === "Aquí" && !table && hayMesas;
 
-  /* No se deshabilita el botón: uno muerto no dice qué hacer. Se abre el
+  /* Mandar a preparar y cobrar exigen lo mismo: sin mesa, la comanda sale de la
+     impresora sin decir a dónde va y el barista ve un pedido sin dueño. Enviar
+     es además el más urgente de los dos, porque el papel ya impreso no se puede
+     desimprimir: cuando alguien nota el error, la cocina ya está trabajando.
+
+     No se deshabilita el botón: uno muerto no dice qué hacer. Se abre el
      selector de mesa y se deja el aviso puesto hasta que se resuelva. */
-  function intentarCobrar() {
+  function conMesa(accion, seguir) {
     if (faltaMesa) {
-      setAvisoMesa(true);
+      setAvisoMesa(accion);
       setTablePicker(true);
       return;
     }
-    setAvisoMesa(false);
-    onCheckout();
+    setAvisoMesa(null);
+    seguir();
   }
+  const intentarEnviar = () => conMesa("enviar", onEnviar);
+  const intentarCobrar = () => conMesa("cobrar", onCheckout);
   const catById = useMemo(() => Object.fromEntries(cats.map((c) => [c.id, c])), [cats]);
   const ingById = useMemo(() => Object.fromEntries(ingredients.map((i) => [i.id, i])), [ingredients]);
   // Unidades que alcanzan de cada producto con el inventario actual.
@@ -292,6 +433,61 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
   const enviadas = account ? account.lines.filter((l) => l.sentSeq) : [];
   // El total de la cuenta suma lo enviado vivo (sin lo anulado) más el carrito.
   const totalCuenta = activeLines(enviadas).reduce((s, l) => s + lineTotal(l), 0) + subtotal;
+  // Lo vivo que ya salió a preparar: es lo que hace que cambiar de mesa deje de
+  // ser un cambio de etiqueta y pase a ser una decisión (ver `pedirDestino`).
+  const enviadasVivas = activeLines(enviadas);
+
+  /* Mesas con cuenta abierta de OTRA orden (la propia no cuenta: seguir en su
+     mesa no es un choque). El picker las marca y no deja montarles encima una
+     segunda cuenta. */
+  const mesasOcupadas = useMemo(() => {
+    const m = new Map();
+    for (const o of openOrders) {
+      if (!o.table || !o.table.id) continue;
+      if (accountId && o.id === accountId) continue;
+      m.set(o.table.id, o);
+    }
+    return m;
+  }, [openOrders, accountId]);
+
+  /* Empezar otra orden sin tocar la cuenta abierta. Lo del carrito todavía no
+     existe en el servidor, así que se avisa antes de descartarlo: es lo único
+     que se pierde de verdad al salir. */
+  function empezarOtraOrden() {
+    if (
+      cart.length &&
+      !window.confirm(
+        `Hay ${count} ${count === 1 ? "producto" : "productos"} sin mandar a preparar en esta cuenta.\n\n` +
+          `Si empezás otra orden se descartan. La cuenta y lo que ya salió a preparar se quedan como están.`
+      )
+    )
+      return;
+    onNuevaOrden();
+  }
+
+  /* Qué hacer cuando el mesero cambia el destino de la orden (otra mesa, o
+     "para llevar", que es quitarle la mesa).
+
+     Sin cuenta viva —mostrador, o una cuenta que aún no ha mandado nada— el
+     destino es solo una etiqueta y se cambia y ya.
+
+     Con productos YA mandados a preparar no: esas comandas salieron impresas a
+     nombre del destino viejo y el inventario ya se descontó. Cambiar la
+     etiqueta en silencio se llevaba la cuenta entera al destino nuevo —el viejo
+     quedaba libre en el mapa y al nuevo se le cobraba lo que comió el otro—,
+     que es justo el error reportado. Son dos intenciones distintas y solo el
+     mesero sabe cuál es, así que se le pregunta. */
+  function pedirDestino(mesa) {
+    setTablePicker(false);
+    setAvisoMesa(null); // ya se resolvió lo que el aviso pedía
+    const mismoDestino = mesa ? !!table && mesa.id === table.id : !table;
+    if (mismoDestino || !enviadasVivas.length || !onMoverCuenta || !onNuevaCuentaConCarrito) {
+      setOrderType(mesa ? "Aquí" : "Para llevar");
+      setTable(mesa || null);
+      return;
+    }
+    setCambioDestino({ mesa: mesa || null });
+  }
 
   return (
     <div className="fuwa-split" style={{ display: "grid", gridTemplateColumns: "1fr 376px", height: "100%", minHeight: 0 }}>
@@ -338,8 +534,12 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
       <div style={{ display: "flex", flexDirection: "column", minHeight: 0, background: "#fff" }}>
         <div style={{ padding: "20px 22px 14px", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+            {/* Con una cuenta guardada el título la nombra: era lo único que
+                faltaba para notar que se sigue parado en la cuenta de otra mesa
+                y no en una orden nueva. */}
             <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 20, color: "var(--navy)", display: "flex", alignItems: "center", gap: 9 }}>
-              <Icon name="bag" size={22} /> Orden{" "}
+              <Icon name="bag" size={22} />{" "}
+              {account && account.number ? (table ? `Cuenta · Mesa ${table.label}` : "Cuenta para llevar") : "Orden"}{" "}
               {count > 0 && <span style={{ fontSize: 13, background: "var(--primary-soft)", color: "var(--primary)", padding: "2px 10px", borderRadius: 999 }}>{count}</span>}
             </div>
             {cart.length > 0 && (
@@ -353,11 +553,21 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
               <button
                 key={o}
                 onClick={() => {
+                  /* Pasar a "para llevar" le quita la mesa a la orden, así que
+                     con una cuenta ya enviada es el mismo cambio de destino que
+                     tocar otra mesa y hace la misma pregunta. Es el camino por
+                     el que el mesero intenta arrancar un pedido para llevar sin
+                     salir de la cuenta, y antes lo único que lograba era mudar
+                     la cuenta de la mesa. */
+                  if (o === "Para llevar" && enviadasVivas.length && onMoverCuenta) {
+                    pedirDestino(null);
+                    return;
+                  }
                   setOrderType(o);
                   if (o === "Para llevar") setTable(null);
                   // Al pasar a "Para aquí" se abre el mapa para asignar mesa de una vez.
                   else if (!table && areas.some((a) => a.tables.length > 0)) setTablePicker(true);
-                  if (o !== "Aquí") setAvisoMesa(false);
+                  if (o !== "Aquí") setAvisoMesa(null);
                 }}
                 style={{
                   flex: 1,
@@ -468,12 +678,15 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
                lo frecuente (cada ronda de pedidos) y cobrar pasa una sola vez al
                final, por eso enviar es el botón primario mientras haya pendientes. */
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {/* Un solo aviso arriba de los dos botones: la mesa que falta es
+                  la misma para enviar y para cobrar. */}
+              {faltaMesa && avisoMesa && <AvisoMesa accion={avisoMesa} />}
               <Btn
                 kind={cart.length > 0 ? "primary" : "ghost"}
                 size="lg"
                 full
                 disabled={cart.length === 0 || enviando}
-                onClick={onEnviar}
+                onClick={intentarEnviar}
                 icon="bag"
               >
                 {enviando ? "Enviando…" : `Enviar a preparar${count > 0 ? " · " + count : ""}`}
@@ -482,26 +695,9 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
                   sentido y sin salida la mesa quedaría ocupada para siempre. La
                   acción pasa a ser descartar la cuenta. */}
               {totalCuenta > 0 ? (
-                <>
-              {faltaMesa && avisoMesa && (
-                <div
-                  role="status"
-                  style={{
-                    display: "flex", alignItems: "center", gap: 9, marginBottom: 10, padding: "10px 13px",
-                    borderRadius: 11, background: "var(--aviso-suave)", color: "var(--aviso)",
-                    fontSize: 13, fontWeight: 600, lineHeight: 1.4,
-                  }}
-                >
-                  <span style={{ flexShrink: 0, display: "flex" }}>
-                    <Icon name="alert" size={17} />
-                  </span>
-                  <span>Elegí una mesa para cobrar, o cambiá la orden a <b>Para llevar</b>.</span>
-                </div>
-              )}
                 <Btn kind={cart.length > 0 ? "ghost" : "primary"} size="lg" full onClick={intentarCobrar} icon="card">
                   Cobrar · {money(totalCuenta)}
                 </Btn>
-                </>
               ) : (
                 account.number && (
                   <Btn kind="danger" size="lg" full onClick={onDescartarCuenta} icon="trash">
@@ -509,12 +705,23 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
                   </Btn>
                 )
               )}
-              <button
-                onClick={onCerrarCuenta}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", fontFamily: "var(--ui)", fontWeight: 700, fontSize: 12.5, padding: "6px 0" }}
-              >
-                Volver a las cuentas
-              </button>
+              {/* Dos salidas, porque son dos cosas distintas: atender a otro
+                  cliente sin soltar el salón, o volver al mapa. Sin la primera,
+                  el único camino para empezar otro pedido era el selector de
+                  mesa, que edita ESTA cuenta en vez de abrir otra. */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                {account.number && onNuevaOrden && (
+                  <>
+                    <button onClick={empezarOtraOrden} style={enlaceBtn}>
+                      Nueva orden
+                    </button>
+                    <span style={{ color: "var(--borde-fuerte)", fontSize: 12 }}>·</span>
+                  </>
+                )}
+                <button onClick={onCerrarCuenta} style={enlaceBtn}>
+                  Volver a las cuentas
+                </button>
+              </div>
               {cart.length > 0 && (
                 <div style={{ textAlign: "center", fontSize: 12, color: "oklch(0.52 0.12 70)", fontWeight: 700 }}>
                   Hay {count} {count === 1 ? "producto" : "productos"} sin mandar a preparar
@@ -524,18 +731,8 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
           ) : (
             <>
               {faltaMesa && avisoMesa && (
-                <div
-                  role="status"
-                  style={{
-                    display: "flex", alignItems: "center", gap: 9, marginBottom: 10, padding: "10px 13px",
-                    borderRadius: 11, background: "var(--aviso-suave)", color: "var(--aviso)",
-                    fontSize: 13, fontWeight: 600, lineHeight: 1.4,
-                  }}
-                >
-                  <span style={{ flexShrink: 0, display: "flex" }}>
-                    <Icon name="alert" size={17} />
-                  </span>
-                  <span>Elegí una mesa para cobrar, o cambiá la orden a <b>Para llevar</b>.</span>
+                <div style={{ marginBottom: 10 }}>
+                  <AvisoMesa accion={avisoMesa} />
                 </div>
               )}
               <Btn kind="primary" size="lg" full disabled={cart.length === 0} onClick={intentarCobrar} icon="card">
@@ -551,11 +748,27 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], t
         <TablePickerModal
           areas={areas}
           value={table}
+          ocupadas={mesasOcupadas}
+          bloquearOcupadas={!!account}
           onClose={() => setTablePicker(false)}
-          onPick={(t) => {
-            setTable(t);
-            setTablePicker(false);
-            setAvisoMesa(false); // ya se resolvió lo que el aviso pedía
+          onPick={pedirDestino}
+        />
+      )}
+
+      {cambioDestino && (
+        <CambioDestinoModal
+          destino={cambioDestino.mesa}
+          origen={table}
+          enviadas={enviadasVivas.length}
+          porEnviar={count}
+          onClose={() => setCambioDestino(null)}
+          onMover={() => {
+            onMoverCuenta(cambioDestino.mesa);
+            setCambioDestino(null);
+          }}
+          onNueva={() => {
+            onNuevaCuentaConCarrito(cambioDestino.mesa);
+            setCambioDestino(null);
           }}
         />
       )}

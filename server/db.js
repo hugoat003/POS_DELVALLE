@@ -1032,6 +1032,22 @@ export const sendOrderTx = db.transaction((id, user) => {
   const row = S.orderGet.get(id);
   if (!row) return { error: "orden no encontrada" };
   if (row.voided) return { error: "la orden está anulada" };
+
+  /* Una comanda "para aquí" sin mesa sale de la impresora sin decir a dónde va:
+     el cocinero prepara y no sabe a quién entregarle, y el barista ve un pedido
+     sin dueño en el tablero. Se corta también aquí y no solo en la tablet
+     porque el papel ya impreso no se puede desimprimir: para cuando alguien
+     nota el error, la cocina ya está trabajando.
+
+     Solo aplica si el local tiene mesas cargadas: un café de mostrador que
+     nunca configuró el mapa no puede quedar sin poder mandar nada. */
+  if ((row.order_type || "Aquí") === "Aquí" && !row.table_json) {
+    const areas = kvGet("fuwa_areas") || [];
+    if (areas.some((a) => (a.tables || []).length > 0)) {
+      return { error: "la orden es para aquí y no tiene mesa: la comanda saldría sin destino", faltaMesa: true };
+    }
+  }
+
   const lines = JSON.parse(row.lines);
   if (!pendingLines(lines).length) return { ok: true, sinCambios: true, order: rowToOrder(row) };
 

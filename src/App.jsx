@@ -197,6 +197,70 @@ export default function App() {
     setView("order");
   }
 
+  /* --------------------------------------------- cambio de mesa
+
+     Tocar otra mesa desde la pantalla de orden solo cambiaba `table`, y ese
+     cambio viajaba al servidor recién en el siguiente envío o cobro. Con una
+     cuenta que ya había mandado cosas a preparar el efecto era que la cuenta
+     ENTERA se mudaba: la mesa vieja quedaba libre en el mapa y a la nueva se le
+     cobraba lo que se había comido la otra, aunque la comanda hubiera salido
+     impresa a nombre de la vieja. Ahora la pantalla pregunta y cada intención
+     tiene su función.
+
+     El cliente se cambió de lugar: la cuenta se muda completa. Se persiste en
+     el momento —no al siguiente envío— para que todas las tablets dejen de ver
+     ocupada la mesa vieja de una vez. */
+  async function moverCuenta(mesa) {
+    if (!accountId || !account) {
+      setTable(mesa);
+      if (!mesa) setOrderType("Para llevar");
+      return;
+    }
+    // Quitarle la mesa a una cuenta es dejarla "para llevar": es la misma
+    // mudanza, solo que el destino no es otra mesa.
+    const tipo = mesa ? "Aquí" : "Para llevar";
+    try {
+      await data.updateAccountLines(accountId, { lines: account.lines, table: mesa, orderType: tipo });
+      setOrderType(tipo);
+      setTable(mesa);
+      setAviso(mesa ? `Cuenta movida a la mesa ${mesa.label}` : "La cuenta quedó sin mesa · para llevar");
+    } catch (e) {
+      window.alert(
+        e && e.offline
+          ? "Sin conexión con el servidor: no se pudo mover la cuenta de mesa."
+          : `No se pudo mover la cuenta: ${(e && e.message) || "error desconocido"}`
+      );
+    }
+  }
+
+  /* Toca atender a otro cliente: la cuenta anterior se queda intacta en el
+     servidor (no hay nada que enviar aquí, ya está guardada) y el carrito —que
+     es solo lo que aún no se ha mandado a preparar— arranca la cuenta nueva.
+     `mesa` en null es una cuenta para llevar. */
+  function nuevaCuentaConCarrito(mesa) {
+    setAccountId(null);
+    setCuentaMode(true);
+    setOrderType(mesa ? "Aquí" : "Para llevar");
+    setTable(mesa || null);
+  }
+
+  /* "Nueva orden" desde la pantalla de orden: empezar de cero sin salir a la
+     pantalla de Cuentas y sin tocar la cuenta en la que se estaba.
+
+     Antes la única forma de arrancar otro pedido era volver a Cuentas y tocar
+     una mesa libre; quien no lo sabía terminaba usando el selector de mesa o el
+     botón de "para llevar" para eso, y esos editan la cuenta abierta en vez de
+     empezar otra. Se queda en modo cuenta (sin `accountId`) para que el mesero
+     conserve las dos salidas: mandar a preparar y luego cobrar, o cobrar de una
+     si es una venta de mostrador. */
+  function nuevaOrdenEnBlanco() {
+    setAccountId(null);
+    setCuentaMode(true);
+    setCart([]);
+    setOrderType("Aquí");
+    setTable(null);
+  }
+
   /* Manda a preparar. Si la cuenta aún no existe en el servidor, se crea aquí
      con las líneas del carrito; si ya existe, se le agregan. En los dos casos
      el carrito queda vacío porque lo enviado pasa a ser parte de la cuenta. */
@@ -742,7 +806,12 @@ export default function App() {
                 orderType={orderType}
                 setOrderType={setOrderType}
                 showEmoji={SHOW_EMOJI}
+                openOrders={openOrders || []}
                 account={cuentaMode ? account || { lines: [] } : null}
+                accountId={accountId}
+                onMoverCuenta={moverCuenta}
+                onNuevaCuentaConCarrito={nuevaCuentaConCarrito}
+                onNuevaOrden={nuevaOrdenEnBlanco}
                 onEnviar={enviarAPreparar}
                 onAnularEnviado={anularEnviado}
                 onCerrarCuenta={salirDeCuenta}

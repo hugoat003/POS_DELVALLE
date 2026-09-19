@@ -39,7 +39,10 @@ function freeSpot(tables) {
 // ---------- Plano del área ----------
 // editable=false → tap selecciona (picker). editable=true → arrastrar mueve
 // (onMove) y un tap corto selecciona (onTap) para renombrar/borrar.
-export function AreaMap({ area, selectedId, onTap, editable, onMove, minHeight = 340 }) {
+// `ocupadas` (Set de ids) pinta las mesas que ya tienen otra cuenta abierta: el
+// picker las muestra distintas para que nadie le monte una segunda cuenta
+// encima sin darse cuenta.
+export function AreaMap({ area, selectedId, onTap, editable, onMove, minHeight = 340, ocupadas }) {
   const canvasRef = useRef(null);
   const drag = useRef(null); // { id, moved }
 
@@ -87,6 +90,7 @@ export function AreaMap({ area, selectedId, onTap, editable, onMove, minHeight =
     >
       {area.tables.map((t) => {
         const selected = t.id === selectedId;
+        const ocupada = !selected && !!(ocupadas && ocupadas.has(t.id));
         return (
           <button
             key={t.id}
@@ -102,9 +106,9 @@ export function AreaMap({ area, selectedId, onTap, editable, onMove, minHeight =
               width: 74,
               height: 74,
               borderRadius: 20,
-              border: "2.5px solid " + (selected ? "var(--primary)" : "var(--line)"),
-              background: selected ? "var(--primary-soft)" : "var(--cream)",
-              color: selected ? "var(--primary)" : "var(--navy)",
+              border: "2.5px solid " + (selected ? "var(--primary)" : ocupada ? "var(--aviso)" : "var(--line)"),
+              background: selected ? "var(--primary-soft)" : ocupada ? "var(--aviso-suave)" : "var(--cream)",
+              color: selected ? "var(--primary)" : ocupada ? "var(--aviso)" : "var(--navy)",
               cursor: editable ? "grab" : "pointer",
               display: "flex",
               flexDirection: "column",
@@ -117,8 +121,9 @@ export function AreaMap({ area, selectedId, onTap, editable, onMove, minHeight =
               touchAction: "none",
             }}
           >
-            <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>Mesa</span>
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: ocupada ? "inherit" : "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5, opacity: ocupada ? 0.8 : 1 }}>Mesa</span>
             <span style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 24, lineHeight: 1 }}>{t.label}</span>
+            {ocupada && <span style={{ fontSize: 9.5, fontWeight: 700, opacity: 0.85 }}>ocupada</span>}
           </button>
         );
       })}
@@ -131,10 +136,27 @@ export function AreaMap({ area, selectedId, onTap, editable, onMove, minHeight =
   );
 }
 
-// ---------- Modal para elegir mesa (pantalla de orden) ----------
-export function TablePickerModal({ areas, value, onPick, onClose }) {
+/* ---------- Modal para elegir mesa (pantalla de orden) ----------
+
+   `ocupadas` es un Map id-de-mesa → cuenta abierta que NO es la de esta orden.
+   Elegir una de esas mesas se bloquea cuando `bloquearOcupadas` está activo (o
+   sea, cuando se está trabajando una cuenta de mesa): dos cuentas vivas sobre la
+   misma mesa dejan a una invisible en el mapa de Cuentas —el mapa indexa por
+   mesa y solo cabe una— y nadie podría volver a entrar a cobrarla. */
+export function TablePickerModal({ areas, value, onPick, onClose, ocupadas, bloquearOcupadas }) {
   const [areaId, setAreaId] = useState((value && value.areaId) || (areas[0] && areas[0].id));
+  const [choque, setChoque] = useState(null); // mesa ocupada que se intentó elegir
   const area = areas.find((a) => a.id === areaId) || areas[0];
+  const ocupadasIds = ocupadas || new Map();
+
+  function elegir(t) {
+    if (bloquearOcupadas && ocupadasIds.has(t.id)) {
+      setChoque(t);
+      return;
+    }
+    setChoque(null);
+    onPick({ id: t.id, label: t.label, areaId: area.id, areaName: area.name });
+  }
 
   return (
     <div style={overlay} onClick={onClose}>
@@ -156,12 +178,30 @@ export function TablePickerModal({ areas, value, onPick, onClose }) {
             ))}
           </div>
           {area ? (
-            <AreaMap area={area} selectedId={value && value.id} onTap={(t) => onPick({ id: t.id, label: t.label, areaId: area.id, areaName: area.name })} />
+            <AreaMap
+              area={area}
+              selectedId={value && value.id}
+              ocupadas={new Set(ocupadasIds.keys())}
+              onTap={elegir}
+            />
           ) : (
             <div style={{ color: "var(--muted)", fontWeight: 700, padding: 30, textAlign: "center" }}>No hay áreas configuradas. El gerente puede crearlas en la pantalla “Mesas”.</div>
           )}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 13, color: "var(--muted)" }}>Toca una mesa para asignarla; saldrá en la comanda de cocina.</span>
+          {choque && (
+            <div style={{ display: "flex", gap: 10, background: "var(--aviso-suave)", border: "1px solid var(--aviso)", borderRadius: 14, padding: "10px 14px", color: "var(--aviso)" }}>
+              <span style={{ flexShrink: 0, marginTop: 1 }}>
+                <Icon name="alert" size={17} />
+              </span>
+              <div style={{ fontSize: 12.5, lineHeight: 1.45 }}>
+                La <b>mesa {choque.label}</b> ya tiene una cuenta abierta. Para agregarle productos, entra a ella desde <b>Cuentas</b>.
+              </div>
+            </div>
+          )}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 13, color: "var(--muted)" }}>
+              Toca una mesa para asignarla; saldrá en la comanda de cocina.
+              {ocupadasIds.size > 0 && " Las mesas en ámbar ya tienen cuenta abierta."}
+            </span>
             {value && (
               <Btn kind="ghost" size="sm" onClick={() => onPick(null)}>
                 Quitar mesa
