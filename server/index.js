@@ -183,7 +183,9 @@ app.post("/api/orders", (req, res) => {
   }
   const out = insertOrder(b, req.user.name);
   if (out.error) return res.status(out.invalido ? 400 : 409).json(out);
-  res.json({ order: out.order, rev: getRev() });
+  // `consumo` solo viene en la comida de empleado: lleva el costo que se
+  // registró como gasto, para poder confirmárselo en pantalla a quien lo hizo.
+  res.json({ order: out.order, consumo: out.consumo || null, rev: getRev() });
 });
 
 app.post("/api/orders/:id/void", (req, res) => {
@@ -237,7 +239,7 @@ app.post("/api/orders/:id/cobrar", (req, res) => {
   if (out.error) return res.status(409).json(out);
   // `existed` le dice al outbox que este cobro ya se había registrado, para que
   // no lo cuente como una venta nueva al reconectar.
-  res.json({ order: out.order, existed: !!out.existed, rev: getRev() });
+  res.json({ order: out.order, existed: !!out.existed, consumo: out.consumo || null, rev: getRev() });
 });
 
 // Reimpresión del ticket del cliente (se atascó el papel, piden copia).

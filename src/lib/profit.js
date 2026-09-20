@@ -16,6 +16,12 @@
 import { lineConsumption, lineCost } from "./recipe.js";
 
 // Los helpers de recipe.js esperan un objeto plano {id: ingrediente}.
+/* Una orden cerrada como consumo de empleado NO es una venta: no entró dinero.
+   Su costo de materiales ya se registró como gasto al cobrarla, así que tampoco
+   entra en el costo de ventas — contarlo aquí lo restaría dos veces de la
+   ganancia. Queda fuera de ingresos y de costo, y visible solo como gasto. */
+export const esConsumoEmpleado = (order) => (order && order.payment && order.payment.method) === "empleado";
+
 export function byId(ingredients) {
   return Object.fromEntries((ingredients || []).map((i) => [i.id, i]));
 }
@@ -59,7 +65,7 @@ export function computeProfit(orders, expenses, menu, modGroups, ingredients) {
   let linesSinReceta = 0;
 
   for (const o of orders || []) {
-    if (o.voided) continue;
+    if (o.voided || esConsumoEmpleado(o)) continue;
     revenue += Number(o.payment?.subtotal) || 0;
     const { cost, sinReceta } = orderCost(o, menu, modGroups, ingById);
     cogs += cost;
@@ -96,7 +102,7 @@ export function profitByDay(orders, expenses, menu, modGroups, ingredients) {
   };
 
   for (const o of orders || []) {
-    if (o.voided) continue;
+    if (o.voided || esConsumoEmpleado(o)) continue;
     const b = bucket(o.ts);
     b.revenue += Number(o.payment?.subtotal) || 0;
     b.cogs += orderCost(o, menu, modGroups, ingById).cost;

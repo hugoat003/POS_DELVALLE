@@ -27,9 +27,9 @@ import { ToolsScreen } from "./screens/ToolsScreen.jsx";
 import { ExpensesScreen } from "./screens/ExpensesScreen.jsx";
 import { CloseShiftScreen } from "./screens/CloseShiftScreen.jsx";
 import { usePersistentState, reloadConfig } from "./lib/storage.js";
-import { useServerData } from "./lib/serverData.js";
+import { useServerData, tomarUltimoConsumo } from "./lib/serverData.js";
 import { apiLogout, getToken, onAuthExpired, isOnline, onConnectionChange } from "./lib/api.js";
-import { availableCashNow } from "./lib/format.js";
+import { availableCashNow, money } from "./lib/format.js";
 import { PRODUCTS, MOD_GROUPS, CATEGORIES, AREAS } from "./data.js";
 
 /* Apariencia e impresión, antes configurables desde el panel de Tweaks.
@@ -502,6 +502,15 @@ export default function App() {
     }
   }
 
+  /* Comida de empleado: se confirma en pantalla cuánto se registró como gasto.
+     Sin esto, la acción más silenciosa del sistema —cerrar una orden sin
+     cobrarla— no dejaría ninguna señal de que algo pasó. */
+  function avisarConsumo() {
+    const c = tomarUltimoConsumo();
+    if (!c) return;
+    setAviso(`Consumo de ${c.empleado || "empleado"} · gasto de ${money(c.costo)} en materiales`);
+  }
+
   // Cobro: el servidor asigna el número definitivo (evita duplicados entre
   // tablets); mientras responde, el recibo muestra un número provisional.
   async function confirmPayment(payment) {
@@ -512,6 +521,7 @@ export default function App() {
       try {
         if (cart.length) await data.updateAccountLines(accountId, { lines: [...account.lines, ...cart], table, orderType });
         const order = await data.payAccount(accountId, payment);
+        avisarConsumo();
         setLastOrder(order);
         setCart([]);
         setTable(null);
@@ -538,6 +548,7 @@ export default function App() {
     // Mostrador (o cuenta que nunca llegó a enviarse): una sola operación.
     const order = data.createOrder({ lines: cart, payment, orderType, table: orderType === "Aquí" ? table : null }, (final) => {
       setLastOrder((prev) => (prev && prev.id === final.id ? final : prev));
+      avisarConsumo(); // el servidor confirma aquí cuánto costó
     });
     setLastOrder(order);
     setCart([]);
@@ -1027,6 +1038,9 @@ export default function App() {
               cart={account ? [...account.lines.filter((l) => !l.voided), ...cart] : cart}
               orderType={orderType}
               table={table}
+              menu={menu}
+              mods={mods}
+              ingredients={ingredients}
               tipEnabled={TIP_ENABLED}
               onBack={() => setView("order")}
               onConfirm={confirmPayment}

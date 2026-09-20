@@ -143,7 +143,12 @@ export function ReceiptTicket({ order }) {
           </div>
         ) : (
           <>
-            <TRow label={order.payment.method === "efectivo" ? "Efectivo" : "Tarjeta"} value={money(order.payment.received)} />
+            {/* Un consumo de empleado no se pagó: decir "Efectivo Q0" haría
+                pensar que sí entró dinero. */}
+            <TRow
+              label={order.payment.method === "empleado" ? "Consumo de empleado" : order.payment.method === "efectivo" ? "Efectivo" : "Tarjeta"}
+              value={order.payment.method === "empleado" ? "No se cobra" : money(order.payment.received)}
+            />
             {order.payment.method === "efectivo" && <TRow label="Cambio" value={money(order.payment.change)} />}
           </>
         )}

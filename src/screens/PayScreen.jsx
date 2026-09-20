@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
 import { Btn } from "../components/ui.jsx";
 import { money, lineTotal } from "../lib/format.js";
+import { orderCost, byId } from "../lib/profit.js";
 
 function SectionLabel({ children }) {
   return <div style={{ fontWeight: 700, fontSize: 13.5, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 12 }}>{children}</div>;
@@ -16,13 +17,15 @@ function Row({ label, value, strong }) {
   );
 }
 
-function MethodPicker({ value, onChange, compact }) {
+function MethodPicker({ value, onChange, compact, conEmpleado }) {
+  const opciones = [
+    { id: "efectivo", icon: "cash", label: "Efectivo" },
+    { id: "tarjeta", icon: "card", label: "Tarjeta" },
+    ...(conEmpleado ? [{ id: "empleado", icon: "users", label: "Empleado" }] : []),
+  ];
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: compact ? 8 : 14 }}>
-      {[
-        { id: "efectivo", icon: "cash", label: "Efectivo" },
-        { id: "tarjeta", icon: "card", label: "Tarjeta" },
-      ].map((m) => (
+    <div style={{ display: "grid", gridTemplateColumns: `repeat(${opciones.length}, 1fr)`, gap: compact ? 8 : 14 }}>
+      {opciones.map((m) => (
         <button
           key={m.id}
           onClick={() => onChange(m.id)}
@@ -63,16 +66,33 @@ function CashInput({ value, onChange }) {
 }
 
 // ---------- Pago de una sola cuenta ----------
-function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
+function SinglePay({ cart, subtotal, tipEnabled, onConfirm, menu, mods, ingredients }) {
   const [method, setMethod] = useState("efectivo");
   const [tipPct, setTipPct] = useState(0);
   const [received, setReceived] = useState("");
+  const [empleado, setEmpleado] = useState("");
+  const [costoManual, setCostoManual] = useState("");
 
-  const tipAmt = Math.round(subtotal * tipPct) / 100;
-  const total = subtotal + tipAmt;
+  const esEmpleado = method === "empleado";
+
+  /* Comida de empleado: no se cobra, se registra como gasto por el COSTO de los
+     materiales. Aquí se calcula solo para mostrarlo; la cifra que vale es la
+     que recalcula el servidor con sus recetas. */
+  const costo = useMemo(
+    () => orderCost({ lines: cart }, menu || [], mods || {}, byId(ingredients || [])),
+    [cart, menu, mods, ingredients]
+  );
+  const manualNum = parseFloat(costoManual) || 0;
+  const costoTotal = Math.round((costo.cost + manualNum) * 100) / 100;
+
+  const tipAmt = esEmpleado ? 0 : Math.round(subtotal * tipPct) / 100;
+  const total = esEmpleado ? 0 : subtotal + tipAmt;
   const recNum = parseFloat(received) || 0;
   const change = recNum - total;
   const canCash = method === "efectivo" ? recNum >= total : true;
+  // Sin nombre no se sabe de quién fue; sin costo de los productos sin receta,
+  // el gasto quedaría incompleto sin que nadie se entere.
+  const faltaEmpleado = esEmpleado && (!empleado.trim() || (costo.sinReceta > 0 && costoManual.trim() === ""));
 
   const quick = [total, Math.ceil(total / 50) * 50, Math.ceil(total / 100) * 100, Math.ceil(total / 100) * 100 + 100];
   const quickUniq = [...new Set(quick.map((q) => Math.round(q * 100) / 100))];
@@ -83,10 +103,11 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
       method,
       tip: tipAmt,
       tipPct,
-      subtotal,
+      subtotal, // el servidor lo contrasta con las líneas vivas, también aquí
       total,
       received: method === "efectivo" ? recNum : total,
       change: method === "efectivo" ? Math.max(0, change) : 0,
+      ...(esEmpleado ? { empleado: empleado.trim(), costoManual: manualNum } : {}),
     });
   }
 
@@ -95,8 +116,48 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
       <div style={{ padding: "0 32px 26px", overflowY: "auto", minHeight: 0 }}>
         <SectionLabel>Método de pago</SectionLabel>
         <div style={{ marginBottom: 28 }}>
-          <MethodPicker value={method} onChange={setMethod} />
+          <MethodPicker value={method} onChange={setMethod} conEmpleado />
         </div>
+
+        {esEmpleado && (
+          <div style={{ marginBottom: 28 }}>
+            <SectionLabel>Comida de empleado</SectionLabel>
+            <div style={{ border: "1px solid var(--borde)", borderRadius: "var(--r)", padding: 16, background: "var(--superficie)" }}>
+              <div style={{ fontSize: 13.5, color: "var(--muted)", lineHeight: 1.5, marginBottom: 14 }}>
+                No se cobra nada. Se registra como gasto por lo que costaron los materiales, y no cuenta como venta.
+              </div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+                ¿Para quién?
+              </div>
+              <input
+                value={empleado}
+                onChange={(e) => setEmpleado(e.target.value.slice(0, 60))}
+                placeholder="Nombre de quien se lo lleva"
+                style={{ width: "100%", padding: "11px 14px", border: "1px solid var(--line)", borderRadius: 12, fontFamily: "var(--ui)", fontSize: 15, color: "var(--ink)", outline: "none", boxSizing: "border-box" }}
+              />
+              {costo.sinReceta > 0 && (
+                <>
+                  <div style={{ display: "flex", gap: 10, background: "var(--aviso-suave)", border: "1px solid var(--aviso)", borderRadius: 12, padding: "10px 13px", color: "var(--aviso)", margin: "14px 0 10px", fontSize: 12.5, lineHeight: 1.45 }}>
+                    <span style={{ flexShrink: 0, marginTop: 1 }}>
+                      <Icon name="alert" size={16} />
+                    </span>
+                    <span>
+                      {costo.sinReceta === 1 ? "Un producto no tiene receta" : `${costo.sinReceta} productos no tienen receta`}, así que su costo
+                      no se puede calcular. Escríbelo para que el gasto quede completo.
+                    </span>
+                  </div>
+                  <input
+                    value={costoManual}
+                    onChange={(e) => setCostoManual(e.target.value.replace(/[^\d.]/g, ""))}
+                    inputMode="decimal"
+                    placeholder="Costo de esos productos (Q)"
+                    style={{ width: "100%", padding: "11px 14px", border: "1px solid var(--line)", borderRadius: 12, fontFamily: "var(--ui)", fontSize: 15, color: "var(--ink)", outline: "none", boxSizing: "border-box" }}
+                  />
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {tipEnabled && (
           <>
@@ -181,8 +242,9 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
           ))}
         </div>
         <div style={{ padding: "18px 26px 24px", borderTop: "1px solid var(--line)", flexShrink: 0 }}>
-          <Row label="Subtotal" value={money(subtotal)} />
+          <Row label={esEmpleado ? "Valor de venta (no se cobra)" : "Subtotal"} value={money(subtotal)} />
           {tipEnabled && tipAmt > 0 && <Row label={"Propina " + tipPct + "%"} value={money(tipAmt)} />}
+          {esEmpleado && <Row label="Costo de materiales → gasto" value={money(costoTotal)} />}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "10px 0 16px", paddingTop: 12, borderTop: "1px solid var(--line)" }}>
             <span style={{ fontWeight: 700, fontSize: 18, color: "var(--navy)" }}>Total</span>
             <span style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 33, letterSpacing: "-.01em", fontVariantNumeric: "tabular-nums", color: "var(--verde-oscuro)"}}>{money(total)}</span>
@@ -193,9 +255,14 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
               <span style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 25, letterSpacing: "-.01em", fontVariantNumeric: "tabular-nums", color: "var(--verde-oscuro)"}}>{money(Math.abs(change))}</span>
             </div>
           )}
-          <Btn kind="primary" size="lg" full disabled={!canCash} onClick={confirm} icon="check">
-            {method === "efectivo" ? "Confirmar pago" : "Cobrar con tarjeta"}
+          <Btn kind="primary" size="lg" full disabled={!canCash || faltaEmpleado} onClick={confirm} icon="check">
+            {esEmpleado ? "Registrar consumo" : method === "efectivo" ? "Confirmar pago" : "Cobrar con tarjeta"}
           </Btn>
+          {faltaEmpleado && (
+            <div style={{ textAlign: "center", fontSize: 12.5, color: "var(--aviso)", fontWeight: 700, marginTop: 10 }}>
+              {!empleado.trim() ? "Escribe para quién es el consumo" : "Falta el costo de los productos sin receta"}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -522,7 +589,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
   );
 }
 
-export function PayScreen({ cart, orderType, table, tipEnabled, onBack, onConfirm }) {
+export function PayScreen({ cart, orderType, table, tipEnabled, onBack, onConfirm, menu, mods, ingredients }) {
   const subtotal = cart.reduce((s, l) => s + lineTotal(l), 0);
   const [mode, setMode] = useState("single");
 
@@ -573,7 +640,7 @@ export function PayScreen({ cart, orderType, table, tipEnabled, onBack, onConfir
       </div>
       <div style={{ flex: 1, minHeight: 0 }}>
         {mode === "single" ? (
-          <SinglePay cart={cart} subtotal={subtotal} tipEnabled={tipEnabled} onConfirm={onConfirm} />
+          <SinglePay cart={cart} subtotal={subtotal} tipEnabled={tipEnabled} onConfirm={onConfirm} menu={menu} mods={mods} ingredients={ingredients} />
         ) : (
           <SplitPay cart={cart} subtotal={subtotal} tipEnabled={tipEnabled} onConfirm={onConfirm} />
         )}

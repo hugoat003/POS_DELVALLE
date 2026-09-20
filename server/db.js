@@ -548,6 +548,10 @@ export function rowToArchivedShift(r) {
   };
 }
 export const publicUser = (u) => ({ id: u.id, name: u.name, role: u.role, hue: u.hue });
+
+/* Orden cerrada como comida de empleado: no es venta. Se declara aquí, antes
+   de su primer uso, porque una `const` no se eleva y el tablero la consulta. */
+export const esConsumoEmpleado = (pago) => !!pago && pago.method === "empleado";
 export const rowToIngredient = (r) => ({
   id: r.id, name: r.name, unit: r.unit, stock: r.stock, minStock: r.min_stock, cost: r.cost,
   purchaseUnit: r.purchase_unit || r.unit,
@@ -829,6 +833,8 @@ export function getDashboard() {
   let ventas = 0, propinas = 0, efectivo = 0, tarjeta = 0;
   for (const r of delDia) {
     const p = JSON.parse(r.payment);
+    // El consumo de empleado no es venta: su costo ya entró como gasto.
+    if (esConsumoEmpleado(p)) continue;
     ventas += p.subtotal || 0;
     propinas += p.tip || 0;
     const parts = p.split ? p.parts || [] : [{ method: p.method, total: p.total }];
@@ -839,6 +845,7 @@ export function getDashboard() {
   }
 
   const cogs = delDia.reduce((s, r) => {
+    if (esConsumoEmpleado(JSON.parse(r.payment))) return s; // su costo es gasto, no costo de ventas
     const { cost } = orderCost(rowToOrder(r), kvGet("cdv_menu") || [], kvGet("cdv_mods") || {}, byId(listIngredients()));
     return s + cost;
   }, 0);
@@ -1261,9 +1268,11 @@ export const payOrderTx = db.transaction((id, payment, cashier) => {
        en una venta cobrada a las 15:40. Mismo formato que usa el cliente. */
     time_label: (payment && payment.time) || new Date(now).toLocaleTimeString("es-GT", { hour: "2-digit", minute: "2-digit" }),
   });
-  enqueueTicketFor(S.orderGet.get(id));
+  const fila = S.orderGet.get(id);
+  const consumo = esConsumoEmpleado(payment) ? registrarConsumoEmpleado(fila, payment, cashier) : null;
+  enqueueTicketFor(fila);
   S.bumpRev.run();
-  return { order: rowToOrder(S.orderGet.get(id)), existed: false };
+  return { order: rowToOrder(S.orderGet.get(id)), existed: false, consumo };
 });
 
 /* El ticket del cliente lleva TODOS los items, los de cocina y los de barra:
@@ -1375,9 +1384,11 @@ export const insertOrder = db.transaction((data, cashier) => {
   // Aunque se cobre de una vez, los items siguen teniendo que llegar a quien
   // los prepara: la comida se imprime en cocina y la bebida entra al tablero.
   routeOrderTx(S.orderGet.get(data.id), 1);
-  enqueueTicketFor(S.orderGet.get(data.id));
+  const filaNueva = S.orderGet.get(data.id);
+  const consumoNuevo = esConsumoEmpleado(data.payment) ? registrarConsumoEmpleado(filaNueva, data.payment, cashier) : null;
+  enqueueTicketFor(filaNueva);
   S.bumpRev.run();
-  return { order: rowToOrder(S.orderGet.get(data.id)), existed: false };
+  return { order: rowToOrder(S.orderGet.get(data.id)), existed: false, consumo: consumoNuevo };
 });
 
 export const voidOrderTx = db.transaction((idOrNumber, reason, userName) => {
@@ -1391,6 +1402,41 @@ export const voidOrderTx = db.transaction((idOrNumber, reason, userName) => {
   S.bumpRev.run();
   return { ok: true };
 });
+
+/* Consumo de empleado: la orden se cierra sin cobrarse y su COSTO DE MATERIALES
+   se registra como gasto.
+
+   El costo lo calcula el servidor con sus propias recetas, igual que el
+   descuento de inventario: es la única cifra que no se le puede pedir a la
+   tablet sin abrir la puerta a que alguien escriba lo que quiera.
+
+   Los productos sin receta no se pueden costear. En vez de registrar un gasto
+   incompleto en silencio, la tablet pregunta el costo de esos y lo manda en
+   `costoManual`, que se suma al calculado.
+
+   El gasto va con método "otro", NUNCA efectivo: no sale dinero de la caja, así
+   que sumarlo al arqueo haría aparecer un faltante que no existe. */
+function registrarConsumoEmpleado(row, payment, user) {
+  const menu = kvGet("cdv_menu") || [];
+  const mods = kvGet("cdv_mods") || {};
+  const orden = rowToOrder(row);
+  const { cost, sinReceta } = orderCost(orden, menu, mods, byId(listIngredients()));
+  const manual = Math.max(0, Number(payment && payment.costoManual) || 0);
+  const total = round2(cost + manual);
+  const quien = String((payment && payment.empleado) || "").trim().slice(0, 60);
+
+  S.expenseInsert.run({
+    id: `Ge:${row.id}`, // determinista: un reintento no duplica el gasto
+    shift_id: row.shift_id,
+    ts: Date.now(),
+    concept: `Comida de empleado · ${quien || "sin nombre"} · orden #${row.number}`,
+    amount: total,
+    method: "otro",
+    kind: "salida",
+    registered_by: user || row.cashier || "Barista",
+  });
+  return { costo: total, calculado: round2(cost), manual: round2(manual), sinReceta, empleado: quien };
+}
 
 export const insertExpense = db.transaction((data, registeredBy) => {
   const existing = S.expenseGet.get(data.id);

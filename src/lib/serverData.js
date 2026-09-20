@@ -15,6 +15,12 @@ import { apiFetch, enqueue, outboxEntries, isOnline, getToken, onReconnect, setO
 import { applyServerConfig } from "./storage.js";
 
 const CACHE_KEY = "cdv_server_cache";
+
+/* Costo registrado en el último consumo de empleado, para confirmarlo en
+   pantalla. Vive fuera del estado porque es un dato de un solo uso: no hay que
+   re-renderizar nada por él ni conservarlo entre cobros. */
+let ultimoConsumo = null;
+export const tomarUltimoConsumo = () => { const c = ultimoConsumo; ultimoConsumo = null; return c; };
 const SHIFT_CLOSED = { open: false, openingCash: 0, openedAt: null, closedAt: null };
 /* `orders` son SOLO las cobradas (es de donde salen arqueo y reportes).
    `openOrders` son las cuentas de mesa sin cobrar y `kds` el tablero de barra,
@@ -143,6 +149,7 @@ export function useServerData(currentUser) {
       };
       apiFetch("/api/orders", { method: "POST", body: order })
         .then((res) => {
+          ultimoConsumo = res.consumo || null;
           setState((s) => {
             const next = { ...s, rev: res.rev, orders: [...s.orders.filter((o) => o.id !== order.id), res.order] };
             LS.set(CACHE_KEY, next);
@@ -242,6 +249,7 @@ export function useServerData(currentUser) {
   const payAccount = useCallback(
     async (orderId, payment) => {
       const res = await apiFetch(`/api/orders/${encodeURIComponent(orderId)}/cobrar`, { method: "POST", body: { payment } });
+      ultimoConsumo = res.consumo || null;
       setState((s) => {
         const next = {
           ...s,

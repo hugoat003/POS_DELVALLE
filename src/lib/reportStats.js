@@ -2,6 +2,7 @@
    Misma semántica que el dashboard (SummaryScreen): solo órdenes no anuladas,
    y los pagos divididos reparten el total entre métodos vía payment.parts. */
 import { money } from "./format.js";
+import { esConsumoEmpleado } from "./profit.js";
 
 // Órdenes/gastos del turno actual + todos los turnos archivados.
 export function combineOrders(orders, shiftHistory) {
@@ -39,7 +40,8 @@ export function filterByRange(items, from, to) {
 
 // KPIs del período (mismos criterios que el useMemo de SummaryScreen).
 export function computeKpis(orders, expenses) {
-  const valid = orders.filter((o) => !o.voided);
+  // El consumo de empleado no es venta: cuenta como gasto (ver profit.js).
+  const valid = orders.filter((o) => !o.voided && !esConsumoEmpleado(o));
   let tips = 0,
     cash = 0,
     card = 0;
@@ -89,7 +91,7 @@ export function shiftsInRange(shiftHistory, from, to) {
 // de órdenes/gastos (ya no se pueden reabrir ni reimprimir).
 export function compactShift(s) {
   const all = s.orders || [];
-  const valid = all.filter((o) => !o.voided);
+  const valid = all.filter((o) => !o.voided && !esConsumoEmpleado(o));
   let sales = 0,
     tips = 0,
     cash = 0,

@@ -96,7 +96,7 @@ export function buildTicket(p) {
   t.bold(true).size(0x01).row("TOTAL", Q(p.total)).size(0x00).bold(false);
   t.feed(1);
 
-  t.row("Forma de pago", p.method || "");
+  t.row("Forma de pago", p.method === "empleado" ? "CONSUMO EMPLEADO" : p.method || "");
   if (p.received != null && p.method === "efectivo") {
     t.row("Recibido", Q(p.received));
     t.row("Cambio", Q(p.change));
