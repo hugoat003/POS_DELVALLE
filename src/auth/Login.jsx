@@ -3,7 +3,7 @@
    el navegador nunca ve hashes. Requiere conexión para iniciar sesión nueva. */
 import { useEffect, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
-import { Mascot } from "../components/Mascot.jsx";
+import { Logo } from "../components/Mascot.jsx";
 import { Avatar, RoleBadge } from "./Avatar.jsx";
 import { apiLogin, apiFetch } from "../lib/api.js";
 
@@ -139,14 +139,13 @@ export function Login({ onLogin, users: usersProp }) {
         <div style={{ position: "absolute", right: -90, top: -70, width: 340, height: 340, borderRadius: 999, background: "rgba(255,255,255,.045)" }} />
         <div style={{ position: "absolute", right: 30, bottom: -130, width: 280, height: 280, borderRadius: 999, background: "rgba(139,90,43,.16)" }} />
 
+        {/* El logotipo tal cual es, no una marca dibujada aparte: antes se
+            mostraba un símbolo aproximado y debajo el nombre vuelto a escribir
+            en otra tipografía, así que el logo aparecía dos veces y ninguna de
+            las dos era el logo. En el logotipo la "C" del arco ES la C de
+            "Café": separarla del texto rompe la palabra. */}
         <div style={{ position: "relative" }}>
-          <Mascot size={54} color="rgba(255,255,255,.95)" />
-          <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 40, lineHeight: 1.05, marginTop: 16, letterSpacing: "-.01em" }}>
-            Café del Valle
-          </div>
-          <div style={{ fontSize: 12.5, color: "rgba(244,248,230,.62)", letterSpacing: 3, textTransform: "uppercase", marginTop: 6 }}>
-            Cafetería
-          </div>
+          <Logo size={76} tono="claro" />
         </div>
 
         <div style={{ position: "relative" }}>
@@ -159,9 +158,19 @@ export function Login({ onLogin, users: usersProp }) {
       </div>
 
       {/* panel de acceso */}
-      <div style={{ flex: 1, background: "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center", padding: 40, minWidth: 0 }}>
+      {/* `margin: auto` en el hijo y NO `alignItems: center` aquí: con centrado
+          por flex, un contenido más alto que la pantalla se recorta por ARRIBA
+          y esa parte queda inalcanzable al desplazar. En la tablet baja pasaba
+          justo eso: el logotipo salía cortado por el borde superior. */}
+      <div style={{ flex: 1, background: "var(--cream)", display: "flex", justifyContent: "center", overflowY: "auto", padding: 40, minWidth: 0 }}>
         {!sel ? (
-          <div style={{ width: "100%", maxWidth: 460 }}>
+          <div style={{ width: "100%", maxWidth: 460, margin: "auto" }}>
+            {/* En tablet el panel de marca se oculta para dejarle el ancho al
+                teclado de PIN, y el acceso se quedaba sin ningún logo. Este
+                aparece solo cuando aquel no está. */}
+            <div className="cdv-login-marca">
+              <Logo size={46} />
+            </div>
             <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 34, letterSpacing: "-.01em", color: "var(--tinta)", margin: "0 0 4px" }}>¿Quién está en caja?</h1>
             <p style={{ color: "var(--muted)", margin: "0 0 26px", fontSize: 15.5 }}>Selecciona tu usuario para continuar.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -207,7 +216,7 @@ export function Login({ onLogin, users: usersProp }) {
             </div>
           </div>
         ) : (
-          <div style={{ width: "100%", maxWidth: 360, textAlign: "center" }}>
+          <div style={{ width: "100%", maxWidth: 360, textAlign: "center", margin: "auto" }}>
             <button
               onClick={() => {
                 setSel(null);

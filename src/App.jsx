@@ -3,8 +3,9 @@
    servidor SQLite vía useServerData (con sync multi-tablet y outbox offline);
    la config (menú, opciones, categorías, apariencia) usa usePersistentState
    contra la tabla kv del servidor con caché en localStorage. */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "./components/Icon.jsx";
+import { Btn, overlay, sheet } from "./components/ui.jsx";
 import { Logo } from "./components/Mascot.jsx";
 import { Login } from "./auth/Login.jsx";
 import { ROLES } from "./auth/users.js";
@@ -125,6 +126,103 @@ function PantallaCompleta() {
     >
       <Icon name={activa ? "compress" : "expand"} size={18} />
     </button>
+  );
+}
+
+/* ---------------------------------------- cierre por inactividad (gerente)
+
+   Solo el gerente. Su sesión abre reportes, empleados, costos y Herramientas
+   —donde se borran datos del turno—, así que una tablet olvidada con esa sesión
+   encima es la que hace daño. Al cajero NO se le aplica: pasa el turno entero
+   en la misma pantalla, a veces sin tocarla mientras prepara, y cerrarle la
+   sesión en medio del servicio le borraría el carrito y lo dejaría peleando con
+   el PIN con la fila esperando.
+
+   El tiempo se mide con marcas de reloj y no con un temporizador que corre:
+   cuando la tablet suspende la pantalla, el navegador frena los temporizadores
+   y una cuenta atrás normal se quedaría congelada justo en el rato en que la
+   tablet está sola, que es cuando tiene que contar. */
+const INACTIVIDAD_MINUTOS = 5;
+const AVISO_SEGUNDOS = 30;
+
+function useCierrePorInactividad(activo, alCerrar) {
+  const [restante, setRestante] = useState(null); // segundos, solo durante el aviso
+  const ultimaSenal = useRef(Date.now());
+  const cerrar = useRef(alCerrar);
+  cerrar.current = alCerrar;
+
+  // La usa el botón "Sigo aquí"; el aviso queda fuera del reinicio automático.
+  const posponer = () => {
+    ultimaSenal.current = Date.now();
+    setRestante(null);
+  };
+
+  useEffect(() => {
+    if (!activo) {
+      setRestante(null);
+      return;
+    }
+    const limite = INACTIVIDAD_MINUTOS * 60;
+    /* Los toques DENTRO del aviso no cuentan como actividad. Si contaran, el
+       toque reiniciaría la cuenta, el aviso desaparecería bajo el dedo y el
+       clic se quedaría sin destino: "Cerrar sesión" no cerraba nada. Cada
+       botón del aviso hace lo suyo de forma explícita. */
+    const marcar = (e) => {
+      if (e.target && e.target.closest && e.target.closest("[data-aviso-inactividad]")) return;
+      ultimaSenal.current = Date.now();
+      setRestante((r) => (r === null ? r : null));
+    };
+    const eventos = ["pointerdown", "keydown", "wheel", "touchstart"];
+    for (const e of eventos) window.addEventListener(e, marcar, { passive: true });
+    const id = setInterval(() => {
+      const inactivo = (Date.now() - ultimaSenal.current) / 1000;
+      if (inactivo >= limite) {
+        setRestante(null);
+        cerrar.current();
+        return;
+      }
+      setRestante(inactivo >= limite - AVISO_SEGUNDOS ? Math.ceil(limite - inactivo) : null);
+    }, 1000);
+    return () => {
+      for (const e of eventos) window.removeEventListener(e, marcar);
+      clearInterval(id);
+    };
+  }, [activo]);
+
+  return { restante, posponer };
+}
+
+/* El aviso no es un adorno: sin él la sesión se cae sin explicación y quien
+   vuelve cree que la app falló. Cualquier toque en la pantalla lo cancela, así
+   que el botón es solo la salida evidente. */
+function AvisoInactividad({ segundos, onSeguir, onCerrar }) {
+  return (
+    /* La marca va en la TARJETA, no en el fondo: así los botones funcionan
+       (el reinicio automático no los desmonta bajo el dedo) y, a la vez, tocar
+       el fondo cuenta como actividad y quita el aviso, que es lo que espera
+       quien vuelve a la tablet y toca la pantalla en cualquier parte. */
+    <div style={{ ...overlay, zIndex: 200 }}>
+      <div style={{ ...sheet, maxWidth: 420 }} data-aviso-inactividad="" onClick={(e) => e.stopPropagation()}>
+        <div style={{ padding: "24px 26px 0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: "var(--display)", fontWeight: 700, fontSize: 20, color: "var(--navy)" }}>
+            <Icon name="lock" size={20} /> ¿Sigues ahí?
+          </div>
+          <div style={{ fontSize: 14, color: "var(--muted)", marginTop: 8, lineHeight: 1.5 }}>
+            La sesión de gerente se cerrará en{" "}
+            <b style={{ color: "var(--ink)", fontVariantNumeric: "tabular-nums" }}>{segundos}s</b> por inactividad, para que nadie
+            use esta tablet con tu acceso.
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 10, padding: "18px 26px 24px" }}>
+          <Btn kind="ghost" full onClick={onCerrar} icon="logout">
+            Cerrar sesión
+          </Btn>
+          <Btn kind="primary" full onClick={onSeguir} icon="check">
+            Sigo aquí
+          </Btn>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -646,6 +744,13 @@ export default function App() {
     { id: "tools", icon: "tools", label: "Herramientas" },
   ];
 
+  /* Solo el gerente: ver el comentario de useCierrePorInactividad.
+
+     Va ANTES del retorno del login a propósito. Puesto después, la cantidad de
+     hooks cambiaba entre la pantalla de acceso y la sesión iniciada, que es de
+     las pocas cosas que React no perdona: al entrar, la app se caía entera. */
+  const { restante: segundosParaCerrar, posponer } = useCierrePorInactividad(!!user && user.role === "admin", logout);
+
   // ---- Login gate (sin usuario o sin token de sesión válido) ----
   if (!user || !getToken()) {
     return <Login onLogin={login} users={users} />;
@@ -949,6 +1054,14 @@ export default function App() {
           {safeView === "tools" && <ToolsScreen onResetMenu={resetMenu} onClearOrders={clearOrders} onExport={exportBackup} onImport={importBackup} lastBackup={lastBackup} backupEstado={backupEstado} onBackupAhora={respaldarAhora} backupOcupado={backupOcupado} />}
         </div>
       </main>
+
+      {segundosParaCerrar !== null && (
+        <AvisoInactividad
+          segundos={segundosParaCerrar}
+          onSeguir={posponer}
+          onCerrar={logout}
+        />
+      )}
 
       {/* Documentos para reimprimir una orden vieja (ocultos salvo al imprimir). */}
       <PrintDocs order={printTarget} />

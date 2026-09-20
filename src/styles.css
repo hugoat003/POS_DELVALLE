@@ -217,10 +217,20 @@ textarea:focus {
 
 @media (max-width: 1050px) {
   /* En login, el panel de marca (reloj/logo) se oculta para dar todo el
-     ancho al teclado de PIN. */
+     ancho al teclado de PIN; el logotipo reaparece sobre el acceso para que la
+     pantalla no quede sin marca. */
   .cdv-brand-panel {
     display: none !important;
   }
+  .cdv-login-marca {
+    display: block !important;
+    margin-bottom: 20px;
+  }
+}
+
+/* Solo visible cuando el panel de marca no está (ver el bloque de 1050px). */
+.cdv-login-marca {
+  display: none;
 }
 
 @keyframes cdvShake {

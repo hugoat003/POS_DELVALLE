@@ -45,8 +45,15 @@ export function Mascot({ size = 40, color = "var(--verde)" }) {
 
 /* Logotipo completo. `variant="mark"` entrega solo el distintivo, para el riel
    colapsado de la barra lateral en tablet. */
-export function Logo({ size = 34, variant = "full" }) {
-  const src = variant === "mark" ? "/logo-mark.png" : "/logo.png";
+/* `tono="claro"` usa la versión del logotipo preparada para fondos oscuros: los
+   mismos trazos, con el olivo cambiado por la crema de la marca y el café
+   aclarado. No es una silueta blanca —eso aplanaría el logotipo a un solo
+   tono— sino el mismo logo con los dos colores llevados al otro extremo. */
+export function Logo({ size = 34, variant = "full", tono = "oscuro" }) {
+  const claro = tono === "claro";
+  const src = variant === "mark"
+    ? (claro ? "/logo-mark-claro.png" : "/logo-mark.png")
+    : (claro ? "/logo-claro.png" : "/logo.png");
   return (
     <img
       src={src}
