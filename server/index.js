@@ -148,10 +148,26 @@ app.get("/api/sync", (req, res) => {
    una sola petición, números ya calculados, sin descargar el turno. */
 app.get("/api/dashboard", adminOnly, (_req, res) => res.json(getDashboard()));
 
+/* Claves de configuración que solo el gerente puede escribir.
+
+   `cdv_last_backup` queda fuera: es una marca de tiempo sin consecuencias y la
+   escribe el propio servidor al respaldar.
+
+   El resto sí decide dinero y operación —la carta y sus precios, los destinos
+   de preparación de cada categoría, el mapa de mesas, los datos fiscales del
+   ticket— y hasta ahora bastaba con haber iniciado sesión. Cualquier usuario,
+   incluido el de barra que solo debería ver comandas, podía reescribir la carta
+   entera con una sola petición: cambiar un precio, o vaciar las mesas y dejar
+   sin efecto el candado que impide cobrar sin mesa. */
+const CONFIG_GERENTE = ["cdv_menu", "cdv_mods", "cdv_cats", "cdv_areas", "cdv_tweaks", "cdv_negocio"];
+
 // Config kv (menú, modificadores, categorías, tweaks): last-write-wins.
 app.put("/api/state/:key", (req, res) => {
   const { key } = req.params;
   if (!KV_KEYS.includes(key)) return res.status(404).json({ error: "clave no permitida" });
+  if (CONFIG_GERENTE.includes(key) && req.user.role !== "admin") {
+    return res.status(403).json({ error: "solo el gerente puede cambiar la configuración" });
+  }
 
   /* `editedAt` es cuándo se hizo la edición en la tablet. Solo lo manda la
      re-subida de una clave que quedó pendiente por falta de conexión.
@@ -330,7 +346,10 @@ app.post("/api/expenses", (req, res) => {
 });
 
 app.delete("/api/expenses/:id", (req, res) => {
-  deleteExpenseTx(req.params.id);
+  const out = deleteExpenseTx(req.params.id);
+  // Un gasto de un turno ya cerrado, o el que genera un consumo de empleado, no
+  // se borra: el motivo tiene que llegar a la pantalla (ver db.js).
+  if (out.error) return res.status(409).json(out);
   res.json({ ok: true, rev: getRev() });
 });
 
@@ -344,9 +363,9 @@ app.post("/api/shifts/open", (req, res) => {
 app.post("/api/shifts/close", (req, res) => {
   const b = req.body || {};
   const out = closeShiftTx(b.countedCash, { closeNote: b.closeNote, cashLeft: b.cashLeft });
+  /* Un 409 aquí es casi siempre "quedan mesas sin cobrar": el cierre se rechaza
+     y la respuesta trae cuántas son, para que la pantalla lo explique. */
   if (out.error) return res.status(409).json(out);
-  // `cuentasAbiertas`: mesas que quedaron sin cobrar. No impiden cerrar (su
-  // dinero entra al turno siguiente), pero la pantalla debe avisarlo.
   res.json({ state: getFullState(), cuentasAbiertas: out.cuentasAbiertas });
 });
 

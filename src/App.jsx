@@ -233,6 +233,95 @@ function AvisoInactividad({ segundos, onSeguir, onCerrar }) {
   );
 }
 
+/* Ventas o gastos que el servidor rechazó al reconectar.
+
+   Se cobraron de verdad —el efectivo está en el cajón— pero el servidor no los
+   aceptó: casi siempre porque la caja se cerró mientras la tablet estaba sin
+   red. Antes se descartaban en silencio y el dinero quedaba sin registro.
+
+   El aviso no se puede ignorar de un toque: las dos salidas son reintentar (una
+   vez abierta la caja) o descartar a sabiendas, escribiendo la confirmación.
+   No hay tercera opción a propósito — un "cerrar" fácil es cómo se pierde. */
+function AvisoRechazadas({ entradas, onReintentar, onDescartar }) {
+  const [abierto, setAbierto] = useState(false);
+  const ventas = entradas.filter((e) => e.path === "/api/orders");
+  const monto = ventas.reduce((s, e) => s + ((e.body && e.body.payment && e.body.payment.total) || 0), 0);
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 22px", background: "var(--error-suave)", borderBottom: "1px solid var(--error)", color: "var(--error)", flexShrink: 0 }}>
+      <Icon name="report" size={20} />
+      <div style={{ flex: 1, fontSize: 13.5, fontWeight: 700, lineHeight: 1.35 }}>
+        {entradas.length === 1 ? "1 operación cobrada sin conexión no se pudo registrar" : `${entradas.length} operaciones cobradas sin conexión no se pudieron registrar`}
+        {ventas.length > 0 && ` · ${money(monto)} en ventas`}
+        <div style={{ fontWeight: 500, fontSize: 12.5, marginTop: 2 }}>
+          {entradas[0].motivo}. El dinero sí entró: resuélvelo antes de cerrar caja.
+        </div>
+      </div>
+      <button onClick={() => setAbierto(true)} style={{ border: "1px solid currentColor", background: "transparent", color: "inherit", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "var(--ui)", whiteSpace: "nowrap" }}>
+        Ver detalle
+      </button>
+      <button onClick={onReintentar} style={{ border: "none", background: "var(--navy)", color: "#fff", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "var(--ui)", whiteSpace: "nowrap" }}>
+        Reintentar
+      </button>
+
+      {abierto && (
+        <div style={{ ...overlay, zIndex: 210 }} onClick={() => setAbierto(false)}>
+          <div style={{ ...sheet, maxWidth: 620 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ padding: "24px 26px 0" }}>
+              <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 20, color: "var(--navy)" }}>Operaciones sin registrar</div>
+              <div style={{ fontSize: 13.5, color: "var(--muted)", marginTop: 8, lineHeight: 1.5 }}>
+                Se cobraron en esta tablet mientras no había conexión y el servidor las rechazó al volver. Abre la caja
+                y toca «Reintentar»; si ya no corresponde registrarlas, descártalas.
+              </div>
+            </div>
+            <div style={{ maxHeight: 300, overflowY: "auto", padding: "16px 26px" }}>
+              {entradas.map((e, i) => {
+                const b = e.body || {};
+                const esVenta = e.path === "/api/orders";
+                return (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--borde)", fontSize: 13.5 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 700 }}>
+                        {esVenta ? `Venta · ${(b.lines || []).reduce((s, l) => s + l.qty, 0)} producto(s)` : e.path.startsWith("/api/expenses") ? `Gasto · ${b.concept || ""}` : e.path}
+                      </div>
+                      <div style={{ color: "var(--muted)", fontSize: 12.5 }}>
+                        {new Date(e.ts || e.rechazadoEn).toLocaleString("es-GT")} · {e.motivo}
+                      </div>
+                    </div>
+                    <div style={{ fontWeight: 700, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
+                      {money(esVenta ? (b.payment && b.payment.total) || 0 : b.amount || 0)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", gap: 10, padding: "8px 26px 24px" }}>
+              <Btn
+                kind="ghost"
+                full
+                onClick={() => {
+                  const w = window.prompt(
+                    `Vas a DESCARTAR ${entradas.length} operación(es) que sí se cobraron. No quedará registro de ellas y el arqueo de caja no va a cuadrar.\n\nEscribe DESCARTAR para confirmar:`
+                  );
+                  if (w == null) return;
+                  if (w.trim().toUpperCase() !== "DESCARTAR") return window.alert("Confirmación incorrecta: no se descartó nada.");
+                  onDescartar();
+                  setAbierto(false);
+                }}
+              >
+                Descartar
+              </Btn>
+              <Btn kind="primary" full icon="check" onClick={() => { onReintentar(); setAbierto(false); }}>
+                Reintentar ahora
+              </Btn>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   const [view, setView] = useState("order");
   const [menu, setMenu] = usePersistentState("cdv_menu", PRODUCTS);
@@ -613,6 +702,11 @@ export default function App() {
     // servidor devuelve 401; hay que volver a pedirla ya con el token, o esta
     // tablet se queda con el menú y las áreas que tuviera en localStorage.
     reloadConfig();
+    /* Con la sesión nueva se vacía la cola. Es el caso de la tablet que pasó la
+       noche sin red: al caducar la sesión, el vaciado se detiene y las ventas
+       quedan esperando; el reintento de fondo solo corre estando offline, así
+       que sin esto no volverían a intentarse hasta la próxima caída. */
+    data.sincronizarPendientes();
   }
   function logout() {
     apiLogout();
@@ -969,6 +1063,16 @@ export default function App() {
             </div>
           </div>
         </header>
+
+        {/* Ventas cobradas sin conexión que el servidor no aceptó. Va ANTES del
+            aviso de respaldo: es dinero de hoy, no un riesgo futuro. */}
+        {data.rechazadas.length > 0 && (
+          <AvisoRechazadas
+            entradas={data.rechazadas}
+            onReintentar={data.reintentarRechazadas}
+            onDescartar={data.descartarRechazadas}
+          />
+        )}
 
         {/* Aviso de respaldo: alerta del riesgo de perder datos si hace varios días que no se respalda. */}
         {backupStale && (

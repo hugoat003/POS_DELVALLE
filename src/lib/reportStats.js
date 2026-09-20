@@ -2,7 +2,7 @@
    Misma semántica que el dashboard (SummaryScreen): solo órdenes no anuladas,
    y los pagos divididos reparten el total entre métodos vía payment.parts. */
 import { money } from "./format.js";
-import { esConsumoEmpleado } from "./profit.js";
+import { esVenta } from "./profit.js";
 
 // Órdenes/gastos del turno actual + todos los turnos archivados.
 export function combineOrders(orders, shiftHistory) {
@@ -40,8 +40,8 @@ export function filterByRange(items, from, to) {
 
 // KPIs del período (mismos criterios que el useMemo de SummaryScreen).
 export function computeKpis(orders, expenses) {
-  // El consumo de empleado no es venta: cuenta como gasto (ver profit.js).
-  const valid = orders.filter((o) => !o.voided && !esConsumoEmpleado(o));
+  // Mismo criterio que Resumen y la ganancia neta (ver esVenta en profit.js).
+  const valid = orders.filter(esVenta);
   let tips = 0,
     cash = 0,
     card = 0;
@@ -68,7 +68,9 @@ export function computeKpis(orders, expenses) {
     card,
     expensesTotal,
     cashInTotal,
-    voided: orders.length - valid.length,
+    // Anuladas de verdad: `valid` también deja fuera los consumos de empleado,
+    // que no son anulaciones y no deben contarse como tales.
+    voided: orders.filter((o) => o.voided).length,
   };
 }
 
@@ -91,7 +93,7 @@ export function shiftsInRange(shiftHistory, from, to) {
 // de órdenes/gastos (ya no se pueden reabrir ni reimprimir).
 export function compactShift(s) {
   const all = s.orders || [];
-  const valid = all.filter((o) => !o.voided && !esConsumoEmpleado(o));
+  const valid = all.filter(esVenta);
   let sales = 0,
     tips = 0,
     cash = 0,
@@ -115,7 +117,9 @@ export function compactShift(s) {
   return {
     ...s,
     compacted: true,
-    totals: { total, sales, count: valid.length, tips, cash, card, items, expensesTotal, cashInTotal, voided: all.length - valid.length },
+    // `voided` cuenta anulaciones reales: `valid` también deja fuera los
+    // consumos de empleado, que no son anulaciones de nada.
+    totals: { total, sales, count: valid.length, tips, cash, card, items, expensesTotal, cashInTotal, voided: all.filter((o) => o.voided).length },
     orders: [],
     expenses: [],
   };
@@ -135,6 +139,9 @@ export function addCompactedKpis(kpis, shiftHistory, from, to) {
     out.cash += t.cash || 0;
     out.card += t.card || 0;
     out.expensesTotal += t.expensesTotal || 0;
+    // Las entradas de dinero a caja también viajan en los totales compactados;
+    // sin esta línea, un período con turnos viejos las mostraba en cero.
+    out.cashInTotal += t.cashInTotal || 0;
     out.voided += t.voided || 0;
   });
   out.avg = out.count ? out.total / out.count : 0;

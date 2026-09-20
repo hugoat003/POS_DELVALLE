@@ -11,7 +11,10 @@
    offline invita a corromper el corte. */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LS } from "./storage-core.js";
-import { apiFetch, enqueue, outboxEntries, isOnline, getToken, onReconnect, setOnline } from "./api.js";
+import {
+  apiFetch, enqueue, outboxEntries, isOnline, getToken, onReconnect, setOnline,
+  flushOutbox, rejectedEntries, retryRejected, clearRejected,
+} from "./api.js";
 import { applyServerConfig } from "./storage.js";
 
 const CACHE_KEY = "cdv_server_cache";
@@ -98,7 +101,32 @@ export function useServerData(currentUser) {
   const orders = [...state.orders, ...pendingOrders];
   const expenses = [...state.expenses, ...pendingExpenses].filter((g) => !deletedExpenseIds.includes(g.id));
 
-  // ---- refresco (sync multi-tablet) ----
+  /* Escrituras que el servidor rechazó al reconectar. Casi siempre son ventas
+     ya cobradas en efectivo, así que no pueden quedarse solo en localStorage:
+     la app las muestra hasta que alguien las resuelve. */
+  const rechazadas = rejectedEntries();
+
+  /* ---- refresco (sync multi-tablet) ----
+
+     REGLA: `state.rev` solo avanza cuando se ha aplicado un estado COMPLETO del
+     servidor. Nunca tras una escritura.
+
+     Las acciones de abajo actualizan a mano el trozo que les toca (la orden, el
+     gasto, el ingrediente) porque la pantalla tiene que responder al instante.
+     Pero una escritura cambia más cosas de las que devuelve: cobrar una venta
+     mueve también el tablero de barra y el inventario.
+
+     Cuando además se adoptaba el `rev` que devolvía el servidor, la tablet
+     quedaba diciendo "estoy al día" con un estado que solo era parcial, y el
+     sondeo siguiente contestaba {rev} sin novedades. El resultado: una venta de
+     mostrador NO aparecía en el tablero de barra de la tablet que la cobró —el
+     barista no veía la bebida— y seguía sin aparecer hasta que otra escritura
+     cualquiera desatascara el contador. En las otras tablets sí salía, porque
+     su rev iba atrasado, lo que hacía el fallo aún más difícil de creer.
+
+     Dejando el rev atrás, el sondeo de 4 s trae el estado completo y reconcilia
+     todo. Cuesta una sincronización extra por escritura, que es exactamente lo
+     que hace falta. */
   const refresh = useCallback(async () => {
     if (!getToken()) return;
     try {
@@ -151,7 +179,7 @@ export function useServerData(currentUser) {
         .then((res) => {
           ultimoConsumo = res.consumo || null;
           setState((s) => {
-            const next = { ...s, rev: res.rev, orders: [...s.orders.filter((o) => o.id !== order.id), res.order] };
+            const next = { ...s, orders: [...s.orders.filter((o) => o.id !== order.id), res.order] };
             LS.set(CACHE_KEY, next);
             return next;
           });
@@ -192,7 +220,6 @@ export function useServerData(currentUser) {
     setState((s) => {
       const next = {
         ...s,
-        rev: res.rev,
         openOrders: [...(s.openOrders || []).filter((o) => o.id !== res.order.id), ...(res.order.status === "cobrada" ? [] : [res.order])]
           .sort((a, b) => a.number - b.number),
       };
@@ -253,7 +280,6 @@ export function useServerData(currentUser) {
       setState((s) => {
         const next = {
           ...s,
-          rev: res.rev,
           openOrders: (s.openOrders || []).filter((o) => o.id !== orderId),
           orders: [...s.orders.filter((o) => o.id !== orderId), res.order],
         };
@@ -340,7 +366,7 @@ export function useServerData(currentUser) {
       apiFetch("/api/expenses", { method: "POST", body: expense })
         .then((res) => {
           setState((s) => {
-            const next = { ...s, rev: res.rev, expenses: [...s.expenses.filter((g) => g.id !== expense.id), res.expense] };
+            const next = { ...s, expenses: [...s.expenses.filter((g) => g.id !== expense.id), res.expense] };
             LS.set(CACHE_KEY, next);
             return next;
           });
@@ -364,8 +390,38 @@ export function useServerData(currentUser) {
       if (err.offline) {
         enqueue("DELETE", `/api/expenses/${encodeURIComponent(id)}`, null);
         bumpOutbox();
+      } else {
+        /* El servidor ahora puede negarse (gasto de un turno cerrado, o el que
+           genera un consumo de empleado). El borrado era optimista, así que sin
+           esto el gasto desaparecía de la pantalla aunque siguiera en la base:
+           la lista mentía hasta la siguiente recarga. */
+        window.alert("No se pudo borrar el gasto: " + err.message);
+        refresh();
       }
     });
+  }, [refresh]);
+
+  /* Vacía la cola con la sesión recién abierta.
+
+     Hace falta al volver de un 401: la cola se conserva a propósito, pero el
+     reintento en segundo plano solo corre mientras se está OFFLINE, así que sin
+     esto las ventas encoladas se quedaban esperando a la próxima caída de red. */
+  const sincronizarPendientes = useCallback(async () => {
+    await flushOutbox();
+    bumpOutbox();
+    refresh();
+  }, [refresh]);
+
+  // Reintenta lo que el servidor rechazó, una vez corregida la causa.
+  const reintentarRechazadas = useCallback(async () => {
+    await retryRejected();
+    bumpOutbox();
+    refresh();
+  }, [refresh]);
+
+  const descartarRechazadas = useCallback(() => {
+    clearRejected();
+    bumpOutbox();
   }, []);
 
   // Operaciones de caja: SOLO con conexión (arqueo compartido entre tablets).
@@ -442,7 +498,7 @@ export function useServerData(currentUser) {
       setState((s) => {
         const i = s.users.findIndex((x) => x.id === res.user.id);
         const users = i === -1 ? [...s.users, res.user] : s.users.map((x) => (x.id === res.user.id ? res.user : x));
-        const next = { ...s, rev: res.rev, users };
+        const next = { ...s, users };
         LS.set(CACHE_KEY, next);
         return next;
       });
@@ -458,7 +514,7 @@ export function useServerData(currentUser) {
     try {
       const res = await apiFetch(`/api/users/${encodeURIComponent(id)}`, { method: "DELETE" });
       setState((s) => {
-        const next = { ...s, rev: res.rev, users: s.users.filter((x) => x.id !== id) };
+        const next = { ...s, users: s.users.filter((x) => x.id !== id) };
         LS.set(CACHE_KEY, next);
         return next;
       });
@@ -479,7 +535,7 @@ export function useServerData(currentUser) {
       setState((s) => {
         const i = s.ingredients.findIndex((x) => x.id === res.ingredient.id);
         const ingredients = i === -1 ? [...s.ingredients, res.ingredient] : s.ingredients.map((x) => (x.id === res.ingredient.id ? res.ingredient : x));
-        const next = { ...s, rev: res.rev, ingredients };
+        const next = { ...s, ingredients };
         LS.set(CACHE_KEY, next);
         return next;
       });
@@ -495,7 +551,7 @@ export function useServerData(currentUser) {
     try {
       const res = await apiFetch(`/api/ingredients/${encodeURIComponent(id)}`, { method: "DELETE" });
       setState((s) => {
-        const next = { ...s, rev: res.rev, ingredients: s.ingredients.filter((x) => x.id !== id) };
+        const next = { ...s, ingredients: s.ingredients.filter((x) => x.id !== id) };
         LS.set(CACHE_KEY, next);
         return next;
       });
@@ -513,7 +569,7 @@ export function useServerData(currentUser) {
     try {
       const res = await apiFetch("/api/stock/moves", { method: "POST", body: move });
       setState((s) => {
-        const next = { ...s, rev: res.rev, ingredients: s.ingredients.map((x) => (x.id === res.ingredient.id ? res.ingredient : x)) };
+        const next = { ...s, ingredients: s.ingredients.map((x) => (x.id === res.ingredient.id ? res.ingredient : x)) };
         LS.set(CACHE_KEY, next);
         return next;
       });
@@ -576,6 +632,10 @@ export function useServerData(currentUser) {
     ingredients: state.ingredients || [],
     rev: state.rev,
     pendingCount: pendingOrders.length + pendingExpenses.length,
+    rechazadas,
+    sincronizarPendientes,
+    reintentarRechazadas,
+    descartarRechazadas,
     refresh,
     createOrder,
     openAccount,

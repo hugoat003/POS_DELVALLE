@@ -5,7 +5,12 @@ import { Logo } from "../components/Mascot.jsx";
 import { Kpi, DashCard } from "../components/ui.jsx";
 import { ProfitCard } from "../components/ProfitCard.jsx";
 import { money, fmtHour, lineTotal } from "../lib/format.js";
-import { computeProfit } from "../lib/profit.js";
+/* `esVenta` es compartida a propósito (ver lib/profit.js): esta pantalla usaba
+   su propio filtro y se quedó atrás cuando aparecieron los consumos de
+   empleado, así que Resumen y Reportes mostraban ventas distintas del mismo
+   día. Un capuchino regalado a un barista aparecía aquí como Q25 vendidos,
+   entre los más vendidos y dentro de las ventas por categoría. */
+import { computeProfit, esVenta } from "../lib/profit.js";
 
 // Períodos disponibles para el reporte.
 const PERIODS = [
@@ -128,9 +133,9 @@ export function SummaryScreen({ orders, expenses = [], cats, shiftHistory = [], 
         diff: s.diff,
         ...(s.compacted
           ? { count: s.totals?.count || 0, total: s.totals?.total || 0, avg: s.totals?.count ? s.totals.total / s.totals.count : 0 }
-          : summarize(s.orders.filter((o) => !o.voided))),
+          : summarize(s.orders.filter(esVenta))),
       }));
-    const cur = orders.filter((o) => !o.voided);
+    const cur = orders.filter(esVenta);
     if (cur.length) rows.unshift({ id: "actual", label: "Turno actual", diff: null, ...summarize(cur) });
     return rows;
   }, [orders, shiftHistory]);
@@ -146,7 +151,7 @@ export function SummaryScreen({ orders, expenses = [], cats, shiftHistory = [], 
   );
 
   const stats = useMemo(() => {
-    const validOrders = periodOrders.filter((o) => !o.voided);
+    const validOrders = periodOrders.filter(esVenta);
     let sales = 0,
       tips = 0,
       cash = 0,

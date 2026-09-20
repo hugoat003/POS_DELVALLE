@@ -25,6 +25,10 @@ import { LS } from "./storage-core.js";
 
 const TOKEN_KEY = "cdv_token";
 const OUTBOX_KEY = "cdv_outbox";
+/* Escrituras que el servidor rechazó. NO es lo mismo que la cola: de aquí no
+   sale nada solo, porque cada entrada es una venta o un gasto que ocurrió de
+   verdad y que alguien tiene que mirar. Ver flushOutbox. */
+const REJECTED_KEY = "cdv_outbox_rechazado";
 
 export const getToken = () => {
   try {
@@ -153,9 +157,43 @@ export function outboxBodies(path) {
     .map((e) => e.body);
 }
 
-/* Reenvía el outbox en orden. Un error de red detiene el vaciado (se reintenta
-   después); una respuesta 4xx/5xx descarta esa entrada (p. ej. caja cerrada
-   entretanto) para no bloquear el resto. */
+// ---- rechazadas: lo que el servidor no aceptó y NO se puede tirar ----
+export const rejectedEntries = () => LS.get(REJECTED_KEY, []);
+const setRejected = (list) => LS.set(REJECTED_KEY, list);
+export const rejectedSize = () => rejectedEntries().length;
+export const clearRejected = () => setRejected([]);
+
+/* Devuelve las rechazadas a la cola para volver a intentarlas. Se usa cuando la
+   causa ya se corrigió: se abrió la caja, se eligió mesa, volvió la sesión. */
+export async function retryRejected() {
+  const list = rejectedEntries();
+  if (!list.length) return true;
+  setRejected([]);
+  for (const e of list) enqueue(e.method, e.path, e.body);
+  return flushOutbox();
+}
+
+/* Reenvía el outbox en orden.
+
+   Aquí viven las ventas que se cobraron SIN CONEXIÓN: el dinero ya entró al
+   cajón y esta cola es el único sitio donde existe el registro. Por eso ninguna
+   entrada se tira en silencio.
+
+   Tres desenlaces, y el que faltaba era el tercero:
+
+     sin red      → se corta el vaciado y se reintenta luego, con la cola intacta.
+     401          → la sesión caducó (12 h de inactividad). NO es un rechazo del
+                    contenido: la venta sigue siendo válida y solo hace falta
+                    volver a entrar. Antes esto vaciaba la cola entera, una
+                    entrada tras otra, y una tablet que pasaba la noche sin red
+                    perdía el turno completo al reconectar por la mañana.
+     otro 4xx/5xx → el servidor rechazó ESTA entrada (la caja se cerró
+                    entretanto, por ejemplo). Se aparta a `rechazadas` con su
+                    motivo y se sigue con el resto, pero queda a la vista para
+                    que alguien decida: reintentarla o darla por perdida a
+                    sabiendas. Antes se escribía un console.warn que nadie lee
+                    en una tablet, y la venta desaparecía sin dejar rastro
+                    mientras el efectivo seguía en la caja. */
 export async function flushOutbox() {
   let list = getOutbox();
   while (list.length) {
@@ -164,7 +202,12 @@ export async function flushOutbox() {
       await apiFetch(head.path, { method: head.method, body: head.body });
     } catch (err) {
       if (err.offline) return false; // sigue sin conexión: se reintenta luego
-      console.warn("Café del Valle outbox: entrada descartada", head.path, err.message);
+      if (err.status === 401) return false; // sesión vencida: la cola se conserva
+      setRejected([
+        ...rejectedEntries(),
+        { ...head, motivo: err.message || `rechazo ${err.status}`, status: err.status || 0, rechazadoEn: Date.now() },
+      ]);
+      console.warn("Café del Valle outbox: entrada apartada para revisión", head.path, err.message);
     }
     list = rest;
     setOutbox(list);

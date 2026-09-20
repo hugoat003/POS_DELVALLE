@@ -22,6 +22,16 @@ import { lineConsumption, lineCost } from "./recipe.js";
    ganancia. Queda fuera de ingresos y de costo, y visible solo como gasto. */
 export const esConsumoEmpleado = (order) => (order && order.payment && order.payment.method) === "empleado";
 
+/* Qué cuenta como venta. FUENTE ÚNICA: la usan Resumen, Reportes, la ganancia
+   neta y la compactación de turnos.
+
+   Estaba copiada en cada pantalla, y una copia se quedó atrás: Resumen seguía
+   contando los consumos de empleado mientras Reportes ya no, así que las dos
+   pantallas daban cifras distintas para el mismo día sin que nada indicara
+   cuál era la buena. Con una sola definición, añadir un caso nuevo —una
+   cortesía, una merma vendida a cero— no puede volver a desincronizarlas. */
+export const esVenta = (order) => !!order && !order.voided && !esConsumoEmpleado(order);
+
 export function byId(ingredients) {
   return Object.fromEntries((ingredients || []).map((i) => [i.id, i]));
 }
@@ -65,7 +75,7 @@ export function computeProfit(orders, expenses, menu, modGroups, ingredients) {
   let linesSinReceta = 0;
 
   for (const o of orders || []) {
-    if (o.voided || esConsumoEmpleado(o)) continue;
+    if (!esVenta(o)) continue;
     revenue += Number(o.payment?.subtotal) || 0;
     const { cost, sinReceta } = orderCost(o, menu, modGroups, ingById);
     cogs += cost;
@@ -102,7 +112,7 @@ export function profitByDay(orders, expenses, menu, modGroups, ingredients) {
   };
 
   for (const o of orders || []) {
-    if (o.voided || esConsumoEmpleado(o)) continue;
+    if (!esVenta(o)) continue;
     const b = bucket(o.ts);
     b.revenue += Number(o.payment?.subtotal) || 0;
     b.cogs += orderCost(o, menu, modGroups, ingById).cost;

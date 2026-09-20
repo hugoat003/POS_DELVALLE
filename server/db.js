@@ -16,7 +16,7 @@ import { orderCost, byId } from "../src/lib/profit.js";
 import { costPerBase } from "../src/lib/units.js";
 import { splitByStation, pendingLines, stampSent, stationOf, activeLines } from "../src/lib/stations.js";
 import { lineTotal } from "../src/lib/format.js";
-import { INGREDIENTS, PRODUCTS, MOD_GROUPS, CATEGORIES } from "../src/data.js";
+import { INGREDIENTS, PRODUCTS, MOD_GROUPS, CATEGORIES, AREAS } from "../src/data.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const DATA_DIR = path.join(__dirname, "data");
@@ -475,6 +475,17 @@ export const getRev = () => S.getMeta.get().rev;
 const insertMove = (p) =>
   S.moveInsert.run({ order_id: null, note: null, user_name: null, entered_qty: null, entered_unit: null, ...p });
 
+/* Misma envoltura y misma razón que insertMove: el día que `expenses` ganó la
+   columna `kind`, el statement pasó a exigirla y la restauración de respaldos
+   —que es el único callsite que no se actualizó— empezó a lanzar "Missing named
+   parameter: kind" a mitad de la transacción.
+
+   El fallo era de los peores posibles: no se notaba nunca, porque la
+   restauración es justo lo que solo se usa el día que algo ya salió mal. Con
+   los defaults aquí, añadir columnas deja de poder romper el respaldo. */
+const insertExpenseRow = (p) =>
+  S.expenseInsert.run({ kind: "salida", registered_by: null, ...p });
+
 // Misma envoltura, misma razón: orderInsert se llama desde la venta directa y
 // desde el restore de un respaldo, y ganó seis columnas con la cuenta abierta.
 const insertOrderRow = (p) =>
@@ -853,18 +864,25 @@ export function getDashboard() {
   const abiertas = S.openOrders.all().map(rowToOrder);
   const bajoMinimo = listIngredients().filter((i) => !i.archived && i.stock <= i.minStock);
 
+  /* El conteo de órdenes y el ticket promedio también excluyen los consumos de
+     empleado. Las ventas ya los dejaban fuera, pero el conteo no, así que el
+     promedio se calculaba dividiendo las ventas reales entre un número de
+     órdenes inflado: tres cafés vendidos y uno regalado daban un ticket
+     promedio un 25% más bajo del real. */
+  const ventasDelDia = delDia.filter((r) => !esConsumoEmpleado(JSON.parse(r.payment)));
+
   return {
     ts: Date.now(),
     caja: row ? { abierta: true, desde: row.opened_at, fondo: row.opening_cash } : { abierta: false },
     hoy: {
-      ordenes: delDia.length,
+      ordenes: ventasDelDia.length,
       ventas: Math.round(ventas * 100) / 100,
       propinas: Math.round(propinas * 100) / 100,
       efectivo: Math.round(efectivo * 100) / 100,
       tarjeta: Math.round(tarjeta * 100) / 100,
       costoInsumos: Math.round(cogs * 100) / 100,
       gananciaNeta: Math.round((ventas - cogs) * 100) / 100,
-      ticketPromedio: delDia.length ? Math.round((ventas / delDia.length) * 100) / 100 : 0,
+      ticketPromedio: ventasDelDia.length ? Math.round((ventas / ventasDelDia.length) * 100) / 100 : 0,
     },
     cuentasAbiertas: {
       total: abiertas.length,
@@ -1026,6 +1044,10 @@ export const openOrderTx = db.transaction((data, user) => {
   if (malas) return { error: malas, invalido: true };
   const open = S.openShift.get();
   if (!open) return { error: "caja cerrada" };
+  const ocupada = cuentaEnMesa(data.table, data.id);
+  if (ocupada) {
+    return { error: `la mesa ${JSON.parse(ocupada.table_json).label} ya tiene la cuenta #${ocupada.number} sin cobrar`, mesaOcupada: true, cuenta: ocupada.number };
+  }
   const now = data.ts || Date.now();
   const number = S.getMeta.get().order_seq;
   insertOrderRow({
@@ -1061,6 +1083,15 @@ export const updateOrderLinesTx = db.transaction((id, data) => {
   const malas = validarLineas(data.lines || []);
   if (malas) return { error: malas, invalido: true };
 
+  // Mudar la cuenta a una mesa que ya tiene dueño dejaría una de las dos fuera
+  // del mapa. Solo se comprueba cuando el cliente manda mesa de verdad.
+  if (data.table !== undefined) {
+    const ocupada = cuentaEnMesa(data.table, id);
+    if (ocupada) {
+      return { error: `la mesa ${JSON.parse(ocupada.table_json).label} ya tiene la cuenta #${ocupada.number} sin cobrar`, mesaOcupada: true, cuenta: ocupada.number };
+    }
+  }
+
   /* Se conservan las enviadas y las anuladas tal cual, y solo se aceptan del
      cliente las líneas nuevas. Así una tablet desactualizada no puede resucitar
      un item que otra acaba de cancelar ni borrar el rastro de la anulación.
@@ -1095,6 +1126,27 @@ function faltaMesa(orderType, table) {
   if ((orderType || "Aquí") !== "Aquí" || table) return false;
   const areas = kvGet("cdv_areas") || [];
   return areas.some((a) => (a.tables || []).length > 0);
+}
+
+/* ¿Ya hay otra cuenta viva en esa mesa?
+
+   El mapa del salón muestra UNA cuenta por mesa. Si dos llegan a la misma, la
+   segunda queda invisible: no se puede abrir, no se puede cobrar y no se puede
+   descartar, pero sí sigue contando para bloquear el cierre de caja. El turno
+   se queda trabado en una cuenta que nadie puede ver ni tocar.
+
+   La pantalla ya no deja elegir una mesa ocupada, pero eso no alcanza: dos
+   tablets pueden tocar la misma mesa libre en el mismo segundo, y una tablet
+   con el mapa viejo la ve libre aunque no lo esté. Se decide aquí, que es el
+   único sitio donde las dos peticiones se ordenan. */
+function cuentaEnMesa(table, exceptoId) {
+  if (!table || !table.id) return null;
+  for (const r of S.openOrders.all()) {
+    if (r.id === exceptoId) continue;
+    const t = r.table_json ? JSON.parse(r.table_json) : null;
+    if (t && t.id === table.id) return r;
+  }
+  return null;
 }
 
 /* Manda la cuenta a preparar. Es idempotente por construcción: lo que ya lleva
@@ -1399,6 +1451,14 @@ export const voidOrderTx = db.transaction((idOrNumber, reason, userName) => {
   if (row.voided) return { ok: true }; // ya anulada: no devolver stock dos veces
   S.orderVoid.run(reason || "", Date.now(), row.id);
   restoreStockForOrder(row.id, userName); // lo consumido vuelve al inventario
+  /* Si era un consumo de empleado, su gasto se va con ella.
+
+     Anular devuelve el material al inventario, así que el negocio ya no lo
+     gastó; dejar el gasto en pie hacía que siguiera pagándolo en los reportes
+     para siempre. Como la orden anulada tampoco cuenta en el costo de ventas,
+     nadie iba a encontrar ese dinero de vuelta. Borrar por id es inofensivo
+     cuando no existe. */
+  S.expenseDelete.run(`Ge:${row.id}`);
   S.bumpRev.run();
   return { ok: true };
 });
@@ -1425,7 +1485,7 @@ function registrarConsumoEmpleado(row, payment, user) {
   const total = round2(cost + manual);
   const quien = String((payment && payment.empleado) || "").trim().slice(0, 60);
 
-  S.expenseInsert.run({
+  insertExpenseRow({
     id: `Ge:${row.id}`, // determinista: un reintento no duplica el gasto
     shift_id: row.shift_id,
     ts: Date.now(),
@@ -1443,7 +1503,7 @@ export const insertExpense = db.transaction((data, registeredBy) => {
   if (existing) return { expense: rowToExpense(existing), existed: true };
   const open = S.openShift.get();
   if (!open) return { error: "caja cerrada" };
-  S.expenseInsert.run({
+  insertExpenseRow({
     id: data.id,
     shift_id: open.id,
     ts: data.ts || Date.now(),
@@ -1457,7 +1517,31 @@ export const insertExpense = db.transaction((data, registeredBy) => {
   return { expense: rowToExpense(S.expenseGet.get(data.id)), existed: false };
 });
 
+/* Borrar un gasto.
+
+   Antes no comprobaba nada: bastaba el id para borrar cualquier gasto de
+   cualquier turno, incluido uno ya cerrado y archivado. Eso cambia un arqueo
+   que ya se firmó —el esperado del turno se calculó con ese gasto dentro— y el
+   historial pasa a contar una historia distinta de la que se cerró esa noche,
+   sin dejar rastro de la edición.
+
+   Se acota a lo corregible: el turno abierto. Para tocar uno archivado hay que
+   reabrirlo, que es una acción del gerente y queda a la vista. */
 export const deleteExpenseTx = db.transaction((id) => {
+  const row = S.expenseGet.get(id);
+  if (!row) return { error: "el gasto no existe" };
+  /* El gasto de un consumo de empleado no se borra a mano: es el reflejo
+     contable de una orden. Borrarlo dejaría el consumo sin costo por ningún
+     lado —la orden tampoco entra al costo de ventas— y el material salido del
+     inventario acabaría siendo gratis en los reportes. Se quita anulando la
+     orden, que además devuelve el inventario. */
+  if (String(id).startsWith("Ge:")) {
+    return { error: "este gasto lo generó un consumo de empleado: anula esa orden en el historial para quitarlo" };
+  }
+  const open = S.openShift.get();
+  if (!open || row.shift_id !== open.id) {
+    return { error: "ese gasto es de un turno ya cerrado: reabre el turno desde Historial para corregirlo" };
+  }
   S.expenseDelete.run(id);
   S.bumpRev.run();
   return { ok: true };
@@ -1610,7 +1694,13 @@ export const compactOldShifts = db.transaction((days = 180) => {
   const ingById = byId(listIngredients());
   for (const r of olds) {
     const all = S.ordersByShift.all(r.id).map(rowToOrder);
-    const valid = all.filter((o) => !o.voided);
+    /* Igual que compactShift en el cliente (src/lib/reportStats.js): los
+       consumos de empleado no son ventas. Aquí faltaba el filtro, y es el sitio
+       donde más duele — compactar BORRA las órdenes y deja solo estos totales,
+       así que un consumo contado como venta quedaba congelado en el histórico
+       sin forma de recalcularlo. Su costo, además, ya está como gasto: sumarlo
+       otra vez al costo de ventas lo restaba dos veces de la ganancia. */
+    const valid = all.filter((o) => !o.voided && !esConsumoEmpleado(o.payment));
     let sales = 0, tips = 0, cash = 0, card = 0, items = 0, cogs = 0;
     valid.forEach((o) => {
       cogs += orderCost(o, menu, mods, ingById).cost;
@@ -1628,7 +1718,10 @@ export const compactOldShifts = db.transaction((days = 180) => {
       JSON.stringify({
         total, sales, count: valid.length, tips, cash, card, items, expensesTotal, cashInTotal,
         cogs: Math.round(cogs * 100) / 100,
-        voided: all.length - valid.length,
+        // Anuladas de verdad: los consumos de empleado quedan fuera de `valid`
+        // pero no son anulaciones, y contarlos aquí inventaría anulaciones que
+        // nadie hizo en el turno archivado.
+        voided: all.filter((o) => o.voided).length,
       }),
       r.id
     );
@@ -1843,7 +1936,14 @@ export const importLegacyData = db.transaction((data, { wipe = false } = {}) => 
     for (const e of expenses || []) {
       const id = e.id || newId("G");
       if (S.expenseGet.get(id)) continue;
-      S.expenseInsert.run({ id, shift_id: shiftId, ts: e.ts || 0, concept: e.concept, amount: e.amount, method: e.method, registered_by: e.registeredBy || "" });
+      insertExpenseRow({
+        id, shift_id: shiftId, ts: e.ts || 0, concept: e.concept, amount: e.amount,
+        method: e.method,
+        // Sin esto, restaurar un respaldo convertía las entradas de dinero en
+        // salidas y el arqueo del turno restaurado salía descuadrado.
+        kind: e.kind === "entrada" ? "entrada" : "salida",
+        registered_by: e.registeredBy || "",
+      });
     }
   };
 
@@ -1851,12 +1951,20 @@ export const importLegacyData = db.transaction((data, { wipe = false } = {}) => 
   for (const s of data.shiftHistory || []) {
     const id = s.id || newId("S");
     if (S.shiftGet.get(id)) continue;
+    /* El arqueo se restaura COMPLETO. Faltaban cash_in, card_sales, la nota de
+       cierre y el efectivo dejado en caja: al restaurar, los turnos archivados
+       volvían con las entradas de dinero en cero y sin la nota del traspaso, así
+       que un arqueo que había cuadrado aparecía descuadrado después de una
+       restauración —y sin forma de saber por qué. */
     db.prepare(
-      `INSERT INTO shifts (id, status, opened_at, closed_at, closed_label, opening_cash, cash_sales, cash_expenses, expected, counted, diff, compacted, compact_json)
-       VALUES (?, 'closed', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO shifts (id, status, opened_at, closed_at, closed_label, opening_cash, cash_sales, cash_expenses,
+                           cash_in, card_sales, expected, counted, diff, close_note, cash_left, compacted, compact_json)
+       VALUES (?, 'closed', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       id, s.openedAt, s.closedAt, s.closedAtLabel || "", s.openingCash || 0,
-      s.cashSales ?? null, s.cashExpenses ?? null, s.expected ?? null, s.counted ?? null, s.diff ?? null,
+      s.cashSales ?? null, s.cashExpenses ?? null, s.cashIn ?? null, s.cardSales ?? null,
+      s.expected ?? null, s.counted ?? null, s.diff ?? null,
+      s.closeNote || null, s.cashLeft ?? null,
       s.compacted ? 1 : 0, s.compacted ? JSON.stringify(s.totals || {}) : null
     );
     if (!s.compacted) insertShiftData(id, s.orders, s.expenses);
@@ -1932,6 +2040,16 @@ export const seedInventoryDefaults = db.transaction(() => {
   if (!kvGet("cdv_menu")) S.kvSet.run("cdv_menu", JSON.stringify(PRODUCTS), Date.now());
   if (!kvGet("cdv_cats")) S.kvSet.run("cdv_cats", JSON.stringify(CATEGORIES), Date.now());
   if (!kvGet("cdv_mods")) S.kvSet.run("cdv_mods", JSON.stringify(MOD_GROUPS), Date.now());
+  /* Las mesas faltaban en esta siembra, y eso apagaba en silencio el candado de
+     "no se puede cobrar ni mandar a preparar sin mesa".
+
+     `faltaMesa` decide si el local usa mesas mirando `cdv_areas` en el
+     servidor. La tablet cae a los defaults de data.js y SE VE el mapa completo,
+     así que nada delata el problema; pero mientras nadie edite las mesas, el
+     servidor tiene la clave vacía, cree que es un café de puro mostrador y deja
+     pasar todo. Una protección que falla abierta y sin avisar es peor que no
+     tenerla, porque se confía en ella. */
+  if (!kvGet("cdv_areas")) S.kvSet.run("cdv_areas", JSON.stringify(AREAS), Date.now());
 
   /* Destino de preparación en las categorías que ya existían. Se toma el de
      data.js cuando el id coincide y "barra" para las que creó el cliente: en un
