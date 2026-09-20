@@ -1,7 +1,7 @@
 /* Café del Valle POS — dashboard de ventas: turno actual o rango de fechas + comparativa de turnos. */
 import { useMemo, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
-import { Mascot } from "../components/Mascot.jsx";
+import { Logo } from "../components/Mascot.jsx";
 import { Kpi, DashCard } from "../components/ui.jsx";
 import { ProfitCard } from "../components/ProfitCard.jsx";
 import { money, fmtHour, lineTotal } from "../lib/format.js";
@@ -230,7 +230,7 @@ export function SummaryScreen({ orders, expenses = [], cats, shiftHistory = [], 
           <PeriodSelector period={period} setPeriod={setPeriod} />
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, textAlign: "center" }}>
-          <Mascot size={84} color="var(--line)" />
+          <Logo variant="mark" size={84} opacidad={0.3} />
           <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 29, letterSpacing: "-.01em", color: "var(--tinta)"}}>No hay ventas en este período</div>
           <div style={{ color: "var(--muted)", fontSize: 15.5, maxWidth: 380, lineHeight: 1.5 }}>{period === "turno" ? "Cobra órdenes desde la pantalla principal y aquí verás el resumen del turno en tiempo real." : "Prueba con otro período o revisa los turnos archivados en Historial."}</div>
         </div>

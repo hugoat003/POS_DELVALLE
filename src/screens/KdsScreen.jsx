@@ -13,7 +13,7 @@
    comanda estorba más de lo que protege. El seguro es poder deshacer. */
 import { useEffect, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
-import { Mascot } from "../components/Mascot.jsx";
+import { Logo } from "../components/Mascot.jsx";
 import { Btn } from "../components/ui.jsx";
 
 // Gris hasta 5 min, ámbar hasta 10, rojo después: la señal de "esto ya urge".
@@ -189,7 +189,7 @@ export function KdsScreen({ orders, shiftOpen, onSetPrep }) {
     return (
       <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: 40, textAlign: "center" }}>
         <div style={{ maxWidth: 380 }}>
-          <Mascot size={90} />
+          <Logo variant="mark" size={90} opacidad={0.3} />
           <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 25, letterSpacing: "-.01em", color: "var(--tinta)", marginTop: 14 }}>La caja está cerrada</div>
           <div style={{ color: "var(--muted)", fontSize: 15, marginTop: 6, lineHeight: 1.5 }}>
             Las comandas aparecen aquí en cuanto caja abra el turno y empiece a cobrar.

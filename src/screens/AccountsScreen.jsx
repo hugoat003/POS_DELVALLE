@@ -9,7 +9,7 @@
    llena; una libre queda en el fondo crema de siempre. */
 import { useEffect, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
-import { Mascot } from "../components/Mascot.jsx";
+import { Logo } from "../components/Mascot.jsx";
 import { Btn } from "../components/ui.jsx";
 import { lineTotal } from "../lib/format.js";
 import { activeLines, pendingLines } from "../lib/stations.js";
@@ -186,7 +186,7 @@ export function AccountsScreen({ openOrders, areas, onAbrir, onNueva }) {
       {openOrders.length === 0 && (
         <div style={{ textAlign: "center", padding: "24px 16px", color: "var(--muted)" }}>
           <div style={{ display: "flex", justifyContent: "center" }}>
-            <Mascot size={72} color="var(--line)" />
+            <Logo variant="mark" size={72} opacidad={0.3} />
           </div>
           <div style={{ marginTop: 8, fontSize: 13.5 }}>
             Toca una mesa para abrirle cuenta. Lo que pidan se manda a preparar y se cobra al final.

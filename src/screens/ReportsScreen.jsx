@@ -2,7 +2,7 @@
    con vista previa y descarga en PDF. Solo para el rol admin. */
 import { useMemo, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
-import { Mascot } from "../components/Mascot.jsx";
+import { Logo } from "../components/Mascot.jsx";
 import { Kpi } from "../components/ui.jsx";
 import { ProfitCard } from "../components/ProfitCard.jsx";
 import { money } from "../lib/format.js";
@@ -150,7 +150,7 @@ export function ReportsScreen({ orders, expenses = [], shiftHistory = [], menu =
         <div style={{ padding: "40px 0", textAlign: "center", color: "var(--muted)", fontWeight: 700 }}>Elige un rango de fechas válido (desde ≤ hasta).</div>
       ) : empty ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 0", gap: 14 }}>
-          <Mascot size={90} />
+          <Logo variant="mark" size={90} opacidad={0.3} />
           <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 20, color: "var(--navy)" }}>Sin movimientos en este período</div>
           <div style={{ color: "var(--muted)", fontWeight: 700, fontSize: 14 }}>Prueba con otro rango de fechas.</div>
         </div>

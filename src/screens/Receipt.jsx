@@ -1,6 +1,6 @@
 /* Café del Valle POS — comprobante del cliente + comanda imprimible para cocina. */
 import { Icon } from "../components/Icon.jsx";
-import { Mascot } from "../components/Mascot.jsx";
+import { Logo } from "../components/Mascot.jsx";
 import { Btn } from "../components/ui.jsx";
 import { money, lineTotal } from "../lib/format.js";
 
@@ -88,8 +88,9 @@ export function ReceiptTicket({ order }) {
   return (
     <div className="cdv-ticket" style={{ width: 340, background: "#fff", borderRadius: 18, padding: "26px 26px 30px", boxShadow: "0 20px 50px -22px rgba(40,44,60,.4)", position: "relative" }}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, paddingBottom: 16, borderBottom: "2px dashed var(--line)" }}>
-        <Mascot size={42} />
-        <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 24, color: "var(--tinta)", letterSpacing: "-.01em" }}>Café del Valle</div>
+        {/* El logotipo, no un símbolo suelto con el nombre repetido debajo en
+            otra tipografía: el ticket es lo que el cliente se lleva. */}
+        <Logo size={44} />
         <div style={{ fontSize: 10.5, color: "var(--cafe)", letterSpacing: 1.8, textTransform: "uppercase" }}>Barillas · Huehuetenango</div>
       </div>
 

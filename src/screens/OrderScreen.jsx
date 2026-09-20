@@ -1,7 +1,7 @@
 /* Café del Valle POS — pantalla de orden: menú con búsqueda, carrito en vivo y modal. */
 import { useMemo, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
-import { Mascot } from "../components/Mascot.jsx";
+import { Logo } from "../components/Mascot.jsx";
 import { Btn, Pill, qtyBtn, overlay, sheet } from "../components/ui.jsx";
 import { activeLines } from "../lib/stations.js";
 import { money, lineTotal } from "../lib/format.js";
@@ -645,7 +645,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], o
 
           {cart.length === 0 && enviadas.length === 0 ? (
             <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--muted)", gap: 12, textAlign: "center", padding: 20 }}>
-              <Mascot size={64} color="var(--line)" />
+              <Logo variant="mark" size={64} opacidad={0.3} />
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>Aún no hay productos</div>
               <div style={{ fontSize: 13.5, maxWidth: 220, lineHeight: 1.5 }}>Toca un producto del menú para empezar la orden.</div>
             </div>
