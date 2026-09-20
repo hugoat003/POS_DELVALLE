@@ -162,6 +162,13 @@ function useCierrePorInactividad(activo, alCerrar) {
       setRestante(null);
       return;
     }
+    /* La cuenta arranca AQUÍ, al iniciar sesión, no al cargar la app.
+
+       Sin esta línea el reloj corría desde que se abrió la pantalla de acceso:
+       una tablet que pasó la noche en el login dejaba al gerente fuera al
+       segundo de entrar, porque para el contador ya llevaba horas quieto. */
+    ultimaSenal.current = Date.now();
+
     const limite = INACTIVIDAD_MINUTOS * 60;
     /* Los toques DENTRO del aviso no cuentan como actividad. Si contaran, el
        toque reiniciaría la cuenta, el aviso desaparecería bajo el dedo y el
