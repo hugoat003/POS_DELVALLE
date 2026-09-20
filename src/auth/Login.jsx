@@ -145,7 +145,7 @@ export function Login({ onLogin, users: usersProp }) {
             las dos era el logo. En el logotipo la "C" del arco ES la C de
             "Café": separarla del texto rompe la palabra. */}
         <div style={{ position: "relative" }}>
-          <Logo size={76} tono="claro" />
+          <Logo size={52} tono="claro" />
         </div>
 
         <div style={{ position: "relative" }}>
@@ -169,7 +169,7 @@ export function Login({ onLogin, users: usersProp }) {
                 teclado de PIN, y el acceso se quedaba sin ningún logo. Este
                 aparece solo cuando aquel no está. */}
             <div className="cdv-login-marca">
-              <Logo size={46} />
+              <Logo size={34} />
             </div>
             <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 34, letterSpacing: "-.01em", color: "var(--tinta)", margin: "0 0 4px" }}>¿Quién está en caja?</h1>
             <p style={{ color: "var(--muted)", margin: "0 0 26px", fontSize: 15.5 }}>Selecciona tu usuario para continuar.</p>
