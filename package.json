@@ -9,7 +9,9 @@
     "server": "node --env-file-if-exists=.env server/index.js",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "npm run build && node --env-file-if-exists=.env server/index.js"
+    "start": "npm run build && node --env-file-if-exists=.env server/index.js",
+    "test": "node tests/regresion/correr.mjs",
+    "test:humo": "node tests/smoke.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",

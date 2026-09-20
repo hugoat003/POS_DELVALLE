@@ -19,7 +19,17 @@ import { lineTotal } from "../src/lib/format.js";
 import { INGREDIENTS, PRODUCTS, MOD_GROUPS, CATEGORIES, AREAS } from "../src/data.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const DATA_DIR = path.join(__dirname, "data");
+/* Dónde viven los datos. Por defecto server/data, que es lo que usa la mini PC
+   de la cafetería y no hay que configurar.
+
+   `CDV_DATA_DIR` existe para poder levantar el servidor contra una base
+   desechable: las pruebas de regresión (tests/) borran su carpeta de datos
+   entre corridas, y sin esta variable apuntarían a la base del negocio. Una
+   suite de pruebas que puede borrar las ventas del día no se puede dejar en el
+   repositorio. También sirve para poner los datos en otro disco. */
+export const DATA_DIR = process.env.CDV_DATA_DIR
+  ? path.resolve(process.env.CDV_DATA_DIR)
+  : path.join(__dirname, "data");
 const DB_FILE = path.join(DATA_DIR, "cdv.db");
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
