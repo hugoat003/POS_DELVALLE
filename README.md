@@ -18,7 +18,7 @@ npm start        # uso diario: compila y sirve app + datos en http://localhost:5
 ```
 
 Los datos (menú, órdenes, turnos, empleados…) se guardan en **SQLite**
-(`server/data/fuwa.db`, modo WAL) a través del servidor Express local. La
+(`server/data/cdv.db`, modo WAL) a través del servidor Express local. La
 primera vez que arranca, el servidor **importa automáticamente** los archivos
 JSON antiguos de `server/data/*.json` y los archiva en
 `server/data/json-importado/`.
@@ -48,7 +48,7 @@ proxy con HTTPS. Receta con **Caddy** (certificados Let's Encrypt automáticos):
 
 ```bash
 # 1. En el VPS (Ubuntu/Debian): Node 20+, y compilar el módulo nativo allí
-git clone <repo> /opt/fuwa && cd /opt/fuwa
+git clone <repo> /opt/cafe-del-valle && cd /opt/cafe-del-valle
 npm install && npm run build       # nunca subas node_modules desde tu Mac
 
 # 2. Servicio systemd — /etc/systemd/system/cafedelvalle.service
@@ -56,14 +56,14 @@ npm install && npm run build       # nunca subas node_modules desde tu Mac
 Description=Café del Valle POS
 After=network.target
 [Service]
-User=fuwa
-WorkingDirectory=/opt/fuwa
+User=cafedelvalle
+WorkingDirectory=/opt/cafe-del-valle
 Environment=NODE_ENV=production PORT=5174
 ExecStart=/usr/bin/node server/index.js
 Restart=always
 [Install]
 WantedBy=multi-user.target
-# systemctl enable --now fuwa
+# systemctl enable --now cafe-del-valle
 
 # 3. Caddy — /etc/caddy/Caddyfile   (HTTPS automático)
 pos.tudominio.com {
@@ -83,7 +83,7 @@ añadir además una copia binaria de SQLite, que es consistente con WAL:
 
 ```bash
 # crontab -e   (opcional, complementa al respaldo JSON de la app)
-0 4 * * * sqlite3 /opt/fuwa/server/data/fuwa.db ".backup /var/backups/fuwa-$(date +\%F).db" && find /var/backups -name 'fuwa-*.db' -mtime +30 -delete
+0 4 * * * sqlite3 /opt/cafe-del-valle/server/data/cdv.db ".backup /var/backups/cafe-del-valle-$(date +\%F).db" && find /var/backups -name 'cafe-del-valle-*.db' -mtime +30 -delete
 ```
 
 ## Funcionalidad
@@ -211,7 +211,7 @@ en la caja se ve todo perfecto y **ninguna tablet conecta**.
 
 ## Respaldos
 
-Se guarda **una copia completa al día** en `server/data/backups/` (`fuwa-aaaa-mm-dd.json`)
+Se guarda **una copia completa al día** en `server/data/backups/` (`cafe-del-valle-aaaa-mm-dd.json`)
 y se conservan las últimas 30. El archivo es el mismo formato que exporta el botón manual,
 así que se puede restaurar desde *Herramientas → Restaurar respaldo* sin ninguna herramienta
 extra.
@@ -243,7 +243,7 @@ que caduquen, sin cuota de API, y funciona igual con Dropbox, OneDrive o una uni
 con `node:crypto`):
 
 ```bash
-BACKUP_DRIVE_CREDENCIALES=C:\fuwa\credenciales-drive.json
+BACKUP_DRIVE_CREDENCIALES=C:\cafe-del-valle\credenciales-drive.json
 BACKUP_DRIVE_CARPETA=<id de la carpeta>
 ```
 
@@ -286,7 +286,7 @@ server/
   index.js            API Express: login/sesiones, órdenes/gastos/turnos, sync
   db.js               capa SQLite (better-sqlite3): esquema, transacciones,
                       migración desde los JSON antiguos
-  data/fuwa.db        la base de datos (WAL); respáldala con sqlite3 .backup
+  data/cdv.db        la base de datos (WAL); respáldala con sqlite3 .backup
 ```
 
 La config (menú, opciones, categorías, apariencia) viaja como JSON a la tabla

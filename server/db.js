@@ -20,9 +20,41 @@ import { INGREDIENTS, PRODUCTS, MOD_GROUPS, CATEGORIES } from "../src/data.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const DATA_DIR = path.join(__dirname, "data");
-const DB_FILE = path.join(DATA_DIR, "fuwa.db");
+const DB_FILE = path.join(DATA_DIR, "cdv.db");
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
+
+/* El archivo de la base se llamaba `fuwa.db`, por el sistema anterior.
+
+   Cambiarle el nombre en el código sin moverlo en el disco es la peor forma de
+   perder datos: SQLite crea alegremente una base vacía con el nombre nuevo, el
+   servidor arranca sin quejarse y el café ve su menú, su inventario y su
+   historial en blanco, aunque todo siga intacto en el archivo de al lado.
+
+   Por eso el archivo se mueve ANTES de abrir nada, y solo si el nombre nuevo no
+   existe todavía. El WAL se pliega dentro del archivo principal antes de
+   moverlo: renombrar solo el `.db` dejaría fuera las escrituras que en ese
+   momento viven en el `-wal`, que en una base activa son las más recientes. */
+function migrarArchivoDeBase() {
+  const viejo = path.join(DATA_DIR, "fuwa.db");
+  if (fs.existsSync(DB_FILE) || !fs.existsSync(viejo)) return;
+  const previa = new Database(viejo);
+  try {
+    previa.pragma("wal_checkpoint(TRUNCATE)");
+  } finally {
+    previa.close();
+  }
+  fs.renameSync(viejo, DB_FILE);
+  for (const sufijo of ["-wal", "-shm"]) {
+    try {
+      fs.rmSync(viejo + sufijo, { force: true });
+    } catch {
+      /* Si quedan, SQLite los reconstruye. */
+    }
+  }
+  console.log("[migración] server/data/fuwa.db → cdv.db (datos conservados)");
+}
+migrarArchivoDeBase();
 
 export const db = new Database(DB_FILE);
 db.pragma("journal_mode = WAL"); // lecturas concurrentes + escrituras atómicas
@@ -426,7 +458,10 @@ const S = {
       (id, ingredient_id, delta, reason, order_id, note, ts, user_name, entered_qty, entered_unit)
     VALUES (@id, @ingredient_id, @delta, @reason, @order_id, @note, @ts, @user_name, @entered_qty, @entered_unit)`),
   movesRecent: db.prepare("SELECT * FROM stock_moves ORDER BY ts DESC, rowid DESC LIMIT ?"),
-  movesByOrder: db.prepare("SELECT * FROM stock_moves WHERE order_id = ? AND reason = 'venta'"),
+  /* TODOS los movimientos de la orden, no solo los de venta: la devolución de
+     una línea anulada entra con reason 'anulacion', y filtrarla dejaba el saldo
+     de la orden incompleto (ver restoreStockForOrder). */
+  movesByOrder: db.prepare("SELECT * FROM stock_moves WHERE order_id = ?"),
   movesByIngredient: db.prepare("SELECT id FROM stock_moves WHERE ingredient_id = ? LIMIT 1"),
 };
 
@@ -547,8 +582,8 @@ export const rowToMove = (r) => ({
    Dentro de un mismo envío el id sigue siendo determinista, que es lo que hace
    que un doble tap o un reintento del outbox no descuenten dos veces. */
 function applyStockForOrder(orderId, lines, userName, ts, seq = 1) {
-  const menu = kvGet("fuwa_menu") || [];
-  const mods = kvGet("fuwa_mods") || {};
+  const menu = kvGet("cdv_menu") || [];
+  const mods = kvGet("cdv_mods") || {};
   for (const { id, qty } of orderConsumption(lines, menu, mods)) {
     if (!S.ingGet.get(id)) continue; // ingrediente borrado: se ignora
     // seq 1 conserva el id histórico, para no re-descontar lo ya vendido.
@@ -564,20 +599,38 @@ function applyStockForOrder(orderId, lines, userName, ts, seq = 1) {
 
 /* Devuelve al stock lo que consumió una orden (al anularla o borrarla).
 
-   El reverso se indexa por el id del movimiento de origen, no por el
-   ingrediente: una orden con dos envíos tiene dos movimientos del mismo
-   ingrediente, y una clave por ingrediente solo habría devuelto el primero. */
+   Se devuelve el SALDO NETO por ingrediente, no cada movimiento de venta por
+   separado. La diferencia importa cuando antes se anuló una línea suelta:
+
+     enviar        → -18g café   (movimiento de venta)
+     anular línea  → +18g café   (movimiento "Mx:", ya devuelto)
+     descartar     →  0          ← debe devolver NADA de esa línea
+
+   Revirtiendo movimiento por movimiento se devolvían otros +18g y el café
+   reaparecía en el inventario aunque se hubiera consumido de verdad. Sumando
+   todos los movimientos de la orden —ventas en negativo, devoluciones en
+   positivo— el saldo dice exactamente cuánto sigue descontado, que es lo único
+   que queda por devolver.
+
+   De paso queda a prueba de repeticiones sin depender del id: si ya se devolvió
+   todo, el saldo es cero y no hay nada que hacer. */
 function restoreStockForOrder(orderId, userName, reason = "anulacion") {
   const ts = Date.now();
+  const saldo = new Map();
   for (const m of S.movesByOrder.all(orderId)) {
-    if (m.delta > 0) continue; // ya es un reverso: no se revierte el reverso
-    const moveId = `Ma:${m.id}`;
+    saldo.set(m.ingredient_id, (saldo.get(m.ingredient_id) || 0) + m.delta);
+  }
+  for (const [ingId, neto] of saldo) {
+    const pendiente = round3(-neto); // lo que sigue fuera del inventario
+    if (pendiente <= 1e-9) continue;
+    if (!S.ingGet.get(ingId)) continue; // ingrediente borrado: se ignora
+    const moveId = `Ma:${orderId}:${ingId}`;
     if (S.moveGet.get(moveId)) continue;
     insertMove({
-      id: moveId, ingredient_id: m.ingredient_id, delta: -m.delta, reason,
+      id: moveId, ingredient_id: ingId, delta: pendiente, reason,
       order_id: orderId, note: null, ts, user_name: userName || null,
     });
-    S.ingSetStock.run(-m.delta, m.ingredient_id);
+    S.ingSetStock.run(pendiente, ingId);
   }
 }
 
@@ -694,11 +747,11 @@ export function currentShiftState() {
 }
 
 // ------------------------------------------------------------- kv (config)
-// fuwa_tweaks quedó huérfana al quitar el panel de apariencia (la identidad
+// cdv_tweaks quedó huérfana al quitar el panel de apariencia (la identidad
 // visual ahora es fija en styles.css). Se conserva la clave para que los
 // respaldos hechos antes del cambio sigan importándose sin error.
-// fuwa_negocio: nombre, NIT, dirección y pie que salen impresos en el ticket.
-export const KV_KEYS = ["fuwa_menu", "fuwa_mods", "fuwa_cats", "fuwa_areas", "fuwa_tweaks", "fuwa_last_backup", "fuwa_negocio"];
+// cdv_negocio: nombre, NIT, dirección y pie que salen impresos en el ticket.
+export const KV_KEYS = ["cdv_menu", "cdv_mods", "cdv_cats", "cdv_areas", "cdv_tweaks", "cdv_last_backup", "cdv_negocio"];
 export function kvGet(key) {
   const row = S.kvGet.get(key);
   return row ? JSON.parse(row.value) : null;
@@ -724,7 +777,7 @@ export const kvUpdatedAt = (key) => (S.kvUpdatedAt.get(key) || {}).updated_at ||
    Las órdenes que se quedan sin items de bebida no entran al tablero: son
    órdenes de pura comida y su camino es la impresora de cocina. */
 function kdsBoard() {
-  const cats = kvGet("fuwa_cats") || [];
+  const cats = kvGet("cdv_cats") || [];
   const out = [];
   for (const r of S.kdsOrders.all()) {
     const o = rowToOrder(r);
@@ -786,7 +839,7 @@ export function getDashboard() {
   }
 
   const cogs = delDia.reduce((s, r) => {
-    const { cost } = orderCost(rowToOrder(r), kvGet("fuwa_menu") || [], kvGet("fuwa_mods") || {}, byId(listIngredients()));
+    const { cost } = orderCost(rowToOrder(r), kvGet("cdv_menu") || [], kvGet("cdv_mods") || {}, byId(listIngredients()));
     return s + cost;
   }, 0);
 
@@ -921,7 +974,7 @@ export const recentJobs = (n = 30) =>
    Devuelve qué se hizo, para que el endpoint pueda contestar "salieron 3 a
    cocina, 2 quedaron en barra" y el mesero lo vea. */
 function routeOrderTx(row, seq) {
-  const cats = kvGet("fuwa_cats") || [];
+  const cats = kvGet("cdv_cats") || [];
   const lines = JSON.parse(row.lines);
   const nuevas = pendingLines(lines);
   if (!nuevas.length) return { cocina: 0, barra: 0 };
@@ -1025,6 +1078,18 @@ export const updateOrderLinesTx = db.transaction((id, data) => {
   return { order: rowToOrder(S.orderGet.get(id)) };
 });
 
+/* Una orden "para aquí" sin mesa: cocina y barra no saben a quién entregarle
+   y en el historial la venta queda sin ubicar. Es la misma regla que aplica la
+   tablet, repetida aquí para que una tablet desactualizada no pueda saltársela.
+
+   Solo cuenta si el local tiene mesas cargadas: un café de mostrador que nunca
+   configuró el mapa no puede quedar sin poder enviar ni cobrar nada. */
+function faltaMesa(orderType, table) {
+  if ((orderType || "Aquí") !== "Aquí" || table) return false;
+  const areas = kvGet("cdv_areas") || [];
+  return areas.some((a) => (a.tables || []).length > 0);
+}
+
 /* Manda la cuenta a preparar. Es idempotente por construcción: lo que ya lleva
    `sentSeq` no se vuelve a imprimir ni a descontar, así que un doble tap del
    mesero o un reintento del outbox no duplican nada. */
@@ -1033,19 +1098,12 @@ export const sendOrderTx = db.transaction((id, user) => {
   if (!row) return { error: "orden no encontrada" };
   if (row.voided) return { error: "la orden está anulada" };
 
-  /* Una comanda "para aquí" sin mesa sale de la impresora sin decir a dónde va:
-     el cocinero prepara y no sabe a quién entregarle, y el barista ve un pedido
-     sin dueño en el tablero. Se corta también aquí y no solo en la tablet
-     porque el papel ya impreso no se puede desimprimir: para cuando alguien
-     nota el error, la cocina ya está trabajando.
-
-     Solo aplica si el local tiene mesas cargadas: un café de mostrador que
-     nunca configuró el mapa no puede quedar sin poder mandar nada. */
-  if ((row.order_type || "Aquí") === "Aquí" && !row.table_json) {
-    const areas = kvGet("fuwa_areas") || [];
-    if (areas.some((a) => (a.tables || []).length > 0)) {
-      return { error: "la orden es para aquí y no tiene mesa: la comanda saldría sin destino", faltaMesa: true };
-    }
+  /* Una comanda "para aquí" sin mesa sale de la impresora sin decir a dónde va.
+     Se corta también aquí y no solo en la tablet porque el papel ya impreso no
+     se puede desimprimir: para cuando alguien nota el error, la cocina ya está
+     trabajando. */
+  if (faltaMesa(row.order_type, row.table_json)) {
+    return { error: "la orden es para aquí y no tiene mesa: la comanda saldría sin destino", faltaMesa: true };
   }
 
   const lines = JSON.parse(row.lines);
@@ -1094,8 +1152,8 @@ export const cancelOrderLineTx = db.transaction((orderId, uid, reason, user) => 
        ingrediente para todo el envío, así que no se puede "revertir el
        movimiento": hay que recalcular lo que consumía ESTA línea. El id lleva
        el uid, con lo que anular dos veces no devuelve doble. */
-    const menu = kvGet("fuwa_menu") || [];
-    const mods = kvGet("fuwa_mods") || {};
+    const menu = kvGet("cdv_menu") || [];
+    const mods = kvGet("cdv_mods") || {};
     const ts = Date.now();
     for (const [ingId, qty] of lineConsumption(linea, menu, mods)) {
       if (!S.ingGet.get(ingId)) continue;
@@ -1111,7 +1169,7 @@ export const cancelOrderLineTx = db.transaction((orderId, uid, reason, user) => 
 
     // Aviso a la cocina. La barra no lo necesita: la línea desaparece del
     // tablero en el siguiente sync, que llega en 4 segundos.
-    const cats = kvGet("fuwa_cats") || [];
+    const cats = kvGet("cdv_cats") || [];
     if (stationOf(linea.catId, cats) === "cocina") {
       enqueuePrint("cocina", "comanda", orderId, {
         number: row.number,
@@ -1155,6 +1213,11 @@ export const payOrderTx = db.transaction((id, payment, cashier) => {
   if (row.status === "cobrada") return { order: rowToOrder(row), existed: true }; // idempotente
   const open = S.openShift.get();
   if (!open) return { error: "caja cerrada" };
+  // El cobro de cuenta no pasa por el outbox (requiere conexión), así que
+  // rechazar aquí no pierde ninguna venta: el cajero ve el motivo y elige mesa.
+  if (faltaMesa(row.order_type, row.table_json)) {
+    return { error: "la orden es para aquí y no tiene mesa: elige una mesa antes de cobrar", faltaMesa: true };
+  }
 
   const lines = JSON.parse(row.lines);
 
@@ -1209,7 +1272,7 @@ function enqueueTicketFor(row) {
   // Lo anulado no se cobra: no aparece en la cuenta del cliente.
   const lines = activeLines(JSON.parse(row.lines));
   const pay = JSON.parse(row.payment || "{}");
-  const cfg = kvGet("fuwa_negocio") || {};
+  const cfg = kvGet("cdv_negocio") || {};
   enqueuePrint("caja", "ticket", row.id, {
     business: cfg.nombre || "Café del Valle",
     tagline: cfg.lema || "",
@@ -1276,6 +1339,14 @@ export const insertOrder = db.transaction((data, cashier) => {
   if (malas) return { error: malas, invalido: true };
   const open = S.openShift.get();
   if (!open) return { error: "caja cerrada" };
+  /* Sin mesa se rechaza, EXCEPTO si la venta viene del outbox. Esa se cobró sin
+     conexión: el dinero ya está en la caja, y el outbox descarta en silencio lo
+     que el servidor rechaza. Rechazarla borraría del registro una venta que sí
+     ocurrió y el arqueo no cuadraría. Entre una comanda sin mesa y una venta
+     perdida, lo primero se arregla en la cocina; lo segundo no se arregla. */
+  if (!data.encolada && faltaMesa(data.orderType, data.table)) {
+    return { error: "la orden es para aquí y no tiene mesa: elige una mesa antes de cobrar", invalido: true, faltaMesa: true };
+  }
   const number = S.getMeta.get().order_seq;
   const now = data.ts || Date.now();
   insertOrderRow({
@@ -1358,10 +1429,30 @@ export const closeShiftTx = db.transaction((countedCash, opts = {}) => {
   const open = S.openShift.get();
   if (!open) return { error: "no hay turno abierto" };
   const orderRows = S.ordersByShift.all(open.id);
-  // Cuentas de mesa que quedan sin cobrar. NO bloquean el cierre —su dinero
-  // entrará en el turno siguiente, que es lo correcto— pero el cajero tiene que
-  // saber que hay mesas vivas antes de contar el efectivo y irse.
+
+  /* Cuentas de mesa sin cobrar: el cierre se rechaza.
+
+     Antes solo se avisaba, y el aviso salía DESPUÉS de cerrar. Para entonces el
+     turno ya estaba cerrado y el cajero se había ido con la caja contada. El
+     daño no es el aviso tardío sino lo que esconde: al mandar a preparar ya se
+     descontó el inventario, así que una cuenta que nunca se cobra deja una
+     venta a medias —producto que salió, dinero que no entró— y el arqueo cuadra
+     igual, porque cuadra contra lo cobrado. Nada delata el hueco.
+
+     Se corta aquí y no solo en la pantalla porque cerrar el turno es
+     irreversible para el cajero: reabrirlo es cosa del gerente. La salida
+     siempre existe: cobrar esas mesas, o descartarlas (que devuelve el
+     inventario). */
   const cuentasAbiertas = S.openOrders.all().length;
+  if (cuentasAbiertas > 0) {
+    return {
+      error:
+        cuentasAbiertas === 1
+          ? "queda 1 cuenta de mesa sin cobrar: cóbrala o descártala antes de cerrar"
+          : `quedan ${cuentasAbiertas} cuentas de mesa sin cobrar: cóbralas o descártalas antes de cerrar`,
+      cuentasAbiertas,
+    };
+  }
   const cashSales = cashFromOrderRows(orderRows);
   const cardSales = cardFromOrderRows(orderRows);
   const { cashExpenses, cashIn } = cashMovesFromExpenseRows(S.expensesByShift.all(open.id));
@@ -1468,8 +1559,8 @@ export const compactOldShifts = db.transaction((days = 180) => {
   const olds = S.closedShifts.all().filter((r) => !r.compacted && r.closed_at < cutoff);
   // El costo se calcula ANTES de tirar las órdenes: después ya no hay líneas
   // que costear y la ganancia neta de ese turno sería irrecuperable.
-  const menu = kvGet("fuwa_menu") || [];
-  const mods = kvGet("fuwa_mods") || {};
+  const menu = kvGet("cdv_menu") || [];
+  const mods = kvGet("cdv_mods") || {};
   const ingById = byId(listIngredients());
   for (const r of olds) {
     const all = S.ordersByShift.all(r.id).map(rowToOrder);
@@ -1555,11 +1646,11 @@ export function exportBackupData() {
   return {
     version: 4, // 4 = incluye las cuentas de mesa abiertas
     exportedAt: new Date().toISOString(),
-    menu: st.config.fuwa_menu,
-    mods: st.config.fuwa_mods,
-    cats: st.config.fuwa_cats,
-    areas: st.config.fuwa_areas,
-    tweaks: st.config.fuwa_tweaks,
+    menu: st.config.cdv_menu,
+    mods: st.config.cdv_mods,
+    cats: st.config.cdv_cats,
+    areas: st.config.cdv_areas,
+    tweaks: st.config.cdv_tweaks,
     users: listUsers().map(({ id, name, role, hue }) => ({ id, name, role, hue })),
     shift: st.shift,
     orders: st.orders,
@@ -1626,12 +1717,12 @@ export const importLegacyData = db.transaction((data, { wipe = false } = {}) => 
     });
   }
   // config
-  if (data.menu) S.kvSet.run("fuwa_menu", JSON.stringify(data.menu), Date.now());
-  if (data.mods) S.kvSet.run("fuwa_mods", JSON.stringify(data.mods), Date.now());
-  if (data.cats) S.kvSet.run("fuwa_cats", JSON.stringify(data.cats), Date.now());
-  if (data.areas) S.kvSet.run("fuwa_areas", JSON.stringify(data.areas), Date.now());
-  if (data.tweaks) S.kvSet.run("fuwa_tweaks", JSON.stringify(data.tweaks), Date.now());
-  if (data.lastBackup !== undefined) S.kvSet.run("fuwa_last_backup", JSON.stringify(data.lastBackup), Date.now());
+  if (data.menu) S.kvSet.run("cdv_menu", JSON.stringify(data.menu), Date.now());
+  if (data.mods) S.kvSet.run("cdv_mods", JSON.stringify(data.mods), Date.now());
+  if (data.cats) S.kvSet.run("cdv_cats", JSON.stringify(data.cats), Date.now());
+  if (data.areas) S.kvSet.run("cdv_areas", JSON.stringify(data.areas), Date.now());
+  if (data.tweaks) S.kvSet.run("cdv_tweaks", JSON.stringify(data.tweaks), Date.now());
+  if (data.lastBackup !== undefined) S.kvSet.run("cdv_last_backup", JSON.stringify(data.lastBackup), Date.now());
 
   // usuarios: hashes legacy se conservan y se re-hashean a scrypt al primer login
   for (const u of data.users || []) {
@@ -1792,16 +1883,16 @@ export const seedInventoryDefaults = db.transaction(() => {
      nunca los sube al servidor hasta que alguien edita algo. El problema es
      que el descuento de inventario lo calcula el servidor con SU copia del
      menú: sin ella, cobrar no descontaría ningún ingrediente. */
-  if (!kvGet("fuwa_menu")) S.kvSet.run("fuwa_menu", JSON.stringify(PRODUCTS), Date.now());
-  if (!kvGet("fuwa_cats")) S.kvSet.run("fuwa_cats", JSON.stringify(CATEGORIES), Date.now());
-  if (!kvGet("fuwa_mods")) S.kvSet.run("fuwa_mods", JSON.stringify(MOD_GROUPS), Date.now());
+  if (!kvGet("cdv_menu")) S.kvSet.run("cdv_menu", JSON.stringify(PRODUCTS), Date.now());
+  if (!kvGet("cdv_cats")) S.kvSet.run("cdv_cats", JSON.stringify(CATEGORIES), Date.now());
+  if (!kvGet("cdv_mods")) S.kvSet.run("cdv_mods", JSON.stringify(MOD_GROUPS), Date.now());
 
   /* Destino de preparación en las categorías que ya existían. Se toma el de
      data.js cuando el id coincide y "barra" para las que creó el cliente: en un
      café la mayoría son bebidas, y equivocarse hacia barra se ve en pantalla
      mientras que equivocarse hacia cocina imprime en un cuarto vacío.
      Solo rellena lo que falta; nunca pisa lo que el gerente haya configurado. */
-  const cats = kvGet("fuwa_cats");
+  const cats = kvGet("cdv_cats");
   if (Array.isArray(cats)) {
     const defCats = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.station]));
     let touched = false;
@@ -1810,11 +1901,11 @@ export const seedInventoryDefaults = db.transaction(() => {
       touched = true;
       return { ...c, station: defCats[c.id] || "barra" };
     });
-    if (touched) S.kvSet.run("fuwa_cats", JSON.stringify(next), Date.now());
+    if (touched) S.kvSet.run("cdv_cats", JSON.stringify(next), Date.now());
   }
 
   // Recetas del menú: solo para productos que aún no tienen ninguna.
-  const menu = kvGet("fuwa_menu");
+  const menu = kvGet("cdv_menu");
   if (Array.isArray(menu)) {
     const defaults = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
     let touched = false;
@@ -1827,11 +1918,11 @@ export const seedInventoryDefaults = db.transaction(() => {
       const sizes = p.sizes && def.sizes && p.sizes.length === def.sizes.length ? def.sizes : p.sizes;
       return { ...p, recipe: def.recipe, sizes };
     });
-    if (touched) S.kvSet.run("fuwa_menu", JSON.stringify(next), Date.now());
+    if (touched) S.kvSet.run("cdv_menu", JSON.stringify(next), Date.now());
   }
 
   // Opciones (leche/azúcar/extras): rellena recipe y swap si faltan.
-  const mods = kvGet("fuwa_mods");
+  const mods = kvGet("cdv_mods");
   if (mods && typeof mods === "object") {
     let touched = false;
     const next = { ...mods };
@@ -1849,14 +1940,34 @@ export const seedInventoryDefaults = db.transaction(() => {
         }),
       };
     }
-    if (touched) S.kvSet.run("fuwa_mods", JSON.stringify(next), Date.now());
+    if (touched) S.kvSet.run("cdv_mods", JSON.stringify(next), Date.now());
   }
 
   S.bumpRev.run();
   return seeded;
 });
 
+/* Las claves de configuración se llamaban `fuwa_*` por el sistema anterior.
+   Renombrarlas en el código sin renombrarlas en la base dejaría el menú, las
+   categorías y el mapa de mesas guardados bajo un nombre que ya nadie lee: la
+   app arrancaría con la semilla de fábrica y el negocio perdería su carta.
+
+   Se renombra la fila, no se copia, y solo si el nombre nuevo aún no existe. */
+const migrarClavesViejas = db.transaction(() => {
+  const viejas = db.prepare("SELECT key FROM kv WHERE key LIKE 'fuwa_%'").all();
+  let n = 0;
+  for (const { key } of viejas) {
+    const nueva = "cdv_" + key.slice("fuwa_".length);
+    if (db.prepare("SELECT 1 FROM kv WHERE key = ?").get(nueva)) continue;
+    db.prepare("UPDATE kv SET key = ? WHERE key = ?").run(nueva, key);
+    n++;
+  }
+  return n;
+});
+
 export function bootstrapDb() {
+  const renombradas = migrarClavesViejas();
+  if (renombradas) console.log(`[migración] ${renombradas} claves de configuración renombradas a cdv_*`);
   if (S.getMeta.get()) {
     compactOldShifts(180);
     seedInventoryDefaults();

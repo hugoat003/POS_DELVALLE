@@ -80,7 +80,7 @@ async function idExistente(token, carpeta, nombre) {
 async function subirADrive(cred, carpeta, nombre, contenido) {
   const token = await tokenDeAcceso(cred);
   const existente = await idExistente(token, carpeta, nombre);
-  const limite = "fuwa" + crypto.randomBytes(8).toString("hex");
+  const limite = "cdv" + crypto.randomBytes(8).toString("hex");
   // En una actualización NO se manda `parents`: Drive lo rechaza.
   const meta = existente ? { name: nombre } : { name: nombre, parents: [carpeta] };
   const cuerpo =
@@ -144,7 +144,7 @@ export function createBackupService({ exportData, dataDir, log = console }) {
      que la carpeta existe Y se puede escribir en ella. */
   function revisarCarpeta() {
     if (!carpetaCopia) return null;
-    const testigo = path.join(carpetaCopia, ".fuwa-prueba");
+    const testigo = path.join(carpetaCopia, ".cdv-prueba");
     try {
       fs.mkdirSync(carpetaCopia, { recursive: true });
       fs.writeFileSync(testigo, "ok");
@@ -158,17 +158,28 @@ export function createBackupService({ exportData, dataDir, log = console }) {
     }
   }
 
-  const nombreDe = (dia) => `fuwa-${dia}.json`;
+  const nombreDe = (dia) => `cafe-del-valle-${dia}.json`;
+  /* Se aceptan también las copias con el nombre viejo para no perder de vista
+     las que ya estaban en la carpeta: se listan, se rotan y se pueden restaurar
+     igual que las nuevas. */
+  const ES_COPIA = /^(cafe-del-valle|cdv|fuwa)-(\d{4}-\d{2}-\d{2})\.json$/;
+  /* Se ordena por la FECHA del nombre, no por el nombre entero: con prefijos
+     distintos conviviendo, ordenar alfabéticamente mezcla los años y la
+     rotación borraría la copia equivocada. */
+  const fechaDe = (f) => (ES_COPIA.exec(f) || [])[2] || "";
+  const copiasOrdenadas = () => {
+    try {
+      return fs.readdirSync(dir).filter((f) => ES_COPIA.test(f)).sort((a, b) => fechaDe(a).localeCompare(fechaDe(b)));
+    } catch {
+      return [];
+    }
+  };
   const rutaDe = (dia) => path.join(dir, nombreDe(dia));
   const existeHoy = () => fs.existsSync(rutaDe(claveDia()));
 
-  /* Borra las copias más viejas que `conservar` días. Se ordena por nombre, que
-     al ser aaaa-mm-dd equivale a ordenar por fecha. */
+  // Borra las copias más viejas que `conservar` días.
   function rotar() {
-    let archivos;
-    try {
-      archivos = fs.readdirSync(dir).filter((f) => /^fuwa-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort();
-    } catch { return 0; }
+    const archivos = copiasOrdenadas();
     const sobran = archivos.slice(0, Math.max(0, archivos.length - conservar));
     for (const f of sobran) {
       try { fs.unlinkSync(path.join(dir, f)); } catch { /* ya no está */ }
@@ -254,10 +265,7 @@ export function createBackupService({ exportData, dataDir, log = console }) {
     stop() { clearInterval(timer); timer = null; },
     ejecutar,
     estado: () => {
-      let copias = [];
-      try {
-        copias = fs.readdirSync(dir).filter((f) => /^fuwa-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort().reverse();
-      } catch { /* aún no hay carpeta */ }
+      const copias = copiasOrdenadas().reverse();
       return {
         activo, hora, conservar,
         destino: {

@@ -6,8 +6,25 @@
      nunca duplica órdenes ni gastos. */
 import { LS } from "./storage-core.js";
 
-const TOKEN_KEY = "fuwa_token";
-const OUTBOX_KEY = "fuwa_outbox";
+/* Igual que en el servidor: lo guardado en la tablet vivía bajo `fuwa_*`. Sin
+   esta migración, al actualizar la app cada tablet perdería su sesión, su caché
+   y —lo grave— el OUTBOX con las ventas cobradas sin conexión que todavía no
+   habían llegado al servidor. Se copia una sola vez, al cargar. */
+(function migrarClavesLocales() {
+  try {
+    for (const vieja of Object.keys(localStorage)) {
+      if (!vieja.startsWith("fuwa_")) continue;
+      const nueva = "cdv_" + vieja.slice("fuwa_".length);
+      if (localStorage.getItem(nueva) === null) localStorage.setItem(nueva, localStorage.getItem(vieja));
+      localStorage.removeItem(vieja);
+    }
+  } catch {
+    /* Sin localStorage (modo privado) no hay nada que migrar. */
+  }
+})();
+
+const TOKEN_KEY = "cdv_token";
+const OUTBOX_KEY = "cdv_outbox";
 
 export const getToken = () => {
   try {

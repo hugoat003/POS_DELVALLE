@@ -272,7 +272,7 @@ export function SummaryScreen({ orders, expenses = [], cats, shiftHistory = [], 
       </div>
 
       {/* cuerpo */}
-      <div className="fuwa-split" style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 18, alignItems: "start" }}>
+      <div className="cdv-split" style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 18, alignItems: "start" }}>
         {/* columna izquierda */}
         <div style={{ display: "flex", flexDirection: "column", gap: 18, minWidth: 0 }}>
           <DashCard title="Ventas por hora" hint={`Hora pico: ${fmtHour(peakHour)}`}>

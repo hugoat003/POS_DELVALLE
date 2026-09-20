@@ -91,7 +91,7 @@ function SinglePay({ cart, subtotal, tipEnabled, onConfirm }) {
   }
 
   return (
-    <div className="fuwa-split" style={{ height: "100%", display: "grid", gridTemplateColumns: "1fr 390px", minHeight: 0 }}>
+    <div className="cdv-split" style={{ height: "100%", display: "grid", gridTemplateColumns: "1fr 390px", minHeight: 0 }}>
       <div style={{ padding: "0 32px 26px", overflowY: "auto", minHeight: 0 }}>
         <SectionLabel>Método de pago</SectionLabel>
         <div style={{ marginBottom: 28 }}>
@@ -376,7 +376,7 @@ function SplitPay({ cart, subtotal, tipEnabled, onConfirm }) {
   );
 
   return (
-    <div className="fuwa-split" style={{ height: "100%", display: "grid", gridTemplateColumns: "1fr 390px", minHeight: 0 }}>
+    <div className="cdv-split" style={{ height: "100%", display: "grid", gridTemplateColumns: "1fr 390px", minHeight: 0 }}>
       <div style={{ padding: "0 32px 26px", overflowY: "auto", minHeight: 0 }}>
         {/* controles: modo + número de personas */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>

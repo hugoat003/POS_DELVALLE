@@ -92,7 +92,7 @@ function RespaldoAuto({ estado, onAhora, ocupado }) {
         <div style={{ fontSize: 12, color: "var(--muted)" }}>
           {copias.slice(0, 3).map((c) => (
             <div key={c.archivo} style={{ display: "flex", justifyContent: "space-between", padding: "2px 0" }}>
-              <span>{c.archivo.replace("fuwa-", "").replace(".json", "")}</span>
+              <span>{c.archivo.replace(/^(cafe-del-valle|cdv|fuwa)-/, "").replace(".json", "")}</span>
               <span>{kb(c.bytes)} · {cuando(c.fecha)}</span>
             </div>
           ))}

@@ -17,6 +17,7 @@ function ProductCard({ product, cat, showEmoji, stockLeft, onClick }) {
   const low = !out && stockLeft <= 5;
   return (
     <button
+      className="cdv-card"
       onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -36,7 +37,7 @@ function ProductCard({ product, cat, showEmoji, stockLeft, onClick }) {
         borderColor: out ? "var(--error)" : hover ? "var(--verde)" : "var(--borde)",
       }}
     >
-      <div style={{ height: 104, margin: 10, borderRadius: 11, background: cat.tint, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, position: "relative", overflow: "hidden", opacity: out ? 0.45 : 1 }}>
+      <div className="cdv-card-thumb" style={{ height: 104, margin: 10, borderRadius: 11, background: cat.tint, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, position: "relative", overflow: "hidden", opacity: out ? 0.45 : 1 }}>
         {/* Aviso de inventario: no bloquea la venta, solo advierte. */}
         {(out || low) && (
           <span
@@ -74,7 +75,7 @@ function ProductCard({ product, cat, showEmoji, stockLeft, onClick }) {
       </div>
       {/* Sin descripción en la tarjeta: en tablet a distancia de brazo no se lee
           y roba altura. El texto sigue en el dato y en el editor de menú. */}
-      <div style={{ padding: "2px 14px 14px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+      <div className="cdv-card-body" style={{ padding: "2px 14px 14px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
         <div style={{ fontWeight: 600, fontSize: 15, color: "var(--tinta)", lineHeight: 1.25, flex: 1, textWrap: "pretty" }}>{product.name}</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 2 }}>
           <span style={{ fontWeight: 700, fontSize: 14.5, color: "var(--cafe)", fontVariantNumeric: "tabular-nums" }}>{money(product.price)}</span>
@@ -490,13 +491,13 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], o
   }
 
   return (
-    <div className="fuwa-split" style={{ display: "grid", gridTemplateColumns: "1fr 376px", height: "100%", minHeight: 0 }}>
+    <div className="cdv-split" style={{ display: "grid", gridTemplateColumns: "1fr 376px", height: "100%", minHeight: 0 }}>
       {/* ---- Menú ---- */}
       <div style={{ display: "flex", flexDirection: "column", minHeight: 0, borderRight: "1px solid var(--borde)" }}>
-        <div style={{ padding: "20px 26px 14px", flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
-            <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 30, letterSpacing: "-.01em", color: "var(--tinta)", margin: 0 }}>Tomar orden</h1>
-            <div style={{ position: "relative", width: 260 }}>
+        <div className="cdv-menu-head" style={{ padding: "20px 26px 14px", flexShrink: 0 }}>
+          <div className="cdv-menu-head-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
+            <h1 className="cdv-screen-title" style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 30, letterSpacing: "-.01em", color: "var(--tinta)", margin: 0 }}>Tomar orden</h1>
+            <div className="cdv-search" style={{ position: "relative", width: 260 }}>
               <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }}>
                 <Icon name="search" size={18} />
               </span>
@@ -508,7 +509,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], o
               />
             </div>
           </div>
-          <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
+          <div className="cdv-cats" style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
             <Pill active={activeCat === "all"} onClick={() => setActiveCat("all")}>
               Todo
             </Pill>
@@ -519,9 +520,9 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], o
             ))}
           </div>
         </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "8px 26px 26px" }}>
+        <div className="cdv-menu-scroll" style={{ flex: 1, overflowY: "auto", padding: "8px 26px 26px" }}>
           {/* Tarjetas amplias para tablet: menos columnas, targets más grandes. */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(195px, 1fr))", gap: 16 }}>
+          <div className="cdv-menu-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(195px, 1fr))", gap: 16 }}>
             {filtered.map((p) => (
               <ProductCard key={p.id} product={p} cat={catById[p.cat]} showEmoji={showEmoji} stockLeft={stockByProduct[p.id]} onClick={() => pick(p)} />
             ))}
@@ -531,8 +532,8 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], o
       </div>
 
       {/* ---- Carrito / Ticket ---- */}
-      <div style={{ display: "flex", flexDirection: "column", minHeight: 0, background: "#fff" }}>
-        <div style={{ padding: "20px 22px 14px", flexShrink: 0 }}>
+      <div className="cdv-cart" style={{ display: "flex", flexDirection: "column", minHeight: 0, background: "#fff" }}>
+        <div className="cdv-cart-head" style={{ padding: "20px 22px 14px", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
             {/* Con una cuenta guardada el título la nombra: era lo único que
                 faltaba para notar que se sigue parado en la cuenta de otra mesa
@@ -548,7 +549,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], o
               </button>
             )}
           </div>
-          <div style={{ display: "flex", gap: 8, background: "var(--cream)", padding: 4, borderRadius: 12 }}>
+          <div className="cdv-seg" style={{ display: "flex", gap: 8, background: "var(--cream)", padding: 4, borderRadius: 12 }}>
             {["Aquí", "Para llevar"].map((o) => (
               <button
                 key={o}

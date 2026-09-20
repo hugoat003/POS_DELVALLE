@@ -27,7 +27,7 @@ const vivas = (order) => (order.lines || []).filter((l) => !l.voided);
 // ---------- Comanda de cocina (sin precios) ----------
 function KitchenComanda({ order }) {
   return (
-    <div className="fuwa-comanda" style={{ width: 320, background: "#fff", padding: "22px 24px 26px", color: "#000" }}>
+    <div className="cdv-comanda" style={{ width: 320, background: "#fff", padding: "22px 24px 26px", color: "#000" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "1px solid #000", paddingBottom: 8 }}>
         <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 22 }}>COMANDA</div>
         <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 22 }}>#{order.number}{order.pending ? "·P" : ""}</div>
@@ -86,7 +86,7 @@ export function printDoc(which, onDone) {
 export function ReceiptTicket({ order }) {
   const split = order.payment.split;
   return (
-    <div className="fuwa-ticket" style={{ width: 340, background: "#fff", borderRadius: 18, padding: "26px 26px 30px", boxShadow: "0 20px 50px -22px rgba(40,44,60,.4)", position: "relative" }}>
+    <div className="cdv-ticket" style={{ width: 340, background: "#fff", borderRadius: 18, padding: "26px 26px 30px", boxShadow: "0 20px 50px -22px rgba(40,44,60,.4)", position: "relative" }}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, paddingBottom: 16, borderBottom: "2px dashed var(--line)" }}>
         <Mascot size={42} />
         <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 24, color: "var(--tinta)", letterSpacing: "-.01em" }}>Café del Valle</div>
@@ -158,11 +158,11 @@ export function ReceiptTicket({ order }) {
 }
 
 // Documentos imprimibles fuera de pantalla (recibo + comanda), para reimprimir
-// una orden vieja desde Historial. Ocultos salvo al imprimir (.fuwa-printsrc).
+// una orden vieja desde Historial. Ocultos salvo al imprimir (.cdv-printsrc).
 export function PrintDocs({ order }) {
   if (!order) return null;
   return (
-    <div className="fuwa-printsrc" aria-hidden="true">
+    <div className="cdv-printsrc" aria-hidden="true">
       <ReceiptTicket order={order} />
       <KitchenComanda order={order} />
     </div>

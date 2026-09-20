@@ -88,13 +88,13 @@ body {
 
    dvh mide el alto realmente visible. Se declara vh primero como respaldo para
    navegadores viejos que no entienden dvh (la segunda regla los ignora). */
-.fuwa-viewport,
+.cdv-viewport,
 #root {
   height: 100vh;
   height: 100dvh;
 }
 /* Mismo motivo para las hojas modales, que si no se salen por abajo. */
-.fuwa-sheet-tall {
+.cdv-sheet-tall {
   max-height: 88vh;
   max-height: 88dvh;
 }
@@ -131,8 +131,8 @@ textarea:focus {
 
 /* La comanda de cocina y los documentos de reimpresión permanecen ocultos en
    pantalla; solo aparecen al imprimir. */
-.fuwa-comanda,
-.fuwa-printsrc {
+.cdv-comanda,
+.cdv-printsrc {
   display: none;
 }
 
@@ -141,31 +141,31 @@ textarea:focus {
     visibility: hidden !important;
   }
   /* Por defecto (y al imprimir el recibo) se muestra el comprobante del cliente. */
-  .fuwa-printsrc {
+  .cdv-printsrc {
     display: block !important;
   }
-  .fuwa-ticket,
-  .fuwa-ticket * {
+  .cdv-ticket,
+  .cdv-ticket * {
     visibility: visible !important;
   }
-  .fuwa-ticket {
+  .cdv-ticket {
     position: absolute !important;
     top: 0;
     left: 0;
     box-shadow: none !important;
   }
   /* Al imprimir la comanda de cocina, se oculta el recibo y se muestra la comanda. */
-  body[data-print="kitchen"] .fuwa-ticket {
+  body[data-print="kitchen"] .cdv-ticket {
     display: none !important;
   }
-  body[data-print="kitchen"] .fuwa-comanda {
+  body[data-print="kitchen"] .cdv-comanda {
     display: block !important;
   }
-  body[data-print="kitchen"] .fuwa-comanda,
-  body[data-print="kitchen"] .fuwa-comanda * {
+  body[data-print="kitchen"] .cdv-comanda,
+  body[data-print="kitchen"] .cdv-comanda * {
     visibility: visible !important;
   }
-  .fuwa-comanda {
+  .cdv-comanda {
     position: absolute !important;
     top: 0;
     left: 0;
@@ -174,24 +174,24 @@ textarea:focus {
 
   /* Impresora térmica de rollo: el ticket/comanda ocupan todo el ancho del papel
      y se imprimen en negro nítido (sin sombras ni bordes redondeados grandes). */
-  body[data-paper="80"] .fuwa-ticket,
-  body[data-paper="80"] .fuwa-comanda {
+  body[data-paper="80"] .cdv-ticket,
+  body[data-paper="80"] .cdv-comanda {
     width: 72mm !important;
     padding: 2mm 3mm !important;
     border-radius: 0 !important;
   }
-  body[data-paper="58"] .fuwa-ticket,
-  body[data-paper="58"] .fuwa-comanda {
+  body[data-paper="58"] .cdv-ticket,
+  body[data-paper="58"] .cdv-comanda {
     width: 50mm !important;
     padding: 1.5mm 2mm !important;
     border-radius: 0 !important;
     font-size: 11px !important;
   }
   /* En papel térmico todo se imprime en negro para máximo contraste/legibilidad. */
-  body[data-paper="80"] .fuwa-ticket *,
-  body[data-paper="58"] .fuwa-ticket *,
-  body[data-paper="80"] .fuwa-comanda *,
-  body[data-paper="58"] .fuwa-comanda * {
+  body[data-paper="80"] .cdv-ticket *,
+  body[data-paper="58"] .cdv-ticket *,
+  body[data-paper="80"] .cdv-comanda *,
+  body[data-paper="58"] .cdv-comanda * {
     color: #000 !important;
   }
 }
@@ -204,19 +204,26 @@ textarea:focus {
    necesario porque el layout base va en estilos inline.
    Los iPad en horizontal (≥1080px) no se ven afectados.
 ------------------------------------------------------------------ */
-@media (max-width: 1050px) {
-  .fuwa-split {
+/* El apilado es para pantallas ANGOSTAS de verdad (teléfono, tablet vertical).
+   Estaba en 1050px y se llevaba por delante a una tablet de 8.7" en horizontal
+   (~893px CSS), que tiene ancho de sobra para las dos columnas: apilarla dejaba
+   el carrito fuera de pantalla y obligaba a bajar para ver el total. */
+@media (max-width: 820px) {
+  .cdv-split {
     grid-template-columns: 1fr !important;
     overflow-y: auto !important;
   }
+}
+
+@media (max-width: 1050px) {
   /* En login, el panel de marca (reloj/logo) se oculta para dar todo el
      ancho al teclado de PIN. */
-  .fuwa-brand-panel {
+  .cdv-brand-panel {
     display: none !important;
   }
 }
 
-@keyframes fuwaShake {
+@keyframes cdvShake {
   0%,
   100% {
     transform: translateX(0);
@@ -234,8 +241,8 @@ textarea:focus {
     transform: translateX(6px);
   }
 }
-.fuwa-shake {
-  animation: fuwaShake 0.4s ease;
+.cdv-shake {
+  animation: cdvShake 0.4s ease;
 }
 
 /* ------------------------------------------------------------------
@@ -297,4 +304,120 @@ textarea:focus {
     right: 10px;
     margin-left: 0;
   }
+}
+
+
+/* ---------------------------------------------------------------- compacto
+
+   Tablet baja: una Redmi Pad SE 8.7" en horizontal da ~893x533 CSS, y con la
+   barra de pestañas y la de dirección de Chrome quedan ~440px de alto. La
+   interfaz está calculada para la tablet de caja de 1440x900, donde sobra
+   alto; ahí no, y entraban 3 productos en pantalla.
+
+   La regla va por ALTURA, no por ancho: el problema no es cómo se reparte el
+   ancho —forzar dos columnas no cambiaba nada— sino cuánto alto se come cada
+   franja fija antes de llegar al menú.
+
+   Se recorta el cromo, nunca el objetivo táctil: las píldoras y los botones
+   suben a 44px de alto mínimo, que es justo lo que les faltaba (medían 42). */
+@media (max-height: 620px) {
+  /* Cabecera: el reloj y el cargo del usuario son lo primero que sobra. */
+  .cdv-topbar {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  /* Aviso de respaldo: informativo y permanente, a una línea. */
+  .cdv-backup {
+    padding: 6px 16px !important;
+    gap: 10px !important;
+  }
+  .cdv-backup > div {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* "Tomar orden" se va: la pestaña lateral ya dice dónde estás, y el buscador
+     toma el ancho que deja. */
+  .cdv-screen-title {
+    display: none !important;
+  }
+  .cdv-menu-head {
+    padding: 10px 16px 8px !important;
+  }
+  .cdv-menu-head-row {
+    margin-bottom: 8px !important;
+  }
+  .cdv-search {
+    width: 100% !important;
+  }
+  .cdv-search input {
+    padding-top: 9px !important;
+    padding-bottom: 9px !important;
+  }
+
+  /* Categorías: una sola fila deslizable en vez de envolverse a dos. */
+  .cdv-cats {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    gap: 7px !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cdv-cats::-webkit-scrollbar {
+    display: none;
+  }
+  .cdv-cats > button {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 10px 14px !important;
+  }
+
+  /* Tarjetas más bajas y más angostas: caben más filas y más columnas. */
+  .cdv-menu-scroll {
+    padding: 6px 16px 16px !important;
+  }
+  .cdv-menu-grid {
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)) !important;
+    gap: 10px !important;
+  }
+  .cdv-card-thumb {
+    height: 54px !important;
+    margin: 7px 7px 0 !important;
+    font-size: 26px !important;
+  }
+  .cdv-card-thumb > div {
+    font-size: 26px !important;
+  }
+  .cdv-card-body {
+    padding: 6px 10px 10px !important;
+  }
+
+  /* Panel de la orden: mismo recorte de cromo, y algo más angosto para que en
+     893px de ancho le quede sitio decente al menú. */
+  .cdv-split {
+    grid-template-columns: 1fr 320px !important;
+  }
+  .cdv-cart-head {
+    padding: 10px 16px 10px !important;
+  }
+}
+
+/* Una columna de rejilla no baja de su contenido mínimo salvo que se le diga:
+   sin esto, el menú imponía su ancho y empujaba el panel de la orden fuera de
+   la pantalla —el total y "Vaciar" quedaban cortados contra el borde derecho—
+   sin que apareciera barra de desplazamiento que lo delatara. */
+.cdv-split > * {
+  min-width: 0;
+}
+
+/* El selector Aquí/Llevar medía 42px de alto, debajo del mínimo cómodo para el
+   dedo. No depende del tamaño de pantalla: se corrige en todas, porque en la
+   tablet de caja tampoco estaba bien, solo se notaba menos. */
+.cdv-seg > button {
+  min-height: 44px;
 }

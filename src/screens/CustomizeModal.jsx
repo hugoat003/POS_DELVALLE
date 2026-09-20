@@ -118,7 +118,7 @@ export function CustomizeModal({ product, cat, modGroupsMap, initialLine, onClos
 
   return (
     <div onClick={onClose} style={overlay}>
-      <div className="fuwa-sheet-tall" onClick={(e) => e.stopPropagation()} style={{ ...sheet, maxWidth: 540, display: "flex", flexDirection: "column" }}>
+      <div className="cdv-sheet-tall" onClick={(e) => e.stopPropagation()} style={{ ...sheet, maxWidth: 540, display: "flex", flexDirection: "column" }}>
         {/* header */}
         <div style={{ background: cat.tint, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div>

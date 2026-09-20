@@ -118,10 +118,10 @@ export function Login({ onLogin, users: usersProp }) {
   }, [sel, pin, err]);
 
   return (
-    <div className="fuwa-viewport" style={{ width: "100vw", display: "flex", overflow: "hidden" }}>
+    <div className="cdv-viewport" style={{ width: "100vw", display: "flex", overflow: "hidden" }}>
       {/* panel de marca */}
       <div
-        className="fuwa-brand-panel"
+        className="cdv-brand-panel"
         style={{
           width: 420,
           flexShrink: 0,
@@ -228,7 +228,7 @@ export function Login({ onLogin, users: usersProp }) {
               </div>
             </div>
             {/* puntos del PIN */}
-            <div className={err ? "fuwa-shake" : ""} style={{ display: "flex", justifyContent: "center", gap: 14, marginBottom: 8 }}>
+            <div className={err ? "cdv-shake" : ""} style={{ display: "flex", justifyContent: "center", gap: 14, marginBottom: 8 }}>
               {[0, 1, 2, 3].map((i) => (
                 <div
                   key={i}

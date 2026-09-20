@@ -112,7 +112,7 @@ function sendTcp({ host, port }, buf) {
    los comandos ESC/POS. */
 function sendWindows({ unc }, buf) {
   return new Promise((resolve, reject) => {
-    const tmp = path.join(os.tmpdir(), `fuwa-${Date.now()}-${Math.random().toString(36).slice(2)}.bin`);
+    const tmp = path.join(os.tmpdir(), `cdv-${Date.now()}-${Math.random().toString(36).slice(2)}.bin`);
     try { fs.writeFileSync(tmp, buf); } catch (e) { return reject(e); }
     execFile("cmd", ["/c", "copy", "/b", tmp, unc], { timeout: 15000 }, (err, _out, stderr) => {
       fs.promises.unlink(tmp).catch(() => {});

@@ -11,6 +11,44 @@ import { useState } from "react";
 import { Btn } from "../components/ui.jsx";
 import { Icon } from "../components/Icon.jsx";
 import { money, cashFromOrders, cardFromOrders, cashMovesFromExpenses } from "../lib/format.js";
+import { cuentaTotal } from "./AccountsScreen.jsx";
+
+/* Cuentas de mesa vivas al momento de cerrar.
+
+   Cerrar con mesas abiertas deja una venta a medias: el inventario ya se
+   descontó al mandar a preparar, pero el dinero no entró y el arqueo cuadra
+   igual, así que nada delata el hueco. Antes se avisaba DESPUÉS de cerrar, que
+   es cuando ya no se puede hacer nada: el turno estaba cerrado y el cajero se
+   iba con la caja contada.
+
+   Se listan una por una con su total porque "quedan 2 cuentas" no dice a qué
+   mesa ir; con el número de mesa el cajero las cobra o las descarta y vuelve. */
+function CuentasAbiertas({ openOrders, onIrACuentas }) {
+  return (
+    <div style={{ border: "1px solid var(--aviso)", background: "var(--aviso-suave)", color: "var(--aviso)", borderRadius: "var(--r)", padding: "14px 16px", marginBottom: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, fontWeight: 700, fontSize: 14.5 }}>
+        <Icon name="alert" size={18} />
+        {openOrders.length === 1 ? "Hay 1 cuenta sin cobrar" : `Hay ${openOrders.length} cuentas sin cobrar`}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4, margin: "10px 0 12px" }}>
+        {openOrders.map((o) => (
+          <div key={o.id} style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 13.5, fontWeight: 600 }}>
+            <span>{o.table ? `Mesa ${o.table.label}${o.table.areaName ? " · " + o.table.areaName : ""}` : `#${o.number} · ${o.orderType || "Para llevar"}`}</span>
+            <span style={{ fontVariantNumeric: "tabular-nums" }}>{money(cuentaTotal(o))}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 12.5, lineHeight: 1.45, marginBottom: 12 }}>
+        Cóbralas o descártalas antes de cerrar la caja. Lo que consumieron ya salió del inventario.
+      </div>
+      {onIrACuentas && (
+        <Btn kind="ghost" size="sm" icon="table" onClick={onIrACuentas}>
+          Ir a Cuentas
+        </Btn>
+      )}
+    </div>
+  );
+}
 
 function Row({ label, value, strong, tone }) {
   return (
@@ -36,7 +74,7 @@ const inputStyle = {
 
 const labelStyle = { fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 };
 
-export function CloseShiftScreen({ shiftOpen, openingCash, orders, expenses, onCloseShift }) {
+export function CloseShiftScreen({ shiftOpen, openingCash, orders, expenses, openOrders = [], onIrACuentas, onCloseShift }) {
   const [counted, setCounted] = useState("");
   const [cashLeft, setCashLeft] = useState("");
   const [note, setNote] = useState("");
@@ -139,12 +177,13 @@ export function CloseShiftScreen({ shiftOpen, openingCash, orders, expenses, onC
         </div>
 
         <div style={{ marginTop: 18, marginBottom: 20 }}>
+          {openOrders.length > 0 && <CuentasAbiertas openOrders={openOrders} onIrACuentas={onIrACuentas} />}
           <Btn
             kind="dark"
             size="lg"
             full
             icon="check"
-            disabled={counted === ""}
+            disabled={counted === "" || openOrders.length > 0}
             onClick={() =>
               onCloseShift(parseFloat(counted) || 0, {
                 closeNote: note.trim(),

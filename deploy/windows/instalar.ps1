@@ -131,7 +131,7 @@ Para probar sin reiniciar:
     Start-ScheduledTask -TaskName "$Tarea"
 
 Para ver que esta pasando:
-    Get-Content "$Raiz\server\data\logs\fuwa-$(Get-Date -Format yyyy-MM-dd).log" -Tail 30 -Wait
+    Get-Content "$Raiz\server\data\logs\cafe-del-valle-$(Get-Date -Format yyyy-MM-dd).log" -Tail 30 -Wait
 
 Para detener:
     powershell -ExecutionPolicy Bypass -File "$PSScriptRoot\detener.ps1"

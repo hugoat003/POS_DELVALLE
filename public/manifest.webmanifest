@@ -1,0 +1,32 @@
+{
+  "name": "Café del Valle · Punto de Venta",
+  "short_name": "Café del Valle",
+  "description": "Punto de venta de Café del Valle (Barillas, Huehuetenango).",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#f7f3ea",
+  "theme_color": "#4d5f24",
+  "lang": "es-GT",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

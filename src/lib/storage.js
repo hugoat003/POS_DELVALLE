@@ -16,19 +16,19 @@ export { LS };
 export { isOnline, onConnectionChange } from "./api.js";
 
 // Claves de config sincronizadas con la tabla kv del servidor (mantener en
-// sync con KV_KEYS de server/db.js). fuwa_user es solo de este navegador.
-// fuwa_tweaks ya no se usa (la apariencia es fija); se deja por compatibilidad
+// sync con KV_KEYS de server/db.js). cdv_user es solo de este navegador.
+// cdv_tweaks ya no se usa (la apariencia es fija); se deja por compatibilidad
 // con los respaldos anteriores. Ver server/db.js.
-const KV_KEYS = ["fuwa_menu", "fuwa_mods", "fuwa_cats", "fuwa_areas", "fuwa_tweaks", "fuwa_last_backup"];
-const LOCAL_ONLY_KEYS = ["fuwa_user"];
-const DIRTY_KEY = "fuwa_dirty_keys"; // claves escritas mientras el servidor estaba caído
+const KV_KEYS = ["cdv_menu", "cdv_mods", "cdv_cats", "cdv_areas", "cdv_tweaks", "cdv_last_backup"];
+const LOCAL_ONLY_KEYS = ["cdv_user"];
+const DIRTY_KEY = "cdv_dirty_keys"; // claves escritas mientras el servidor estaba caído
 
 let serverCache = null; // config del GET /api/state (o null si offline/sin sesión)
 
 /* Claves editadas sin conexión, con la HORA de la edición.
 
    Antes era una simple lista de nombres, y esa falta de fecha causó un
-   incidente real: una tablet con `fuwa_menu` marcada de una sesión anterior
+   incidente real: una tablet con `cdv_menu` marcada de una sesión anterior
    subió su copia vieja al reconectar y borró el menú completo que se acababa de
    cargar. Con la hora, el servidor puede rechazar una subida más vieja que lo
    que ya tiene. Se lee tolerando el formato antiguo (array de strings). */
@@ -205,7 +205,7 @@ if (typeof window !== "undefined") {
 }
 
 // Estado de React respaldado por el servidor, con localStorage como caché.
-// Misma firma de siempre; solo para claves de config y fuwa_user.
+// Misma firma de siempre; solo para claves de config y cdv_user.
 export function usePersistentState(key, initial) {
   const [value, setValue] = useState(() => {
     if (serverCache && !LOCAL_ONLY_KEYS.includes(key) && serverCache[key] !== null && serverCache[key] !== undefined) {

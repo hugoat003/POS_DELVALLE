@@ -135,7 +135,7 @@ export function ExpensesScreen({ expenses, onAdd, onRemove, availableCash = 0 })
   }
 
   return (
-    <div className="fuwa-split" style={{ height: "100%", display: "grid", gridTemplateColumns: "1fr 380px", minHeight: 0 }}>
+    <div className="cdv-split" style={{ height: "100%", display: "grid", gridTemplateColumns: "1fr 380px", minHeight: 0 }}>
       <div style={{ display: "flex", flexDirection: "column", minHeight: 0, borderRight: "1px solid var(--line)" }}>
         <div style={{ padding: "22px 32px 14px", flexShrink: 0 }}>
           <h1 style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 31, letterSpacing: "-.01em", color: "var(--tinta)", margin: "0 0 4px" }}>Gastos y movimientos</h1>

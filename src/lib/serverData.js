@@ -14,7 +14,7 @@ import { LS } from "./storage-core.js";
 import { apiFetch, enqueue, outboxEntries, isOnline, getToken, onReconnect, setOnline } from "./api.js";
 import { applyServerConfig } from "./storage.js";
 
-const CACHE_KEY = "fuwa_server_cache";
+const CACHE_KEY = "cdv_server_cache";
 const SHIFT_CLOSED = { open: false, openingCash: 0, openedAt: null, closedAt: null };
 /* `orders` son SOLO las cobradas (es de donde salen arqueo y reportes).
    `openOrders` son las cuentas de mesa sin cobrar y `kds` el tablero de barra,
@@ -152,7 +152,10 @@ export function useServerData(currentUser) {
         })
         .catch((err) => {
           if (err.offline) {
-            enqueue("POST", "/api/orders", order);
+            /* `encolada` le dice al servidor que esta venta ya se cobró sin
+               conexión: no debe rechazarla por datos que ya no se pueden
+               corregir, porque el outbox descarta lo rechazado. */
+            enqueue("POST", "/api/orders", { ...order, encolada: true });
             bumpOutbox();
           } else if (err.status === 409 || err.status === 400) {
             /* Se muestra el motivo real del servidor. Antes se asumía siempre
@@ -385,17 +388,12 @@ export function useServerData(currentUser) {
         body: { countedCash, closeNote: opts.closeNote || "", cashLeft: opts.cashLeft ?? null },
       });
       applyState(res.state);
-      /* Aviso, no bloqueo: el dinero de esas mesas entrará en el turno nuevo, lo
-         cual es correcto, pero el cajero acaba de contar efectivo y se va — tiene
-         que saber que quedaron cuentas vivas antes de entregar la caja. */
-      if (res.cuentasAbiertas > 0) {
-        window.alert(
-          `Caja cerrada.\n\nOJO: quedaron ${res.cuentasAbiertas} ${res.cuentasAbiertas === 1 ? "cuenta de mesa sin cobrar" : "cuentas de mesa sin cobrar"}. ` +
-            "Siguen abiertas y su cobro entrará en el turno siguiente."
-        );
-      }
       return true;
     } catch (err) {
+      /* El servidor rechaza el cierre si quedan mesas vivas. La pantalla ya
+         deshabilita el botón, así que llegar aquí significa que otra tablet
+         abrió una cuenta mientras esta contaba el efectivo: se refresca para
+         que aparezca en la lista en vez de dejar un error sin explicación. */
       window.alert("No se pudo cerrar la caja: " + err.message);
       refresh();
       return false;
@@ -536,7 +534,7 @@ export function useServerData(currentUser) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `fuwa-respaldo-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `cafe-del-valle-respaldo-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
       return true;

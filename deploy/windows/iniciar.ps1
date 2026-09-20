@@ -20,7 +20,7 @@ Set-Location $Raiz
 
 $LogDir = Join-Path $Raiz "server\data\logs"
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
-$Log = Join-Path $LogDir ("fuwa-" + (Get-Date -Format "yyyy-MM-dd") + ".log")
+$Log = Join-Path $LogDir ("cafe-del-valle-" + (Get-Date -Format "yyyy-MM-dd") + ".log")
 
 function Escribir($msg) {
   $linea = "[{0}] {1}" -f (Get-Date -Format "HH:mm:ss"), $msg
@@ -29,7 +29,7 @@ function Escribir($msg) {
 }
 
 # Se conservan 14 días de log: si no, crecen para siempre sin que nadie mire.
-Get-ChildItem $LogDir -Filter "fuwa-*.log" -ErrorAction SilentlyContinue |
+Get-ChildItem $LogDir -Filter "cafe-del-valle-*.log" -ErrorAction SilentlyContinue |
   Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-14) } |
   Remove-Item -Force -ErrorAction SilentlyContinue
 

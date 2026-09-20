@@ -141,5 +141,5 @@ export function downloadReportPdf({ periodLabel, from, to, kpis, shifts, profit 
     doc.text(`Café del Valle · página ${i} de ${pages}`, 14, doc.internal.pageSize.getHeight() - 8);
   }
 
-  doc.save(`fuwa-reporte-${toDateInput(from)}_${toDateInput(to)}.pdf`);
+  doc.save(`cafe-del-valle-reporte-${toDateInput(from)}_${toDateInput(to)}.pdf`);
 }

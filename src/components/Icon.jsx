@@ -7,6 +7,8 @@ const PATHS = {
   edit: "M4 20h4L19 9a2 2 0 0 0-3-3L5 17v3zM14 7l3 3",
   chart: "M5 21V11M12 21V5M19 21v-7M3 21h18",
   plus: "M12 5v14M5 12h14",
+  expand: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",
+  compress: "M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5",
   minus: "M5 12h14",
   trash: "M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13",
   cash: "M3 6h18v12H3zM12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6M6 6v12M18 6v12",

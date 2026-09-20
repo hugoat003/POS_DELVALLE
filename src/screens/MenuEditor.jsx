@@ -200,7 +200,7 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
 
   return (
     <div onClick={onCancel} style={overlay}>
-      <div className="fuwa-sheet-tall" onClick={(e) => e.stopPropagation()} style={{ ...sheet, maxWidth: 520, display: "flex", flexDirection: "column" }}>
+      <div className="cdv-sheet-tall" onClick={(e) => e.stopPropagation()} style={{ ...sheet, maxWidth: 520, display: "flex", flexDirection: "column" }}>
         <div style={{ background: catObj.tint, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 25, letterSpacing: "-.01em", color: "var(--tinta)"}}>{isNew ? "Nuevo producto" : "Editar producto"}</div>
           <button onClick={onCancel} style={iconBtn}>

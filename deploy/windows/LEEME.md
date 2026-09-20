@@ -6,7 +6,7 @@ respaldo automático y la app a pantalla completa. Nadie tiene que abrir nada.
 ## Antes de empezar
 
 - **Node.js 22 LTS** instalado — [nodejs.org](https://nodejs.org)
-- El proyecto copiado en el equipo, por ejemplo `C:\fuwa`
+- El proyecto copiado en el equipo, por ejemplo `C:\cafe-del-valle`
 - Las dos impresoras conectadas (la de caja por USB, la de cocina en la red)
 
 ## 1. Instalar
@@ -202,7 +202,7 @@ Si eliges (B), dos precauciones que valen la pena:
   arrancar, se puede bajar ese plazo o cerrar sesión al apagar: dímelo.
 
 Lo que el inicio automático no protege es el archivo de la base
-(`server\data\fuwa.db`) frente a alguien con acceso físico al equipo. Para una
+(`server\data\cdv.db`) frente a alguien con acceso físico al equipo. Para una
 mini PC detrás del mostrador es un riesgo razonable; si el equipo va a estar a la
 vista del público, mejor la opción (A).
 
@@ -232,7 +232,7 @@ Hay tres archivos en `server\data\logs\` y **cada uno sirve para algo distinto**
 
 | Archivo | Qué contiene | Cuándo mirarlo |
 |---|---|---|
-| `fuwa-AAAA-MM-DD.log` | Arranque, reintentos, caídas | No abre la app al encender |
+| `cafe-del-valle-AAAA-MM-DD.log` | Arranque, reintentos, caídas | No abre la app al encender |
 | `servidor.out.log` | Impresoras, respaldos, IP de las tablets | Las comandas o el respaldo fallan |
 | `servidor.err.log` | Errores del servidor | Se cae o no levanta |
 
@@ -291,5 +291,5 @@ No borra datos.
 | El respaldo no llega a Drive | La carpeta no es accesible. *Herramientas → Respaldo automático* lo dice al arrancar. |
 | No arranca nada al encender | No hay inicio de sesión automático (paso 4), o la tarea está deshabilitada: `Get-ScheduledTask -TaskName "Café del Valle POS"`. |
 
-Nada de esto pone en riesgo los datos: la base está en `server\data\fuwa.db` y
+Nada de esto pone en riesgo los datos: la base está en `server\data\cdv.db` y
 hay una copia diaria en `server\data\backups\`.

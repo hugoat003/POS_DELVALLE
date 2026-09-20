@@ -209,7 +209,7 @@ export function KdsScreen({ orders, shiftOpen, onSetPrep }) {
       </div>
 
       <div
-        className="fuwa-split"
+        className="cdv-split"
         style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, padding: "0 32px 12px", minHeight: 0 }}
       >
         <Columna titulo="En preparación" tickets={pendientes.length} hint="marca Listo al terminar">

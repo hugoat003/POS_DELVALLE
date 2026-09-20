@@ -50,14 +50,92 @@ const TIP_ENABLED = true;
 const BACKUP_STALE_DAYS = 2;
 const daysSince = (ts) => (ts ? (Date.now() - ts) / 86400000 : Infinity);
 
+/* Pantalla completa sin instalar nada.
+
+   La tablet sirve la app por http://192.168.1.7:5174, y Chrome solo deja
+   INSTALAR una web (sin barra de pestañas ni de dirección) si el origen es
+   seguro: https o localhost. Una IP de la red local por http no lo es, así que
+   "Agregar a pantalla de inicio" solo crea un acceso directo que vuelve a abrir
+   Chrome con todas sus barras — que es justo lo que se veía.
+
+   La API de pantalla completa no tiene esa restricción y da el mismo resultado
+   práctico: recupera los ~90px que se llevan las barras, una quinta parte de
+   una pantalla de 8.7". Hace falta un gesto del usuario, por eso es un botón y
+   no algo automático al cargar.
+
+   La preferencia se recuerda: si la tablet se quedó en pantalla completa y la
+   app se recarga, vuelve a entrar en cuanto alguien toca la pantalla. */
+function PantallaCompleta() {
+  const [activa, setActiva] = useState(!!document.fullscreenElement);
+  const soportada = typeof document.documentElement.requestFullscreen === "function";
+
+  useEffect(() => {
+    const sync = () => setActiva(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+
+  /* Al recargar, el navegador sale de pantalla completa y no deja volver sin
+     un gesto. Se rearma con el primer toque, una sola vez.
+
+     El toque sobre el PROPIO botón no cuenta. Si contara, ese toque haría dos
+     cosas a la vez: el rearme entra en pantalla completa y, unos milisegundos
+     después, el botón se encuentra con que ya está activa y la cierra. El botón
+     parecía no responder, y de forma intermitente, porque `requestFullscreen`
+     es asíncrono y ganaba uno u otro según lo rápido que llegara el `click`
+     tras el `pointerdown` — en la tablet casi siempre ganaba el rearme. */
+  useEffect(() => {
+    if (!soportada || localStorage.getItem("cdv_pantalla_completa") !== "1") return;
+    const rearmar = (e) => {
+      if (e.target && e.target.closest && e.target.closest("[data-pantalla-completa]")) return; // lo maneja el botón
+      document.documentElement.requestFullscreen().catch(() => {});
+      document.removeEventListener("pointerdown", rearmar);
+    };
+    document.addEventListener("pointerdown", rearmar);
+    return () => document.removeEventListener("pointerdown", rearmar);
+  }, [soportada]);
+
+  if (!soportada) return null;
+
+  const alternar = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        localStorage.setItem("cdv_pantalla_completa", "0");
+      } else {
+        await document.documentElement.requestFullscreen({ navigationUI: "hide" });
+        localStorage.setItem("cdv_pantalla_completa", "1");
+      }
+    } catch {
+      /* Si el navegador la rechaza no hay nada que hacer: se queda como está. */
+    }
+  };
+
+  return (
+    <button
+      onClick={alternar}
+      data-pantalla-completa=""
+      title={activa ? "Salir de pantalla completa" : "Pantalla completa (oculta las barras del navegador)"}
+      aria-label={activa ? "Salir de pantalla completa" : "Pantalla completa"}
+      style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        width: 44, height: 44, borderRadius: 10, cursor: "pointer",
+        border: "1px solid var(--borde)", background: "var(--superficie)", color: "var(--tinta-2)",
+      }}
+    >
+      <Icon name={activa ? "compress" : "expand"} size={18} />
+    </button>
+  );
+}
+
 export default function App() {
   const [view, setView] = useState("order");
-  const [menu, setMenu] = usePersistentState("fuwa_menu", PRODUCTS);
-  const [mods, setMods] = usePersistentState("fuwa_mods", MOD_GROUPS);
-  const [cats, setCats] = usePersistentState("fuwa_cats", CATEGORIES);
-  const [areas, setAreas] = usePersistentState("fuwa_areas", AREAS);
-  const [user, setUser] = usePersistentState("fuwa_user", null);
-  const [lastBackup, setLastBackup] = usePersistentState("fuwa_last_backup", null);
+  const [menu, setMenu] = usePersistentState("cdv_menu", PRODUCTS);
+  const [mods, setMods] = usePersistentState("cdv_mods", MOD_GROUPS);
+  const [cats, setCats] = usePersistentState("cdv_cats", CATEGORIES);
+  const [areas, setAreas] = usePersistentState("cdv_areas", AREAS);
+  const [user, setUser] = usePersistentState("cdv_user", null);
+  const [lastBackup, setLastBackup] = usePersistentState("cdv_last_backup", null);
   const [cart, setCart] = useState([]);
   const [orderType, setOrderType] = useState("Aquí");
   const [table, setTable] = useState(null); // mesa asignada a la orden en curso {id, label, areaId, areaName}
@@ -92,10 +170,10 @@ export default function App() {
   // variables CSS no son fiables dentro de @page.
   useEffect(() => {
     document.body.setAttribute("data-paper", PAPER);
-    let el = document.getElementById("fuwa-print-page");
+    let el = document.getElementById("cdv-print-page");
     if (!el) {
       el = document.createElement("style");
-      el.id = "fuwa-print-page";
+      el.id = "cdv-print-page";
       document.head.appendChild(el);
     }
     const size = PAPER_PAGE[PAPER] || PAPER_PAGE["80"];
@@ -582,9 +660,9 @@ export default function App() {
   const backupStale = !backupDismissed && daysSince(lastBackup) >= BACKUP_STALE_DAYS && (orders.length > 0 || shiftHistory.length > 0);
 
   return (
-    // El alto va por CSS (.fuwa-viewport), no inline: necesita el respaldo
+    // El alto va por CSS (.cdv-viewport), no inline: necesita el respaldo
     // vh→dvh, que un objeto de estilo no puede expresar (ver styles.css).
-    <div className="fuwa-viewport" style={{ display: "flex", width: "100vw", overflow: "hidden", background: "var(--cream)" }}>
+    <div className="cdv-viewport" style={{ display: "flex", width: "100vw", overflow: "hidden", background: "var(--cream)" }}>
       {/* Confirmación flotante de "sí salió la comanda". Se va sola a los 3s. */}
       {aviso && (
         <div
@@ -717,6 +795,7 @@ export default function App() {
       {/* ---- Topbar + contenido ---- */}
       <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         <header
+          className="cdv-topbar"
           style={{
             background: "var(--superficie)",
             borderBottom: "1px solid var(--borde)",
@@ -739,6 +818,7 @@ export default function App() {
               <Icon name="report" size={15} /> Sin conexión{data.pendingCount > 0 ? ` · ${data.pendingCount}` : ""}
             </div>
           )}
+          <PantallaCompleta />
           <div
             title={shift.open ? "Caja abierta" : "Caja cerrada"}
             style={{
@@ -769,7 +849,7 @@ export default function App() {
 
         {/* Aviso de respaldo: alerta del riesgo de perder datos si hace varios días que no se respalda. */}
         {backupStale && (
-          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 22px", background: "oklch(0.95 0.06 85)", borderBottom: "1px solid oklch(0.85 0.1 85)", color: "oklch(0.42 0.09 70)", flexShrink: 0 }}>
+          <div className="cdv-backup" style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 22px", background: "oklch(0.95 0.06 85)", borderBottom: "1px solid oklch(0.85 0.1 85)", color: "oklch(0.42 0.09 70)", flexShrink: 0 }}>
             <Icon name="note" size={20} />
             <div style={{ flex: 1, fontSize: 13.5, fontWeight: 700, lineHeight: 1.35 }}>
               {lastBackup ? `Hace ${Math.floor(daysSince(lastBackup))} días que no respaldas.` : "Aún no has respaldado los datos."} Los datos viven en el servidor (SQLite): descarga un respaldo por si falla el disco.
@@ -842,7 +922,7 @@ export default function App() {
           )}
           {safeView === "receipt" && lastOrder && <Receipt order={lastOrder} onNew={newOrder} />}
           {safeView === "history" && <HistoryScreen orders={orders} shiftHistory={shiftHistory} onVoid={voidOrder} onReprint={reprintOrder} onReopenShift={canManage ? reopenShift : null} />}
-          {safeView === "closeshift" && <CloseShiftScreen shiftOpen={shift.open} openingCash={shift.openingCash} orders={orders} expenses={expenses} onCloseShift={closeShift} />}
+          {safeView === "closeshift" && <CloseShiftScreen shiftOpen={shift.open} openingCash={shift.openingCash} orders={orders} expenses={expenses} openOrders={openOrders || []} onIrACuentas={() => setView("accounts")} onCloseShift={closeShift} />}
           {safeView === "expenses" && (
             <ExpensesScreen
               expenses={expenses}

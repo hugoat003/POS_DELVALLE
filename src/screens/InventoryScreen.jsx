@@ -99,7 +99,7 @@ function IngredientForm({ initial, onCancel, onSave, onDelete }) {
 
   return (
     <div style={overlay} onClick={onCancel}>
-      <div className="fuwa-sheet-tall" style={{ ...sheet, maxWidth: 460, display: "flex", flexDirection: "column" }} onClick={(e) => e.stopPropagation()}>
+      <div className="cdv-sheet-tall" style={{ ...sheet, maxWidth: 460, display: "flex", flexDirection: "column" }} onClick={(e) => e.stopPropagation()}>
         <div style={{ background: "var(--primary-soft)", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 21, color: "var(--navy)" }}>{isNew ? "Nuevo ingrediente" : "Editar ingrediente"}</div>
           <button onClick={onCancel} style={iconBtn} aria-label="Cerrar">
@@ -281,7 +281,7 @@ function MoveForm({ ingredient, canManage, onCancel, onSave }) {
 
   return (
     <div style={overlay} onClick={onCancel}>
-      <div className="fuwa-sheet-tall" style={{ ...sheet, maxWidth: 440, display: "flex", flexDirection: "column" }} onClick={(e) => e.stopPropagation()}>
+      <div className="cdv-sheet-tall" style={{ ...sheet, maxWidth: 440, display: "flex", flexDirection: "column" }} onClick={(e) => e.stopPropagation()}>
         <div style={{ background: "var(--primary-soft)", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 20, color: "var(--navy)" }}>{ingredient.name}</div>

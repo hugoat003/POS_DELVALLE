@@ -2,8 +2,8 @@
 #
 #   sudo cp deploy/linux/cafedelvalle.service /etc/systemd/system/
 #   sudo systemctl daemon-reload
-#   sudo systemctl enable --now fuwa
-#   journalctl -u fuwa -f
+#   sudo systemctl enable --now cafedelvalle
+#   journalctl -u cafedelvalle -f
 #
 # Ajusta User y WorkingDirectory a tu instalación.
 
@@ -13,8 +13,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=fuwa
-WorkingDirectory=/opt/fuwa
+User=cafedelvalle
+WorkingDirectory=/opt/cafe-del-valle
 
 # HOST se fija aparte de NODE_ENV a propósito:
 #   0.0.0.0    → mini PC en el local: las tablets tienen que alcanzarla
@@ -22,7 +22,7 @@ WorkingDirectory=/opt/fuwa
 Environment=NODE_ENV=production
 Environment=HOST=0.0.0.0
 Environment=PORT=5174
-EnvironmentFile=-/opt/fuwa/.env
+EnvironmentFile=-/opt/cafe-del-valle/.env
 
 ExecStart=/usr/bin/node --env-file-if-exists=.env server/index.js
 
@@ -34,7 +34,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
 ProtectHome=read-only
-ReadWritePaths=/opt/fuwa/server/data
+ReadWritePaths=/opt/cafe-del-valle/server/data
 
 [Install]
 WantedBy=multi-user.target

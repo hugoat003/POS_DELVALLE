@@ -1,5 +1,5 @@
 /* Café del Valle POS — servidor de datos: SQLite (better-sqlite3) + auth por sesión.
-   - Los datos viven en server/data/fuwa.db (WAL); la primera vez importa los
+   - Los datos viven en server/data/cdv.db (WAL); la primera vez importa los
      JSON legacy de server/data/*.json y los archiva en json-importado/.
    - Login server-side con PIN (scrypt); el cliente nunca ve hashes.
    - Órdenes/gastos/turnos son filas con inserciones individuales idempotentes:
@@ -379,7 +379,7 @@ app.delete("/api/users/:id", adminOnly, (req, res) => {
 
 // ---------------------------------------------------------------- respaldos
 app.get("/api/backup", adminOnly, (_req, res) => {
-  kvSet("fuwa_last_backup", Date.now());
+  kvSet("cdv_last_backup", Date.now());
   res.json(exportBackupData());
 });
 
@@ -392,7 +392,7 @@ app.get("/api/backup/estado", adminOnly, (_req, res) => res.json(backup.estado()
 app.post("/api/backup/ahora", adminOnly, async (_req, res) => {
   const out = await backup.ejecutar({ forzado: true });
   if (!out.ok) return res.status(500).json(out);
-  kvSet("fuwa_last_backup", Date.now());
+  kvSet("cdv_last_backup", Date.now());
   res.json(out);
 });
 
