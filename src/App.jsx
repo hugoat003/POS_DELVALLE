@@ -545,6 +545,10 @@ export default function App() {
         const creada = await data.openAccount({ lines: cart, orderType, table: orderType === "Aquí" ? table : null });
         id = creada.id;
         setAccountId(id);
+        // Si se envía desde la pestaña Orden (sin pasar por Cuentas), la pantalla
+        // aún no está en modo cuenta: sin esto, lo enviado no se vería y no habría
+        // forma de agregar más ni de cobrar la cuenta.
+        setCuentaMode(true);
       } else {
         await data.updateAccountLines(id, { lines: [...account.lines, ...cart], table, orderType });
       }
@@ -871,6 +875,11 @@ export default function App() {
   const role = ROLES[user.role] || ROLES.cajero;
   const NAV = ALL_NAV.filter((n) => role.nav.includes(n.id));
   const canManage = user.role === "admin";
+  /* La pantalla del barista solo tiene el tablero: una barra lateral con UN botón
+     le quitaba ~240px de ancho a un monitor ya de por sí estrecho (vertical).
+     Sin barra, "Cerrar sesión" queda flotando en su mismo sitio (abajo a la
+     izquierda), sin el fondo blanco. */
+  const soloBarra = user.role === "barra";
   // Vista efectiva: si el rol no la permite, un efecto ya la corrige; mientras
   // tanto se renderiza su pantalla de inicio para no mostrar nada no autorizado.
   const safeView = role.nav.includes(navActive) ? view : role.nav[0];
@@ -895,10 +904,29 @@ export default function App() {
         </div>
       )}
 
+      {soloBarra && (
+        <button
+          onClick={logout}
+          title="Cerrar sesión"
+          style={{
+            position: "fixed", left: 16, bottom: 12, zIndex: 20,
+            display: "flex", alignItems: "center", gap: 10,
+            minHeight: 44, padding: "0 14px",
+            background: "transparent", border: "none", borderRadius: 12,
+            color: "var(--tinta-4)", fontFamily: "var(--ui)", fontSize: 14, fontWeight: 500,
+            cursor: "pointer",
+          }}
+        >
+          <Icon name="logout" size={19} stroke={1.8} />
+          Cerrar sesión
+        </button>
+      )}
+
       {/* ---- Barra lateral ---- */}
       {/* Ancha con icono + texto en escritorio; colapsa a riel de iconos por
           debajo de 1050px (ver .cdv-sidebar en styles.css). La tablet de caja
           no puede perder 140px de ancho útil en la pantalla de orden. */}
+      {!soloBarra && (
       <nav
         className="cdv-sidebar"
         style={{
@@ -1008,6 +1036,7 @@ export default function App() {
           <span className="cdv-nav-label">Cerrar sesión</span>
         </button>
       </nav>
+      )}
 
       {/* ---- Topbar + contenido ---- */}
       <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>

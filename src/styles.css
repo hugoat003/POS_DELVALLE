@@ -215,6 +215,31 @@ textarea:focus {
   }
 }
 
+/* Carrusel de categorías de "Tomar orden" (ver Carrusel en OrderScreen.jsx):
+   una sola fila que se desliza. Vale en todos los tamaños. El padding evita que
+   el overflow recorte el anillo de foco de los botones. */
+.cdv-cats {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 9px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 3px 2px 5px;
+  margin: -3px -2px -5px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  cursor: grab;
+  user-select: none;
+}
+.cdv-cats::-webkit-scrollbar {
+  display: none;
+}
+.cdv-cats > button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 /* Pantalla del barista: un monitor de 21" en VERTICAL (1080×1920). Con dos
    columnas cada una quedaba angosta y larga; apiladas ("En preparación" arriba,
    "Listas" abajo) aprovechan el alto y caben más comandas a la vez. */

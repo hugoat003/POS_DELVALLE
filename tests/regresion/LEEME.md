@@ -1,6 +1,6 @@
 # Pruebas de regresión
 
-306 comprobaciones que cubren el camino del dinero de punta a punta. Cada una
+325 comprobaciones que cubren el camino del dinero de punta a punta. Cada una
 existe porque algo falló de verdad: si una se pone en rojo, lo que se rompió ya
 costó caro una vez.
 
@@ -23,7 +23,7 @@ una carpeta desechable del temporal del sistema (`CDV_DATA_DIR`). La base de
 | `03-offline` | La cola de ventas cobradas sin conexión: qué pasa con la caja cerrada, con la sesión vencida y al reintentar. Semilla de mesas en una instalación nueva. Ticket promedio. Compactación de turnos viejos. |
 | `04-cruces` | Funciones que se pisan entre sí: anular un consumo de empleado, dos cuentas en la misma mesa, una cuenta abierta cruzando el cierre de turno, numeración de órdenes, dos tablets cobrando la misma cuenta. |
 | `05-interfaz` | Navegador real sobre la app compilada: que ninguna pantalla se rompa, el candado de la mesa, el aviso de ventas sin registrar y su reintento. |
-| `06-carta-y-teclado` | La carta real de `deploy/menu` (86 productos, ruteo a cocina/barra), el combo que manda su bebida al barista sin repetirla en cocina, y el teclado numérico del tablero de barra en un navegador vertical (Enter = Listo → Entregado, `+`/`−`, `.` deshacer). |
+| `06-carta-y-teclado` | La carta real de `deploy/menu` (86 productos, ruteo a cocina/barra), el combo que manda su bebida al barista sin repetirla en cocina, el teclado numérico del tablero de barra en un navegador vertical (Enter = Listo → Entregado, `+`/`−`, `.` deshacer), el rol Barra sin barra lateral, el carrusel de categorías de "Tomar orden" (una fila, arrastre con mouse) y el envío a preparar con mesa desde esa pestaña. |
 
 ## Al escribir una prueba nueva
 

@@ -111,6 +111,11 @@ const estadoDe = async (n) => (await tablero()).find((o) => o.n === n);
   for (const d of "2222") await p.getByRole("button", { name: d, exact: true }).first().click();
   await p.waitForTimeout(1500);
   check("el barista entra directo al tablero", await p.getByRole("heading", { name: "Barra" }).isVisible().catch(() => false));
+  eq("el barista NO ve la barra lateral", await p.locator("nav.cdv-sidebar").count(), 0);
+  const salir = p.getByRole("button", { name: "Cerrar sesión" });
+  check("pero 'Cerrar sesión' sigue a la vista, abajo a la izquierda", await salir.isVisible().catch(() => false));
+  const caja = await salir.boundingBox();
+  check("y queda en la esquina inferior izquierda", caja && caja.x < 100 && caja.y > 1700, JSON.stringify(caja));
   check("la leyenda del teclado está a la vista", await p.getByText("Listo → Entregado").isVisible().catch(() => false));
   check("la comanda más antigua está resaltada", (await p.locator('[data-kds-foco="1"]').innerText()).includes("#" + nA));
 
@@ -162,6 +167,71 @@ const estadoDe = async (n) => (await tablero()).find((o) => o.n === n);
   check("tras tocar un botón, un Enter avanza un solo paso (no dos)", pasos === 1, `pasos: ${pasos}`);
 
   check("sin errores de JavaScript", errores.length === 0, errores.slice(0, 2).join(" | "));
+
+  await salir.click();
+  await p.waitForTimeout(800);
+  check("'Cerrar sesión' devuelve al acceso por PIN", await p.getByText("Ana Lucía", { exact: false }).first().isVisible().catch(() => false));
+}
+
+seccion("53. Tomar orden: carrusel de categorías y envío con mesa");
+{
+  const c = await (await nav.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
+  const erroresC = [];
+  c.on("pageerror", (e) => erroresC.push(String(e)));
+  await c.goto(base(), { waitUntil: "networkidle" });
+  await c.getByText("Luis", { exact: false }).first().click();
+  for (const d of "1111") await c.getByRole("button", { name: d, exact: true }).first().click();
+  await c.waitForTimeout(1500);
+
+  // --- carrusel
+  const cats = c.locator(".cdv-cats");
+  const medidas = await cats.evaluate((el) => ({
+    ancho: el.clientWidth, total: el.scrollWidth,
+    tops: [...new Set([...el.children].map((b) => b.offsetTop))].length,
+    n: el.children.length,
+  }));
+  check("las 14 categorías (Todo + 13) están en el carrusel", medidas.n === 14, JSON.stringify(medidas));
+  eq("van en UNA sola fila (no se envuelven)", medidas.tops, 1);
+  check("hay más categorías de las que caben: se puede deslizar", medidas.total > medidas.ancho, JSON.stringify(medidas));
+
+  const tarjetasAntes = await c.locator(".cdv-card").count();
+  const cajaChip = await cats.locator("button").nth(2).boundingBox();
+  await c.mouse.move(cajaChip.x + 20, cajaChip.y + 15);
+  await c.mouse.down();
+  await c.mouse.move(cajaChip.x - 250, cajaChip.y + 15, { steps: 8 });
+  await c.mouse.up();
+  await c.waitForTimeout(300);
+  const despues = await cats.evaluate((el) => el.scrollLeft);
+  check("arrastrar con el mouse hacia la izquierda muestra las demás categorías", despues > 100, `scrollLeft=${despues}`);
+  eq("y el arrastre NO cuenta como clic en una categoría", await c.locator(".cdv-card").count(), tarjetasAntes);
+
+  await cats.locator("button", { hasText: "Alitas" }).click();
+  await c.waitForTimeout(400);
+  check("tocar una categoría la selecciona (solo se ven sus productos)", (await c.locator(".cdv-card").count()) === 5, `tarjetas: ${await c.locator(".cdv-card").count()}`);
+
+  // --- enviar con mesa desde la pestaña Orden
+  await cats.locator("button", { hasText: "Calientes" }).scrollIntoViewIfNeeded();
+  await cats.locator("button", { hasText: "Calientes" }).click();
+  await c.getByText("Café Negro", { exact: false }).first().click();
+  await c.waitForTimeout(400);
+  check("con 'Para aquí' aparece 'Enviar a preparar'", await c.getByRole("button", { name: /Enviar a preparar/ }).isVisible().catch(() => false));
+
+  await c.getByRole("button", { name: /Enviar a preparar/ }).click();
+  await c.waitForTimeout(500);
+  check("sin mesa pide elegirla (no envía)", await c.getByText("¿En qué mesa va la orden?").isVisible().catch(() => false));
+  await c.getByRole("button", { name: /^Mesa\s*3$/ }).click();
+  await c.waitForTimeout(400);
+  check("la mesa queda elegida", await c.getByText(/Mesa 3/).first().isVisible().catch(() => false));
+
+  await c.getByRole("button", { name: /Enviar a preparar/ }).click();
+  await c.waitForTimeout(1500);
+  check("confirma que salió a preparar", await c.getByText(/Enviado:/).first().isVisible().catch(() => false));
+  check("la pantalla pasa a la cuenta de esa mesa", await c.getByText(/Cuenta · Mesa 3/).first().isVisible().catch(() => false));
+  check("lo enviado se ve como 'Ya enviado a preparar'", await c.getByText("Ya enviado a preparar").isVisible().catch(() => false));
+  const est = (await admin.get("/api/state")).data;
+  check("el servidor tiene la cuenta abierta en la mesa 3", est.openOrders.some((o) => o.table && o.table.label === "3"));
+  check("y su bebida llegó al tablero de barra", est.kds.some((o) => o.table && o.table.label === "3"));
+  check("sin errores de JavaScript", erroresC.length === 0, erroresC.slice(0, 2).join(" | "));
 }
 
 await nav.close();

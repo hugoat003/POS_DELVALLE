@@ -177,7 +177,10 @@ while ($true) {
     Start-Sleep -Seconds 1
     if ($proc.HasExited) { break }
     try {
-      $r = Invoke-WebRequest -Uri "$Url/api/health" -UseBasicParsing -TimeoutSec 2
+      # 127.0.0.1 y no "localhost": en esta PC "localhost" resuelve primero a IPv6
+      # (::1), donde el servidor no escucha, y Windows espera ~2 s antes de caer a
+      # IPv4. Con un timeout de 2 s la comprobación fallaba SIEMPRE y la app nunca abría.
+      $r = Invoke-WebRequest -Uri "http://127.0.0.1:$Puerto/api/health" -UseBasicParsing -TimeoutSec 5
       if ($r.StatusCode -eq 200) { $listo = $true; break }
     } catch { }
   }

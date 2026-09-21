@@ -39,7 +39,7 @@ function LeerEnv($clave, $defecto) {
 }
 
 $Puerto = LeerEnv "PORT" "5174"
-$Url = "http://localhost:$Puerto"
+$Url = "http://127.0.0.1:$Puerto"  # no "localhost": tarda ~2 s en caer de IPv6 a IPv4
 $destinos = if ($Solo -eq "todas") { @("caja", "cocina") } else { @($Solo) }
 
 Write-Host "`n=== Prueba de impresoras ===" -ForegroundColor White

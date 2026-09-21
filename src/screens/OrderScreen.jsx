@@ -1,5 +1,5 @@
 /* Café del Valle POS — pantalla de orden: menú con búsqueda, carrito en vivo y modal. */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
 import { Logo } from "../components/Mascot.jsx";
 import { Btn, Pill, qtyBtn, overlay, sheet } from "../components/ui.jsx";
@@ -8,6 +8,90 @@ import { money, lineTotal } from "../lib/format.js";
 import { CustomizeModal } from "./CustomizeModal.jsx";
 import { TablePickerModal } from "./TablesEditor.jsx";
 import { producibleUnits, shortagesFor } from "../lib/recipe.js";
+
+/* ---------- Carrusel de categorías ----------
+   Una sola fila que se desliza hacia los lados, en vez de envolverse a varias
+   líneas y comerse el alto del menú (con 13 categorías eran tres filas).
+
+   Con el dedo desliza solo (overflow nativo). Con el mouse hay que arrastrar a
+   mano, porque un contenedor con overflow escondido no responde al arrastre: se
+   escucha el puntero en `window` mientras dure el gesto para que siga
+   funcionando si el cursor se sale de la fila. Un arrastre no debe contar como
+   clic sobre la categoría que quedó debajo del cursor al soltar. */
+function Carrusel({ children }) {
+  const ref = useRef(null);
+  const gesto = useRef({ activo: false, x: 0, izq: 0, movido: false });
+  const [borde, setBorde] = useState({ izq: false, der: false });
+
+  // Se mide en cada render (las categorías cambian de tamaño y de cantidad) pero
+  // solo se actualiza el estado si algo cambió, para no entrar en bucle.
+  function medir() {
+    const el = ref.current;
+    if (!el) return;
+    const izq = el.scrollLeft > 4;
+    const der = el.scrollLeft + el.clientWidth < el.scrollWidth - 4;
+    setBorde((b) => (b.izq === izq && b.der === der ? b : { izq, der }));
+  }
+  useEffect(medir);
+  useEffect(() => {
+    window.addEventListener("resize", medir);
+    return () => window.removeEventListener("resize", medir);
+  }, []);
+
+  function alBajar(e) {
+    if (e.pointerType !== "mouse" || e.button !== 0) return;
+    const el = ref.current;
+    gesto.current = { activo: true, x: e.clientX, izq: el.scrollLeft, movido: false };
+    const mover = (ev) => {
+      const g = gesto.current;
+      if (!g.activo) return;
+      const dx = ev.clientX - g.x;
+      if (Math.abs(dx) > 5) g.movido = true;
+      if (g.movido) el.scrollLeft = g.izq - dx;
+    };
+    const soltar = () => {
+      gesto.current.activo = false;
+      window.removeEventListener("pointermove", mover);
+      window.removeEventListener("pointerup", soltar);
+      window.removeEventListener("pointercancel", soltar);
+    };
+    window.addEventListener("pointermove", mover);
+    window.addEventListener("pointerup", soltar);
+    window.addEventListener("pointercancel", soltar);
+  }
+
+  // Captura: corre antes que el onClick de la categoría y lo anula si fue arrastre.
+  function alHacerClic(e) {
+    if (gesto.current.movido) {
+      e.preventDefault();
+      e.stopPropagation();
+      gesto.current.movido = false;
+      return;
+    }
+    // La categoría elegida se centra: si estaba a medias fuera de la vista, aparece.
+    const boton = e.target.closest && e.target.closest("button");
+    if (boton && boton.scrollIntoView) boton.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+  }
+
+  // Los bordes se difuminan solo donde hay más categorías por ver.
+  const izqMasc = borde.izq ? "transparent, #000 32px" : "#000, #000 0px";
+  const derMasc = borde.der ? "#000 calc(100% - 32px), transparent" : "#000 100%, #000";
+  const mascara = `linear-gradient(to right, ${izqMasc}, ${derMasc})`;
+
+  return (
+    <div
+      ref={ref}
+      className="cdv-cats"
+      onScroll={medir}
+      onPointerDown={alBajar}
+      onClickCapture={alHacerClic}
+      onDragStart={(e) => e.preventDefault()}
+      style={{ WebkitMaskImage: mascara, maskImage: mascara }}
+    >
+      {children}
+    </div>
+  );
+}
 
 // ---------- Tarjeta de producto ----------
 function ProductCard({ product, cat, showEmoji, stockLeft, onClick }) {
@@ -509,7 +593,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], o
               />
             </div>
           </div>
-          <div className="cdv-cats" style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
+          <Carrusel>
             <Pill active={activeCat === "all"} onClick={() => setActiveCat("all")}>
               Todo
             </Pill>
@@ -518,7 +602,7 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], o
                 {c.name}
               </Pill>
             ))}
-          </div>
+          </Carrusel>
         </div>
         <div className="cdv-menu-scroll" style={{ flex: 1, overflowY: "auto", padding: "8px 26px 26px" }}>
           {/* Tarjetas amplias para tablet: menos columnas, targets más grandes. */}
@@ -736,9 +820,25 @@ export function OrderScreen({ cart, menu, mods, cats, areas, ingredients = [], o
                   <AvisoMesa accion={avisoMesa} />
                 </div>
               )}
-              <Btn kind="primary" size="lg" full disabled={cart.length === 0} onClick={intentarCobrar} icon="card">
-                Cobrar {count > 0 ? "· " + money(subtotal) : ""}
-              </Btn>
+              {/* Una orden "Para aquí" con mesa es una cuenta de mesa aunque se haya
+                  empezado desde esta pestaña y no desde Cuentas: sin este botón,
+                  elegir la mesa no llevaba a ninguna parte (solo existía Cobrar).
+                  Al enviar, la cuenta se crea y la pantalla pasa a modo cuenta. "Para
+                  llevar" sigue siendo de cobro inmediato. */}
+              {orderType === "Aquí" && onEnviar ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <Btn kind="primary" size="lg" full disabled={cart.length === 0 || enviando} onClick={intentarEnviar} icon="bag">
+                    {enviando ? "Enviando…" : `Enviar a preparar${count > 0 ? " · " + count : ""}`}
+                  </Btn>
+                  <Btn kind="ghost" size="lg" full disabled={cart.length === 0} onClick={intentarCobrar} icon="card">
+                    Cobrar {count > 0 ? "· " + money(subtotal) : ""}
+                  </Btn>
+                </div>
+              ) : (
+                <Btn kind="primary" size="lg" full disabled={cart.length === 0} onClick={intentarCobrar} icon="card">
+                  Cobrar {count > 0 ? "· " + money(subtotal) : ""}
+                </Btn>
+              )}
               <div style={{ textAlign: "center", fontSize: 12, color: "var(--muted)", marginTop: 10 }}>El cliente paga antes de consumir · precios con impuestos incluidos</div>
             </>
           )}
