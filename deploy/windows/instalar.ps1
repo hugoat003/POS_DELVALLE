@@ -1,4 +1,4 @@
-<#
+﻿<#
   Café del Valle POS — instalación en la mini PC de caja.
 
   Deja el equipo listo para que, al encenderlo, arranque solo el sistema
@@ -34,7 +34,10 @@ Write-Host "Proyecto: $Raiz"
 
 $admin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
   ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if (-not $admin) { Alto "Abre PowerShell como administrador y vuelve a intentarlo." }
+# El arranque automático NO necesita administrador (la tarea es del propio usuario).
+# Solo el firewall lo pide: sin él, el POS funciona en la caja pero las tablets no
+# conectan. Se avisa en el paso 4 con el comando exacto.
+if (-not $admin) { Aviso "sin permisos de administrador: todo se instala menos la regla de firewall (paso 4)" }
 
 # ---------------------------------------------------------------- 1. Node
 Paso 1 "Comprobando Node.js"
@@ -75,10 +78,16 @@ if (Test-Path $envFile) {
 # ----------------------------------------------------------- 4. firewall
 Paso 4 "Abriendo el puerto $Puerto para las tablets"
 $reglaNombre = "Café del Valle POS ($Puerto)"
-Get-NetFirewallRule -DisplayName $reglaNombre -ErrorAction SilentlyContinue | Remove-NetFirewallRule -ErrorAction SilentlyContinue
-New-NetFirewallRule -DisplayName $reglaNombre -Direction Inbound -Action Allow `
-  -Protocol TCP -LocalPort $Puerto -Profile Private,Domain | Out-Null
-Ok "regla de firewall creada (solo redes privadas/dominio)"
+if ($admin) {
+  Get-NetFirewallRule -DisplayName $reglaNombre -ErrorAction SilentlyContinue | Remove-NetFirewallRule -ErrorAction SilentlyContinue
+  New-NetFirewallRule -DisplayName $reglaNombre -Direction Inbound -Action Allow `
+    -Protocol TCP -LocalPort $Puerto -Profile Private,Domain | Out-Null
+  Ok "regla de firewall creada (solo redes privadas/dominio)"
+} else {
+  Aviso "OMITIDO (requiere administrador). Las tablets no podrán conectar hasta hacerlo."
+  Aviso "En un PowerShell como administrador:"
+  Aviso "  New-NetFirewallRule -DisplayName 'Café del Valle POS ($Puerto)' -Direction Inbound -Action Allow -Protocol TCP -LocalPort $Puerto -Profile Private,Domain"
+}
 
 # ------------------------------------------------------- 5. tarea al inicio
 Paso 5 "Registrando el arranque automático"
@@ -106,6 +115,18 @@ Register-ScheduledTask -TaskName $Tarea -Action $accion -Trigger $disparador `
   -Description "Levanta el servidor de Café del Valle POS y abre la app al iniciar sesion." | Out-Null
 Ok "tarea '$Tarea' registrada para el usuario $env:USERNAME"
 
+# ------------------------------------------------------------ 6. energía
+Paso 6 "Que la PC no se duerma"
+<#
+  Un servidor que se suspende deja a las tablets sin sistema a media jornada. Con
+  corriente conectada: ni suspender, ni hibernar. El monitor sí puede apagarse
+  (pero se deja en 0 también: la pantalla de barra tiene que estar siempre viva).
+#>
+foreach ($ajuste in "standby-timeout-ac", "hibernate-timeout-ac", "monitor-timeout-ac") {
+  try { & powercfg /change $ajuste 0 } catch { Aviso "no se pudo ajustar $ajuste" }
+}
+Ok "sin suspensión, hibernación ni apagado de pantalla con corriente"
+
 # ------------------------------------------------------------------ final
 Write-Host "`n=== Listo ===" -ForegroundColor Green
 Write-Host @"
@@ -126,6 +147,14 @@ Falta hacer a mano (una vez):
 
   4. IP FIJA para esta mini PC: las tablets se conectan a ella por IP.
      Reserva por DHCP en el router es lo mas sencillo.
+
+  5. ENCENDER SOLA tras un corte de luz: en el BIOS de la mini PC, opcion
+     "Restore on AC Power Loss" / "After Power Failure" -> Power On.
+
+  6. DOS PANTALLAS: la ventana de caja abre en el monitor principal (la tactil) y
+     el tablero de barra en el secundario. Si abre en el monitor equivocado,
+     pon en el .env  BARRA_POSICION=1920,0  (X,Y de un punto dentro del monitor
+     de barra) o  BARRA_PANTALLA=off  para no abrirlo.
 
 Para probar sin reiniciar:
     Start-ScheduledTask -TaskName "$Tarea"

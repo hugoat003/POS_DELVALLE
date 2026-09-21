@@ -215,6 +215,16 @@ textarea:focus {
   }
 }
 
+/* Pantalla del barista: un monitor de 21" en VERTICAL (1080×1920). Con dos
+   columnas cada una quedaba angosta y larga; apiladas ("En preparación" arriba,
+   "Listas" abajo) aprovechan el alto y caben más comandas a la vez. */
+@media (orientation: portrait) and (min-width: 821px) {
+  .cdv-kds {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 1050px) {
   /* En login, el panel de marca (reloj/logo) se oculta para dar todo el
      ancho al teclado de PIN; el logotipo reaparece sobre el acceso para que la

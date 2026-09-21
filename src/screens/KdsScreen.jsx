@@ -10,8 +10,19 @@
    el pedido perdería la referencia de a dónde va.
 
    No hay diálogo de confirmación a propósito: en barra ocupada un modal por
-   comanda estorba más de lo que protege. El seguro es poder deshacer. */
-import { useEffect, useState } from "react";
+   comanda estorba más de lo que protege. El seguro es poder deshacer.
+
+   Teclado numérico (la pantalla del barista está a unos metros y con las manos
+   ocupadas, sin tocarla):
+
+     Enter   avanza la comanda resaltada un paso: Listo, y otro Enter, Entregado.
+     + / −   cambia la comanda resaltada (de la más antigua a la más nueva).
+     .       deshace el último movimiento.
+
+   Sin tocar nada, la comanda resaltada es la MÁS ANTIGUA: se atiende en orden de
+   llegada. Tras marcar Listo el resaltado se queda en esa comanda, así el
+   segundo Enter la entrega; al entregarla, salta a la siguiente más antigua. */
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "../components/Icon.jsx";
 import { Logo } from "../components/Mascot.jsx";
 import { Btn } from "../components/ui.jsx";
@@ -29,7 +40,7 @@ function lineSub(l) {
     .join(", ");
 }
 
-function Ticket({ order, ahora, onAvanzar, onRetroceder }) {
+function Ticket({ order, ahora, enFoco, onAvanzar, onRetroceder }) {
   const listo = order.prepStatus === "listo";
   /* Se mide desde el ÚLTIMO envío, no desde que se abrió la cuenta: una mesa
      que lleva dos horas sentada mostraba en rojo una bebida recién pedida. */
@@ -43,9 +54,14 @@ function Ticket({ order, ahora, onAvanzar, onRetroceder }) {
 
   return (
     <div
+      data-kds-foco={enFoco ? "1" : undefined}
       style={{
         background: "#fff",
         border: "1px solid " + (listo ? "var(--primary)" : "var(--line)"),
+        // El resaltado del teclado es un contorno grueso: se ve desde lejos y,
+        // al ser outline, no mueve el diseño de la rejilla.
+        outline: enFoco ? "4px solid var(--navy)" : "none",
+        outlineOffset: 2,
         borderRadius: "var(--r)",
         overflow: "hidden",
         display: "flex",
@@ -54,10 +70,15 @@ function Ticket({ order, ahora, onAvanzar, onRetroceder }) {
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: listo ? "var(--primary-soft)" : "var(--cream)" }}>
         <div style={{ fontFamily: "var(--serif)", fontWeight: 400, fontSize: 25, letterSpacing: "-.01em", color: "var(--tinta)"}}>#{order.number}</div>
-        <div style={{ flex: 1, fontSize: 12.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>
+        <div style={{ flex: 1, minWidth: 0, fontSize: 12.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           {order.orderType === "Aquí" ? "Para aquí" : "Para llevar"}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5, fontWeight: 700, fontSize: 13.5, color: colorEspera(min) }}>
+        {enFoco && (
+          <span style={{ flexShrink: 0, whiteSpace: "nowrap", background: "var(--navy)", color: "#fff", borderRadius: 8, padding: "3px 9px", fontSize: 12, fontWeight: 700, letterSpacing: 0.3 }}>
+            ⏎ {listo ? "Entregado" : "Listo"}
+          </span>
+        )}
+        <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 5, fontWeight: 700, fontSize: 13.5, color: colorEspera(min) }}>
           <Icon name="clock" size={15} />
           {min}m
         </div>
@@ -100,7 +121,9 @@ function Ticket({ order, ahora, onAvanzar, onRetroceder }) {
                   un "Café" suelto y no sabe a qué mesa ni a qué platillo va. */}
               {l.desdeLinea && (
                 <div style={{ fontSize: 13, fontWeight: 600, color: "var(--cafe)", paddingLeft: 34, marginTop: 1 }}>
-                  del {l.desdeLinea}
+                  {/* Cuando el extra lleva el nombre del platillo (combos) repetirlo
+                      leería "Combo N.1 · del Combo N.1". */}
+                  {l.desdeLinea === l.name ? "bebida incluida" : `del ${l.desdeLinea}`}
                 </div>
               )}
               {sub && <div style={{ fontSize: 13, color: "var(--muted)", paddingLeft: 34 }}>{sub}</div>}
@@ -147,7 +170,9 @@ function Columna({ titulo, hint, tickets, children }) {
         <span style={{ fontWeight: 700, fontSize: 13, color: "var(--muted)" }}>{tickets}</span>
         {hint && <span style={{ fontSize: 12.5, color: "var(--muted)" }}>· {hint}</span>}
       </div>
-      <div style={{ flex: 1, overflowY: "auto", paddingRight: 4, paddingBottom: 12 }}>{children}</div>
+      {/* 8px de colchón: el contorno del ticket resaltado (4px + 2px de separación)
+          se dibuja FUERA de la tarjeta y el contenedor con scroll lo recortaba. */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 8px 12px" }}>{children}</div>
     </div>
   );
 }
@@ -181,9 +206,65 @@ export function KdsScreen({ orders, shiftOpen, onSetPrep }) {
     setUltimo(null);
   }
 
-  const activas = orders.filter((o) => !o.voided && (o.prepStatus || "pendiente") !== "entregado");
+  // De la más antigua a la más nueva: es el orden de atención y el del teclado.
+  const antiguedad = (o) => o.sentAt || o.ts;
+  const activas = orders
+    .filter((o) => !o.voided && (o.prepStatus || "pendiente") !== "entregado")
+    .sort((a, b) => antiguedad(a) - antiguedad(b));
   const pendientes = activas.filter((o) => (o.prepStatus || "pendiente") === "pendiente");
   const listas = activas.filter((o) => o.prepStatus === "listo");
+
+  /* Comanda resaltada para el teclado. Se guarda el id y no el objeto: el objeto
+     cambia en cada sync. Si ese id ya no está (se entregó, se anuló), cae en la
+     más antigua. */
+  const [foco, setFoco] = useState(null);
+  const enFoco = activas.find((o) => o.id === foco) || activas[0] || null;
+
+  // El manejador se registra una sola vez y lee siempre lo último desde aquí:
+  // si se re-registrara en cada render, una pulsación entre dos renders se perdería.
+  const teclas = useRef(null);
+  teclas.current = { activas, enFoco, mover, deshacer, setFoco, shiftOpen };
+  useEffect(() => {
+    function onKey(e) {
+      if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
+      const t = e.target;
+      if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+      const { activas, enFoco, mover, deshacer, setFoco, shiftOpen } = teclas.current;
+      if (!shiftOpen) return;
+
+      if (e.key === "Enter") {
+        // preventDefault: si un botón quedó con el foco tras un toque, Enter
+        // también lo pulsaría y la comanda avanzaría dos pasos de un solo golpe.
+        e.preventDefault();
+        if (!enFoco) return;
+        const listo = enFoco.prepStatus === "listo";
+        mover(enFoco, listo ? "entregado" : "listo");
+        setFoco(listo ? null : enFoco.id); // entregada → salta a la más antigua
+        return;
+      }
+      const paso =
+        e.code === "NumpadAdd" || e.key === "+" || e.key === "ArrowRight" || e.key === "ArrowDown" ? 1
+        : e.code === "NumpadSubtract" || e.key === "-" || e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1
+        : 0;
+      if (paso && activas.length) {
+        e.preventDefault();
+        const i = Math.max(0, activas.findIndex((o) => enFoco && o.id === enFoco.id));
+        setFoco(activas[(i + paso + activas.length) % activas.length].id);
+      } else if (e.code === "NumpadDecimal" || e.key === "." || e.key === "," || e.key === "Delete" || e.key === "Backspace") {
+        e.preventDefault();
+        deshacer();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Con la pantalla a metros de distancia el resaltado tiene que seguir a la vista.
+  const idFoco = enFoco ? enFoco.id : null;
+  useEffect(() => {
+    const el = document.querySelector('[data-kds-foco="1"]');
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [idFoco, enFoco && enFoco.prepStatus]);
 
   if (!shiftOpen) {
     return (
@@ -209,7 +290,7 @@ export function KdsScreen({ orders, shiftOpen, onSetPrep }) {
       </div>
 
       <div
-        className="cdv-split"
+        className="cdv-split cdv-kds"
         style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, padding: "0 32px 12px", minHeight: 0 }}
       >
         <Columna titulo="En preparación" tickets={pendientes.length} hint="marca Listo al terminar">
@@ -218,7 +299,7 @@ export function KdsScreen({ orders, shiftOpen, onSetPrep }) {
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14, alignItems: "start" }}>
               {pendientes.map((o) => (
-                <Ticket key={o.id} order={o} ahora={ahora} onAvanzar={() => mover(o, "listo")} />
+                <Ticket key={o.id} order={o} ahora={ahora} enFoco={o.id === idFoco} onAvanzar={() => mover(o, "listo")} />
               ))}
             </div>
           )}
@@ -234,6 +315,7 @@ export function KdsScreen({ orders, shiftOpen, onSetPrep }) {
                   key={o.id}
                   order={o}
                   ahora={ahora}
+                  enFoco={o.id === idFoco}
                   onAvanzar={() => mover(o, "entregado")}
                   onRetroceder={() => mover(o, "pendiente")}
                 />
@@ -241,6 +323,17 @@ export function KdsScreen({ orders, shiftOpen, onSetPrep }) {
             </div>
           )}
         </Columna>
+      </div>
+
+      {/* Leyenda del teclado numérico: fija, para que quien llegue a la barra por
+          primera vez no tenga que preguntar qué hace cada tecla. */}
+      <div style={{ flexShrink: 0, display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "6px 22px", padding: "0 32px 12px", fontSize: 13, color: "var(--muted)" }}>
+        {[["Enter", "Listo → Entregado"], ["+ / −", "cambiar comanda"], [".", "deshacer"]].map(([tecla, txt]) => (
+          <span key={tecla} style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+            <kbd style={{ border: "1px solid var(--line)", borderBottomWidth: 2, borderRadius: 6, background: "#fff", padding: "1px 8px", fontFamily: "var(--ui)", fontWeight: 700, fontSize: 12.5, color: "var(--ink)" }}>{tecla}</kbd>
+            {txt}
+          </span>
+        ))}
       </div>
 
       {/* Deshacer: el seguro contra el toque equivocado, sin frenar el ritmo. */}

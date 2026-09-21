@@ -90,17 +90,30 @@ añadir además una copia binaria de SQLite, que es consistente con WAL:
 
 - **Login con roles** — empleados con PIN (también se escribe con el teclado físico:
   dígitos, Backspace, Escape). La navegación se filtra por rol. Demo:
-  - **Mariko Tanaka** — Gerente · PIN `1234` → acceso total.
-  - **Sofía Gómez** — Cajero/Barista · PIN `1111` → orden, historial, gastos, cierre
+  - **María José Estrada** — Gerente · PIN `1234` → acceso total.
+  - **Luis Barrientos** — Cajero/Barista · PIN `1111` → orden, historial, gastos, cierre
     de caja e inventario (solo para registrar mermas).
-  - **Diego Ramírez** — Cajero/Barista · PIN `2222` → igual que Sofía.
-  - **Barra** — rol para el tablero de comandas: **solo** ve la pantalla Barra.
-    No se siembra por defecto; se crea desde Empleados.
+  - **Ana Lucía Morales** — Barra · PIN `2222` → rol del tablero de comandas: **solo**
+    ve la pantalla Barra. Es el usuario de la pantalla del barista.
+  - Cámbialos desde Empleados antes de operar.
   - El panel azul muestra un **reloj en vivo** y la fecha.
 - **Tablero de barra (KDS)** — sustituye a la comandera impresa. Cada orden cobrada
   entra como ticket y pasa por dos firmas: la barra marca **Listo** y quien recoge
   marca **Entregado** (hasta entonces el ticket sigue mostrando la mesa en grande).
   Cualquier toque se puede **deshacer**. Lo ven los roles Barra y Gerente.
+  Pensado para un monitor vertical (se apilan "En preparación" y "Listas") y para
+  operarse **sin tocar la pantalla, con el teclado numérico**:
+
+  | Tecla | Acción |
+  |---|---|
+  | **Enter** | avanza la comanda resaltada: *Listo*; otro Enter, *Entregado* |
+  | **+** / **−** | cambia la comanda resaltada (de más antigua a más nueva) |
+  | **.** | deshace el último movimiento |
+
+  Sin tocar nada el resaltado va a la comanda **más antigua** (orden de llegada); tras
+  marcarla *Lista* se queda en ella, así el siguiente Enter la entrega y salta a la
+  siguiente. Si la barra termina una bebida que no es la más antigua, se pasa a ella
+  con **+** / **−** antes del Enter.
 - **Apertura y cierre de caja** — la caja inicia **cerrada**; hay que abrirla con un
   **fondo de apertura** antes de poder tomar órdenes. Con la caja cerrada no se pueden
   crear órdenes. Al cerrar caja se hace el arqueo de efectivo
@@ -152,6 +165,25 @@ añadir además una copia binaria de SQLite, que es consistente con WAL:
   (insumos bajo mínimo, papeles atorados). Pensado para consultarlo desde el celular
   por Tailscale sin descargar el turno entero.
 
+## La carta
+
+La carta impresa (86 productos, 13 categorías) está transcrita en
+[`deploy/menu/cafe-del-valle.mjs`](deploy/menu/cafe-del-valle.mjs) y se carga en un
+servidor que ya corre con:
+
+```bash
+npm run menu:cargar      # respalda el menú anterior en server/data/menu-anterior-*.json
+```
+
+Solo carga sobre el menú de prueba que trae el sistema; si la carta ya está cargada se
+detiene (volver a cargarla pisaría los precios y recetas que editen los encargados) salvo
+que se use `--forzar`. Las **recetas van vacías** a propósito: las cargan los encargados.
+
+**Platillo que incluye bebida** (combos, afogatto): el platillo va a cocina y se crea un
+*extra con el nombre del platillo* y destino **barra**. Al enviar, la bebida aparece en el
+tablero del barista ("Combo N.1 · bebida incluida") y no en el papel de cocina. Es un grupo
+de una sola opción, así que queda marcado de entrada y el cajero no lo puede olvidar.
+
 ## Impresoras
 
 Dos 3nstar RPT009 con caminos distintos a propósito:
@@ -173,6 +205,11 @@ PRINTER_COCINA=tcp://192.168.1.50:9100   # RAW/JetDirect
 En Windows, la impresora de caja se instala con el driver **"Generic / Text Only"**
 (con el driver propio el spooler intenta rasterizar el ESC/POS) y se comparte con ese
 nombre. A la de cocina conviene reservarle la IP en el router.
+
+**Probarlas en el local:** `npm run impresoras` revisa lo que hay en el `.env` (¿instalada y
+compartida la de caja? ¿responde la IP de cocina en el 9100?), explica qué falla y cómo
+arreglarlo, y manda una página de prueba por la cola real. `-Solo caja` o `-Solo cocina`
+para probar una.
 
 **Nada se pierde si una impresora falla.** El trabajo se encola en la misma transacción
 que la orden, así que si el cobro se guardó, el papel está garantizado: el worker
@@ -200,6 +237,12 @@ powershell -ExecutionPolicy Bypass -File deploy\windows\instalar.ps1
 Instrucciones completas y solución de problemas en
 [deploy/windows/LEEME.md](deploy/windows/LEEME.md). Para Linux hay una unidad
 systemd en [deploy/linux/cafedelvalle.service](deploy/linux/cafedelvalle.service).
+
+**Dos pantallas:** al iniciar, la caja abre en el monitor principal (el táctil) y el tablero
+de barra en el secundario, cada uno en Chrome kiosco con su propio perfil (así la sesión del
+cajero y la del barista no se pisan). En el `.env`: `BARRA_PANTALLA=off` desactiva la de
+barra, y `BARRA_POSICION=1920,0` fija a mano en qué punto abrirla si Windows y Chrome no se
+ponen de acuerdo con los monitores. Con un solo monitor solo se abre la caja.
 
 **El arranque va atado al inicio de sesión, no al arranque de Windows**, y es a
 propósito: un servicio correría como SYSTEM, donde no existen ni la unidad de

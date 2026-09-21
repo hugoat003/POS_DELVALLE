@@ -1,4 +1,4 @@
-<#
+﻿<#
   Café del Valle POS — detiene el sistema (servidor + app en pantalla).
 
   Para mantenimiento: actualizar el menú desde código, cambiar el .env,

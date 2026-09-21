@@ -38,6 +38,12 @@ const correr = (archivo, env = {}) =>
 
 let fallaron = 0;
 
+// Las suites de navegador (05 y 06) sirven la app compilada.
+if (suites.some((s) => /^0[56]/.test(s)) && !fs.existsSync(path.join(RAIZ, "dist", "index.html"))) {
+  console.log("· compilando la app (dist/) …");
+  spawnSync("npm", ["run", "build"], { cwd: RAIZ, stdio: "inherit", shell: true });
+}
+
 for (const s of suites) {
   console.log(`\n${"█".repeat(64)}\n██  ${s}\n${"█".repeat(64)}`);
 

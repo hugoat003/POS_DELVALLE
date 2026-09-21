@@ -1,4 +1,4 @@
-<#
+﻿<#
   Café del Valle POS — quita el arranque automático y la regla de firewall.
 
   NO borra la base de datos, ni los respaldos, ni el .env: solo deja de

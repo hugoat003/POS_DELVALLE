@@ -1,4 +1,4 @@
-<#
+﻿<#
   Café del Valle POS — arranque de la caja.
 
   Lo lanza la tarea programada al iniciar sesión en Windows. Hace tres cosas:
@@ -42,10 +42,20 @@ if (Test-Path $EnvFile) {
 }
 $Url = "http://localhost:$Puerto"
 
+# Lee una clave del .env (solo para lo que necesita ESTE script: las pantallas).
+function LeerEnv($clave, $defecto) {
+  if (Test-Path $EnvFile) {
+    $m = Select-String -Path $EnvFile -Pattern "^\s*$clave\s*=\s*(.*?)\s*(#.*)?$" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($m -and $m.Matches[0].Groups[1].Value) { return $m.Matches[0].Groups[1].Value.Trim() }
+  }
+  return $defecto
+}
+
 # --- node: puede no estar en el PATH de la tarea programada ---
 $Node = (Get-Command node -ErrorAction SilentlyContinue).Source
 if (-not $Node) {
-  foreach ($ruta in @("$env:ProgramFiles\nodejs\node.exe", "${env:ProgramFiles(x86)}\nodejs\node.exe")) {
+  # Node instalado sin permisos de administrador (portable) vive en el perfil del usuario.
+  foreach ($ruta in @("$env:ProgramFiles\nodejs\node.exe", "${env:ProgramFiles(x86)}\nodejs\node.exe", "$env:USERPROFILE\tools\node\node.exe")) {
     if (Test-Path $ruta) { $Node = $ruta; break }
   }
 }
@@ -63,17 +73,53 @@ if (-not (Test-Path (Join-Path $Raiz "dist"))) {
 
 Escribir "iniciando Café del Valle POS · node=$Node · puerto=$Puerto"
 
+# --- pantallas ---
+<#
+  La mini PC de caja tiene DOS monitores:
+    · el principal (táctil)      → la caja: cobrar, cuentas, cierre
+    · el secundario (LCD vertical) → la barra: tablero de comandas del barista
+
+  Cada uno es una ventana de Chrome en kiosco con su PROPIO perfil, porque la
+  sesión (el PIN con que se entró) vive en el almacenamiento del navegador: con
+  un solo perfil, iniciar sesión como barista en una ventana cerraría al cajero
+  en la otra. Con un solo monitor solo se abre la caja; "off" en BARRA_PANTALLA
+  desactiva la ventana de barra aunque haya dos.
+
+  El proceso se declara "consciente de DPI" antes de preguntar por los monitores:
+  si no, Windows le miente con coordenadas escaladas (un monitor al 125% mide
+  1536 en vez de 1920) y la ventana de barra caería en el monitor equivocado.
+#>
+function PantallaBarra {
+  if ((LeerEnv "BARRA_PANTALLA" "auto") -eq "off") { return $null }
+  try {
+    Add-Type -TypeDefinition 'using System.Runtime.InteropServices; public static class CdvDpi { [DllImport("user32.dll")] public static extern bool SetProcessDPIAware(); }' -ErrorAction SilentlyContinue
+    [void][CdvDpi]::SetProcessDPIAware()
+    Add-Type -AssemblyName System.Windows.Forms
+    $otras = [System.Windows.Forms.Screen]::AllScreens | Where-Object { -not $_.Primary } | Sort-Object { $_.Bounds.X }
+    if (-not $otras) { return $null }
+    $b = $otras[0].Bounds
+    Escribir "pantalla de barra: $($otras[0].DeviceName) $($b.Width)x$($b.Height) en ($($b.X),$($b.Y))"
+    # Coordenadas a mano por si Windows y Chrome no se ponen de acuerdo: BARRA_POSICION=1920,0
+    $manual = LeerEnv "BARRA_POSICION" ""
+    if ($manual -match '^\s*(-?\d+)\s*,\s*(-?\d+)\s*$') { return @{ X = [int]$Matches[1]; Y = [int]$Matches[2] } }
+    return @{ X = $b.X + 50; Y = $b.Y + 50 }  # +50: cae dentro del monitor aunque el borde no cuadre
+  } catch {
+    Escribir "no se pudieron leer los monitores ($($_.Exception.Message)); se abre solo la caja"
+    return $null
+  }
+}
+
 # --- navegador en modo pantalla completa ---
-function AbrirApp {
+function AbrirVentana($nombre, $perfil, $posicion) {
   $chrome = @(
     "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
     "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe"
   ) | Where-Object { Test-Path $_ } | Select-Object -First 1
 
-  # Perfil aparte: evita que la sesión del POS se mezcle con la navegación
-  # personal de quien use la máquina, y que un "restaurar pestañas" reabra otra cosa.
-  $perfil = Join-Path $Raiz "server\data\navegador"
   <#
+    Perfil aparte: evita que la sesión del POS se mezcle con la navegación
+    personal de quien use la máquina, y que un "restaurar pestañas" reabra otra cosa.
+
     Sin comillas manuales: PowerShell ya entrecomilla los elementos con espacios
     al construir la línea de comandos. Escaparlas aquí produciría comillas
     dobles y Chrome recibiría una ruta rota — y la ruta del proyecto puede
@@ -83,18 +129,33 @@ function AbrirApp {
     "--kiosk", "--no-first-run", "--noerrdialogs", "--disable-session-crashed-bubble",
     "--disable-infobars", "--disable-features=TranslateUI", "--user-data-dir=$perfil"
   )
+  # El kiosco se abre en el monitor donde cae la ventana: por eso se le da posición.
+  if ($posicion) { $comunes += "--window-position=$($posicion.X),$($posicion.Y)" }
   if ($chrome) {
-    Escribir "abriendo la app en Chrome"
+    Escribir "abriendo $nombre en Chrome"
     Start-Process $chrome -ArgumentList (@("--app=$Url") + $comunes)
   } else {
     $edge = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe"
     if (-not (Test-Path $edge)) { $edge = "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe" }
     if (Test-Path $edge) {
-      Escribir "abriendo la app en Edge"
+      Escribir "abriendo $nombre en Edge"
       Start-Process $edge -ArgumentList (@("$Url", "--edge-kiosk-type=fullscreen", "--no-first-run") + $comunes)
     } else {
       Escribir "no se encontró Chrome ni Edge; abre manualmente $Url"
     }
+  }
+}
+
+function AbrirApp {
+  AbrirVentana "la caja" (Join-Path $Raiz "server\data\navegador") $null
+  $barra = PantallaBarra
+  if ($barra) {
+    # Pausa corta: dos Chrome arrancando a la vez se pelean el foco y el kiosco
+    # de uno termina en el monitor del otro.
+    Start-Sleep -Seconds 3
+    AbrirVentana "el tablero de barra" (Join-Path $Raiz "server\data\navegador-barra") $barra
+  } else {
+    Escribir "un solo monitor (o BARRA_PANTALLA=off): no se abre el tablero de barra"
   }
 }
 

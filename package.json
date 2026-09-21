@@ -11,7 +11,9 @@
     "preview": "vite preview",
     "start": "npm run build && node --env-file-if-exists=.env server/index.js",
     "test": "node tests/regresion/correr.mjs",
-    "test:humo": "node tests/smoke.mjs"
+    "test:humo": "node tests/smoke.mjs",
+    "menu:cargar": "node deploy/menu/cargar.mjs",
+    "impresoras": "powershell -NoProfile -ExecutionPolicy Bypass -File deploy/windows/probar-impresoras.ps1"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",
