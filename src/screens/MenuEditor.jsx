@@ -7,11 +7,17 @@ import { SIZES_BEBIDA, catColors } from "../data.js";
 import { STATIONS, DEFAULT_STATION, stationOf } from "../lib/stations.js";
 import { productCost } from "../lib/recipe.js";
 
-const MOD_LIST = [
-  { id: "leche", label: "Leche" },
-  { id: "azucar", label: "Nivel de azúcar" },
-  { id: "extras", label: "Extras" },
-];
+/* Los tres grupos que trae el sistema de fábrica van primero, en el orden de
+   siempre; cualquier otro grupo que el gerente cree (sabores, temperatura,
+   bebida incluida en un combo…) se agrega después. Antes esta lista estaba
+   fija a estos tres nombres nada más: un grupo nuevo quedaba guardado pero
+   sin ningún lado de la app donde asignarlo a un producto o editar sus
+   opciones — existía en los datos pero era invisible. */
+const GRUPOS_BASE = ["leche", "azucar", "extras"];
+function ordenGrupos(mods) {
+  const ids = Object.keys(mods || {});
+  return [...GRUPOS_BASE.filter((id) => ids.includes(id)), ...ids.filter((id) => !GRUPOS_BASE.includes(id))];
+}
 
 // Descarta filas a medio escribir (sin ingrediente o en cero) al guardar.
 const cleanRecipe = (rows) =>
@@ -122,7 +128,7 @@ function RecipeEditor({ value, onChange, ingredients, allowNegative, compact, em
 }
 
 // ---------- Formulario de producto ----------
-function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete }) {
+function ProductForm({ initial, cats, ingredients, modGroups, onCancel, onSave, onDelete }) {
   const [name, setName] = useState(initial.name || "");
   const [cat, setCat] = useState(initial.cat || cats[0].id);
   const [price, setPrice] = useState(initial.price != null ? String(initial.price) : "");
@@ -304,9 +310,15 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
 
           <Field label="Modificadores disponibles">
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {MOD_LIST.map((m) => (
-                <CheckRow key={m.id} checked={mods.includes(m.id)} onChange={() => toggleMod(m.id)} label={m.label} />
-              ))}
+              {ordenGrupos(modGroups).map((gid) => {
+                const g = modGroups[gid];
+                return <CheckRow key={gid} checked={mods.includes(gid)} onChange={() => toggleMod(gid)} label={g.label} />;
+              })}
+              {Object.keys(modGroups || {}).length === 0 && (
+                <div style={{ fontSize: 13, color: "var(--muted)" }}>
+                  Todavía no hay grupos de opciones. Créalos desde la pestaña "Leche, azúcar y extras".
+                </div>
+              )}
             </div>
           </Field>
 
@@ -366,9 +378,53 @@ function ProductForm({ initial, cats, ingredients, onCancel, onSave, onDelete })
   );
 }
 
-// ---------- Editor de modificadores (leche, azúcar, extras) ----------
+// De "Bebida incluida" a un id estable ("bebida_incluida"), sin acentos ni espacios.
+function slugGrupo(nombre) {
+  return nombre
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "") || "grupo";
+}
+
+// ---------- Editor de modificadores (leche, azúcar, extras, y los que se agreguen) ----------
 function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = [] }) {
-  const order = ["leche", "azucar", "extras"];
+  const order = ordenGrupos(mods);
+  const [nuevo, setNuevo] = useState(null); // { nombre, type } | null, mientras se crea un grupo
+
+  function crearGrupo() {
+    const nombre = (nuevo.nombre || "").trim();
+    if (!nombre) return;
+    let id = slugGrupo(nombre);
+    // Id repetido (dos grupos con nombre parecido): se le agrega un número.
+    if (mods[id]) {
+      let n = 2;
+      while (mods[id + "_" + n]) n++;
+      id = id + "_" + n;
+    }
+    setMods((prev) => ({ ...prev, [id]: { id, label: nombre, type: nuevo.type, required: false, options: [] } }));
+    setNuevo(null);
+  }
+
+  // Solo se puede borrar un grupo que ningún producto use todavía: si algún
+  // producto lo tiene marcado, borrarlo dejaría ese producto apuntando a un
+  // grupo que ya no existe. Los tres grupos de fábrica no se borran: el resto
+  // de la app (leche con su intercambio, azúcar con su valor por defecto) da
+  // por hecho que siguen ahí.
+  function borrarGrupo(gid) {
+    if (GRUPOS_BASE.includes(gid)) return;
+    const enUso = (menu || []).filter((p) => (p.mods || []).includes(gid)).length;
+    if (enUso > 0) {
+      window.alert(`"${mods[gid].label}" lo usan ${enUso} producto(s). Quítaselo desde cada producto antes de borrar el grupo.`);
+      return;
+    }
+    if (!window.confirm(`¿Borrar el grupo "${mods[gid].label}" y sus opciones?`)) return;
+    setMods((prev) => {
+      const { [gid]: _fuera, ...resto } = prev;
+      return resto;
+    });
+  }
 
   /* A dónde llega cada grupo de opciones.
 
@@ -471,6 +527,18 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
                   </div>
                 );
               })()}
+              {/* Los tres grupos de fábrica no se borran: el resto de la app da por
+                  hecho que siguen existiendo (leche con su intercambio, azúcar con
+                  su valor por defecto). Los que crea el gerente sí. */}
+              {!GRUPOS_BASE.includes(gid) && (
+                <button
+                  onClick={() => borrarGrupo(gid)}
+                  title="Borrar este grupo de opciones"
+                  style={{ flexShrink: 0, background: "none", border: "none", cursor: "pointer", color: "var(--tinta-4)", padding: 4, display: "flex" }}
+                >
+                  <Icon name="trash" size={17} />
+                </button>
+              )}
             </div>
             <div style={{ padding: "6px 20px 16px" }}>
               <div style={{ display: "flex", gap: 10, padding: "8px 0 4px", fontSize: 11.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>
@@ -614,6 +682,51 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
           </div>
         );
       })}
+
+      {/* Crear un grupo nuevo: temperatura, sabor, "bebida incluida" de un
+          combo… cualquier pregunta que la carta necesite y que no sea leche,
+          azúcar ni extras. Sale sin opciones; se le agregan con "Agregar
+          opción" una vez creado, igual que a los demás grupos. */}
+      {nuevo ? (
+        <div style={{ background: "#fff", border: "2px dashed var(--borde-fuerte)", borderRadius: "var(--r)", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ fontFamily: "var(--ui)", fontWeight: 600, fontSize: 16, color: "var(--tinta)" }}>Nuevo grupo de opciones</div>
+          <input
+            autoFocus
+            value={nuevo.nombre}
+            onChange={(e) => setNuevo((n) => ({ ...n, nombre: e.target.value }))}
+            placeholder="Ej. Temperatura, Sabor, Bebida incluida…"
+            style={inp}
+          />
+          <div style={{ display: "flex", gap: 8 }}>
+            <Pill active={nuevo.type === "single"} onClick={() => setNuevo((n) => ({ ...n, type: "single" }))}>
+              El cliente elige una
+            </Pill>
+            <Pill active={nuevo.type === "multi"} onClick={() => setNuevo((n) => ({ ...n, type: "multi" }))}>
+              Puede elegir varias
+            </Pill>
+          </div>
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <Btn kind="ghost" size="sm" onClick={() => setNuevo(null)}>
+              Cancelar
+            </Btn>
+            <Btn kind="primary" size="sm" disabled={!nuevo.nombre.trim()} onClick={crearGrupo} icon="check">
+              Crear grupo
+            </Btn>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setNuevo({ nombre: "", type: "single" })}
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            width: "100%", background: "none", border: "2px dashed var(--line)", borderRadius: "var(--r)",
+            padding: "14px 16px", cursor: "pointer", color: "var(--primary)", fontWeight: 700,
+            fontFamily: "var(--ui)", fontSize: 15,
+          }}
+        >
+          <Icon name="plus" size={18} /> Nuevo grupo de opciones
+        </button>
+      )}
     </div>
   );
 }
@@ -805,7 +918,7 @@ export function MenuEditor({ menu, setMenu, mods, setMods, cats, setCats, ingred
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(330px, 1fr))", gap: 14 }}>
               {list.map((p) => {
                 const c = catById[p.cat] || cats[0];
-                const opts = [p.sizes && "Tamaños", ...(p.mods || []).map((m) => MOD_LIST.find((x) => x.id === m) && MOD_LIST.find((x) => x.id === m).label)].filter(Boolean);
+                const opts = [p.sizes && "Tamaños", ...(p.mods || []).map((m) => mods[m] && mods[m].label)].filter(Boolean);
                 return (
                   <button
                     key={p.id}
@@ -870,7 +983,7 @@ export function MenuEditor({ menu, setMenu, mods, setMods, cats, setCats, ingred
           <CategoriesEditor cats={cats} setCats={setCats} counts={counts} onDelete={removeCat} />
         )}
       </div>
-      {editing && <ProductForm initial={editing} cats={cats} ingredients={ingredients} onCancel={() => setEditing(null)} onSave={upsert} onDelete={remove} />}
+      {editing && <ProductForm initial={editing} cats={cats} ingredients={ingredients} modGroups={mods} onCancel={() => setEditing(null)} onSave={upsert} onDelete={remove} />}
     </div>
   );
 }

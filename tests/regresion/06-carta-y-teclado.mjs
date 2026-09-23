@@ -234,6 +234,45 @@ seccion("53. Tomar orden: carrusel de categorías y envío con mesa");
   check("sin errores de JavaScript", erroresC.length === 0, erroresC.slice(0, 2).join(" | "));
 }
 
+seccion("54. Editor de menú: los 16 grupos de opciones son editables");
+{
+  const g = await (await nav.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
+  const erroresG = [];
+  g.on("pageerror", (e) => erroresG.push(String(e)));
+  await g.goto(base(), { waitUntil: "networkidle" });
+  await g.getByText("María José", { exact: false }).first().click();
+  for (const d of "1234") await g.getByRole("button", { name: d, exact: true }).first().click();
+  await g.waitForTimeout(1200);
+  await g.getByRole("button", { name: /^Menú/ }).click();
+  await g.waitForTimeout(400);
+  await g.getByRole("button", { name: "Leche, azúcar y extras" }).click();
+  await g.waitForTimeout(400);
+
+  // Antes solo se veían 3 grupos (Leche, Azúcar, Extras); la carta trae 16.
+  const chips = g.locator("button[title='Borrar este grupo de opciones']");
+  eq("los 13 grupos que no son de fábrica tienen su botón de borrar", await chips.count(), 13);
+  check("un grupo de sabor de la carta aparece (Sidras Italianas)", await g.getByText("Sabor", { exact: false }).count() > 0);
+  check("y uno de bebida incluida en combo aparece", await g.getByText("Bebida incluida").first().isVisible().catch(() => false));
+
+  // Crear un grupo nuevo desde la UI.
+  await g.getByRole("button", { name: "Nuevo grupo de opciones" }).click();
+  await g.getByPlaceholder(/Temperatura, Sabor/).fill("Punto de la carne");
+  await g.getByRole("button", { name: "Puede elegir varias" }).click();
+  await g.getByRole("button", { name: "Crear grupo" }).click();
+  await g.waitForTimeout(500);
+  check("el grupo nuevo aparece en la lista", await g.getByText("Punto de la carne").isVisible().catch(() => false));
+
+  // El producto "Combo N.1" ya trae su extra de bebida incluida en los datos:
+  // el checklist del producto tiene que mostrarlo marcado, no solo existir.
+  await g.getByRole("button", { name: "Productos" }).click();
+  await g.waitForTimeout(300);
+  await g.getByText("Combo N.1", { exact: true }).click();
+  await g.waitForTimeout(400);
+  const filaExtra = g.getByRole("button", { name: "Bebida incluida" });
+  check("Combo N.1 muestra su grupo de bebida ya marcado", (await filaExtra.locator("svg").count()) > 0);
+  check("sin errores de JavaScript", erroresG.length === 0, erroresG.slice(0, 2).join(" | "));
+}
+
 await nav.close();
 await para();
 process.exit(resumen("CARTA Y TECLADO") ? 1 : 0);
