@@ -7,13 +7,32 @@ import path from "node:path";
 const TICKETS = path.join(DATOS, "tickets");
 const papeles = () => { try { return fs.readdirSync(TICKETS).filter((f) => f.endsWith(".txt")); } catch { return []; } };
 const leerPapeles = () => papeles().map((f) => fs.readFileSync(path.join(TICKETS, f), "utf8"));
-const esperaPapel = async (n, ms = 9000) => {
+/* 25 s de margen, no 9: el worker de impresión despierta cada 4 s y procesa la
+   cola por tandas, así que el papel puede tardar dos o tres vueltas. */
+const esperaPapel = async (n, ms = 25000) => {
   const t0 = Date.now();
   while (Date.now() - t0 < ms) {
     if (papeles().length >= n) return true;
     await new Promise((r) => setTimeout(r, 200));
   }
   return false;
+};
+
+/* Espera un papel POR SU CONTENIDO, no por el conteo.
+
+   Esperar "un papel más" fallaba de forma intermitente sin que nada estuviera
+   roto: si de una sección anterior quedaba un papel en cola, el contador subía
+   con ESE y la espera terminaba antes de que se escribiera el que de verdad se
+   estaba buscando. La comanda de cancelación sí salía, solo que un momento
+   después de que la prueba ya había mirado. */
+const esperaTexto = async (re, ms = 25000) => {
+  const t0 = Date.now();
+  while (Date.now() - t0 < ms) {
+    const hallado = leerPapeles().find((t) => re.test(t));
+    if (hallado) return hallado;
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  return null;
 };
 
 await arranca({ puerto: 5199 });
@@ -299,8 +318,7 @@ seccion("9. Anular un producto ya mandado a preparar");
   eq("la línea NO se borra, queda marcada", cta2.lines.length, 3);
   eq("la línea queda anulada", cta2.lines.find((l) => l.uid === croissant.uid).voided, true);
 
-  await esperaPapel(papelesAntes + 1);
-  const cancel = leerPapeles().find((t) => /CANCELA/i.test(t));
+  const cancel = await esperaTexto(/CANCELA/i);
   check("sale una comanda de CANCELACIÓN a cocina", !!cancel, "papeles: " + papeles().length);
   if (cancel) check("la cancelación nombra el producto", /Croissant/.test(cancel), cancel.slice(0, 200));
 

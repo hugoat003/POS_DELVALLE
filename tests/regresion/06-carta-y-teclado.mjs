@@ -8,7 +8,7 @@
 import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";
-import { arranca, para, cliente, base, seccion, check, eq, resumen, linea, uid, DATOS } from "./harness.mjs";
+import { arranca, para, cliente, base, seccion, check, eq, resumen, linea, pagoEfectivo, uid, DATOS } from "./harness.mjs";
 import { CATEGORIES, MODS, PRODUCTS } from "../../deploy/menu/cafe-del-valle.mjs";
 
 await arranca({ puerto: 5216 });
@@ -254,8 +254,15 @@ seccion("54. Editor de menú: los 16 grupos de opciones son editables");
   check("un grupo de sabor de la carta aparece (Sidras Italianas)", await g.getByText("Sabor", { exact: false }).count() > 0);
   check("y uno de bebida incluida en combo aparece", await g.getByText("Bebida incluida").first().isVisible().catch(() => false));
 
+  // Con 16 grupos cargados el botón de crear uno nuevo quedaba hasta el fondo
+  // de una página de miles de píxeles: en la práctica, invisible. Tiene que
+  // estar arriba de todo, sin desplazarse.
+  const botonNuevo = g.getByRole("button", { name: "Nuevo grupo de opciones" });
+  const posBoton = await botonNuevo.boundingBox();
+  check("'Nuevo grupo de opciones' está a la vista sin hacer scroll", posBoton && posBoton.y < 500, JSON.stringify(posBoton));
+
   // Crear un grupo nuevo desde la UI.
-  await g.getByRole("button", { name: "Nuevo grupo de opciones" }).click();
+  await botonNuevo.click();
   await g.getByPlaceholder(/Temperatura, Sabor/).fill("Punto de la carne");
   await g.getByRole("button", { name: "Puede elegir varias" }).click();
   await g.getByRole("button", { name: "Crear grupo" }).click();
@@ -270,7 +277,142 @@ seccion("54. Editor de menú: los 16 grupos de opciones son editables");
   await g.waitForTimeout(400);
   const filaExtra = g.getByRole("button", { name: "Bebida incluida" });
   check("Combo N.1 muestra su grupo de bebida ya marcado", (await filaExtra.locator("svg").count()) > 0);
+
+  // El caso real que falló: crear un grupo SIN salir del producto que se
+  // estaba editando (antes solo existía esa posibilidad desde la pestaña
+  // separada de Opciones), y que quede marcado ahí mismo sin tocar nada más.
+  await g.mouse.click(10, 10); // cierra Combo N.1 sin guardar (clic fuera de la hoja)
+  await g.waitForTimeout(300);
+  await g.getByText("Hamburguesa Crispy", { exact: true }).click();
+  await g.waitForTimeout(400);
+  await g.getByRole("button", { name: "Nuevo grupo de opciones" }).scrollIntoViewIfNeeded();
+  await g.getByRole("button", { name: "Nuevo grupo de opciones" }).click();
+  await g.getByPlaceholder(/Temperatura, Sabor/).fill("Término de la carne");
+  await g.getByRole("button", { name: "Crear y marcar" }).click();
+  await g.waitForTimeout(400);
+  const filaNueva = g.getByRole("button", { name: "Término de la carne" });
+  check("el grupo creado desde el producto aparece YA marcado, sin tocarlo", (await filaNueva.locator("svg").count()) > 0);
+  await g.getByRole("button", { name: "Guardar" }).click();
+  // La config se sube con 500 ms de retardo (ver scheduleServerWrite): leer
+  // antes devuelve el valor viejo y la prueba falla sin que nada esté roto.
+  await g.waitForTimeout(2000);
+  const estG = await admin.get("/api/state");
+  const hc = estG.data.config.cdv_menu.find((x) => x.name === "Hamburguesa Crispy");
+  check("y quedó guardado en el servidor", hc && hc.mods.includes("termino_de_la_carne"), JSON.stringify(hc && hc.mods));
   check("sin errores de JavaScript", erroresG.length === 0, erroresG.slice(0, 2).join(" | "));
+}
+
+seccion("55. Agregar a una mesa en curso NO la manda al final del tablero");
+{
+  /* El caso que reportó el dueño con el local lleno: estaba preparando una
+     comanda, a esa mesa se le agregó algo más, y el ticket que tenía en las
+     manos se le fue hasta el final del tablero. */
+  const mesa = (id, label) => ({ id, label, areaId: "salon", areaName: "Salón" });
+  const abrirYEnviar = async (nombre, m) => {
+    const a = await cajero.post("/api/orders/open", { id: uid("O"), lines: [linePara(nombre)], orderType: "Aquí", table: m });
+    await cajero.post(`/api/orders/${a.data.order.id}/enviar`);
+    return a.data.order.id;
+  };
+  const tablero = async () => (await admin.get("/api/state")).data.kds.map((o) => o.id);
+
+  // Tres mesas en cola, en orden de llegada.
+  const A = await abrirYEnviar("Café Negro", mesa("s4", "4"));
+  await new Promise((r) => setTimeout(r, 1100));
+  const B = await abrirYEnviar("Frappe Clásico", mesa("s5", "5"));
+  await new Promise((r) => setTimeout(r, 1100));
+  const C = await abrirYEnviar("Chai Clásico", mesa("s6", "6"));
+
+  // Posiciones relativas: el tablero puede traer comandas de otras pruebas.
+  const antes = await tablero();
+  const posA = antes.indexOf(A);
+  check("las tres mesas entran al tablero en orden de llegada",
+    posA >= 0 && antes.indexOf(B) === posA + 1 && antes.indexOf(C) === posA + 2,
+    `A=${posA} B=${antes.indexOf(B)} C=${antes.indexOf(C)}`);
+
+  // A la mesa que el barista está preparando (la primera) se le agrega algo.
+  await new Promise((r) => setTimeout(r, 1100));
+  const cta = (await admin.get("/api/state")).data.openOrders.find((o) => o.id === A);
+  const agregada = await cajero.put(`/api/orders/${A}/lines`, {
+    lines: [...cta.lines, linePara("Capuccino Clásico")],
+    table: mesa("s4", "4"),
+    orderType: "Aquí",
+  });
+  eq("se le puede agregar un producto a la cuenta", agregada.status, 200);
+  const env = await cajero.post(`/api/orders/${A}/enviar`);
+  eq("y se manda a preparar", env.status, 200);
+
+  const despues = await tablero();
+  eq("la mesa en curso NO se mueve de su lugar", despues.indexOf(A), posA);
+  check("sigue por delante de las que llegaron después",
+    despues.indexOf(A) < despues.indexOf(B) && despues.indexOf(B) < despues.indexOf(C),
+    `A=${despues.indexOf(A)} B=${despues.indexOf(B)} C=${despues.indexOf(C)}`);
+  check("y NO se fue al final del tablero", despues.indexOf(A) !== despues.length - 1);
+
+  const enTablero = (await admin.get("/api/state")).data.kds.find((o) => o.id === A);
+  eq("el barista ve los dos productos de esa mesa", enTablero.lines.length, 2);
+  check("el cronómetro sí se actualiza al último envío (no marca en rojo de más)",
+    enTablero.sentAt > enTablero.pendingSince, `sentAt=${enTablero.sentAt} pendingSince=${enTablero.pendingSince}`);
+
+  // El caso contrario tiene que seguir funcionando: una mesa que ya recibió
+  // TODO y vuelve a pedir es trabajo nuevo, y ahí sí va al final.
+  await admin.post(`/api/orders/${B}/prep`, { status: "listo" });
+  await admin.post(`/api/orders/${B}/prep`, { status: "entregado" });
+  check("la mesa entregada sale del tablero", !(await tablero()).includes(B));
+  await new Promise((r) => setTimeout(r, 1100));
+  const ctaB = (await admin.get("/api/state")).data.openOrders.find((o) => o.id === B);
+  await cajero.put(`/api/orders/${B}/lines`, { lines: [...ctaB.lines, linePara("Café Negro")], table: mesa("s5", "5"), orderType: "Aquí" });
+  await cajero.post(`/api/orders/${B}/enviar`);
+  const final = await tablero();
+  eq("si vuelve a pedir después de recibir todo, entra al final", final.indexOf(B), final.length - 1);
+}
+
+seccion("56. Al abrir caja, el tablero no arrastra lo que quedó sin marcar");
+{
+  /* En el local se acumularon 46 comandas en trece días: ventas cobradas a las
+     que nadie les marcó Listo ni Entregado. El tablero no las soltaba nunca, y
+     al abrir caja el barista las encontraba por delante de las del día. */
+  const p = producto("Café Negro");
+  const venta = await cajero.post("/api/orders", {
+    id: uid("O"),
+    orderType: "Para llevar",
+    table: null,
+    lines: [linea({ productId: p.id, name: p.name, catId: p.cat, price: p.price })],
+    payment: pagoEfectivo(p.price),
+  });
+  eq("se cobra una venta de mostrador con bebida", venta.status, 200);
+  const olvidada = venta.data.order.id;
+  check("entra al tablero de barra", (await admin.get("/api/state")).data.kds.some((o) => o.id === olvidada));
+
+  // Fin del día: se descartan las cuentas de mesa que quedaron de las pruebas
+  // anteriores (el cierre se bloquea con cuentas sin cobrar) y se cierra caja.
+  for (const o of (await admin.get("/api/state")).data.openOrders) {
+    await cajero.post(`/api/orders/${o.id}/void`, { reason: "fin de pruebas" });
+  }
+  const cierre = await cajero.post("/api/shifts/close", { countedCash: 200 });
+  eq("se cierra la caja", cierre.status, 200);
+  eq("con la caja cerrada el tablero queda vacío", (await admin.get("/api/state")).data.kds.length, 0);
+
+  // Día siguiente.
+  eq("se abre caja de nuevo", (await cajero.post("/api/shifts/open", { openingCash: 200 })).status, 200);
+  const alAbrir = (await admin.get("/api/state")).data.kds;
+  eq("el tablero arranca LIMPIO, sin lo de ayer", alAbrir.length, 0);
+  check("y la comanda olvidada ya no reaparece", !alAbrir.some((o) => o.id === olvidada));
+
+  // Lo del día nuevo sí entra con normalidad.
+  const hoy = await cajero.post("/api/orders", {
+    id: uid("O"),
+    orderType: "Para llevar",
+    table: null,
+    lines: [linea({ productId: p.id, name: p.name, catId: p.cat, price: p.price })],
+    payment: pagoEfectivo(p.price),
+  });
+  const tablero = (await admin.get("/api/state")).data.kds;
+  eq("una comanda del turno nuevo sí aparece", tablero.length, 1);
+  eq("y es la de hoy", tablero[0].id, hoy.data.order.id);
+
+  // El tablero del dueño cuenta lo mismo que la pantalla, no lo acumulado.
+  const dash = await admin.get("/api/dashboard");
+  eq("el tablero del dueño cuenta solo lo del turno", dash.data.preparacion.pendientes, 1);
 }
 
 await nav.close();

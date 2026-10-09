@@ -206,8 +206,14 @@ export function KdsScreen({ orders, shiftOpen, onSetPrep }) {
     setUltimo(null);
   }
 
-  // De la más antigua a la más nueva: es el orden de atención y el del teclado.
-  const antiguedad = (o) => o.sentAt || o.ts;
+  /* De la más antigua a la más nueva: es el orden de atención y el del teclado.
+
+     Se ordena por `pendingSince` —cuándo empezó el trabajo que sigue pendiente—
+     y NO por `sentAt`, que es el del último envío. Con el local lleno, agregarle
+     algo a una mesa que ya estaba en preparación la mandaba al final del
+     tablero: al barista se le movía de sitio el ticket que tenía en las manos.
+     El cronómetro de abajo sí sigue midiendo desde el último envío. */
+  const antiguedad = (o) => o.pendingSince || o.sentAt || o.ts;
   const activas = orders
     .filter((o) => !o.voided && (o.prepStatus || "pendiente") !== "entregado")
     .sort((a, b) => antiguedad(a) - antiguedad(b));

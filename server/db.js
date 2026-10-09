@@ -290,6 +290,24 @@ if (addColumn("ALTER TABLE orders ADD COLUMN served_seq INTEGER NOT NULL DEFAULT
 }
 addColumn("ALTER TABLE orders ADD COLUMN served_prev INTEGER NOT NULL DEFAULT 0");
 
+/* Posición en el tablero de barra.
+
+   `sent_at` es el del ÚLTIMO envío porque el cronómetro mide desde que llegó la
+   comanda. Ordenar la cola por ese mismo campo tenía un efecto que el barista
+   sufrió con el local lleno: si a una mesa que él estaba preparando se le
+   agregaba algo y se reenviaba, esa orden pasaba a ser "la más nueva" y se iba
+   hasta el final del tablero. El ticket que tenía en las manos se le movía de
+   sitio a media preparación.
+
+   `pending_since` marca cuándo empezó el trabajo que HOY sigue pendiente, y por
+   eso NO se toca al agregar otra ronda sobre trabajo que ya estaba en cola: la
+   mesa conserva su lugar. Solo se reinicia cuando la orden no tenía nada
+   pendiente (ya se entregó todo y vuelve a pedir), que ahí sí es trabajo nuevo
+   y va al final con razón. */
+if (addColumn("ALTER TABLE orders ADD COLUMN pending_since INTEGER")) {
+  db.exec("UPDATE orders SET pending_since = COALESCE(sent_at, ts)");
+}
+
 /* Las ventas históricas se tomaron, se prepararon y se cobraron en el mismo
    acto. Sin estas marcas el tablero de barra (que ahora filtra por sent_at) las
    dejaría de ver, y `send_seq = 0` haría que un envío las tratara como nunca
@@ -414,8 +432,22 @@ const S = {
      Antes el filtro era prep_status != 'entregado', y eso dejaba fuera para
      siempre a una mesa que pidiera una segunda ronda después de recibir la
      primera: el barista nunca veía lo nuevo. */
+  /* Se ordena por `pending_since` (cuándo empezó el trabajo que sigue
+     pendiente) y no por `sent_at` (último envío): si no, agregarle algo a una
+     mesa que el barista ya está preparando la mandaba al final de la cola. */
+  /* `desde` es la hora en que abrió el turno: el tablero muestra el trabajo de
+     HOY y nada más.
+
+     Sin ese corte, una comanda a la que nadie le marcó Listo ni Entregado se
+     quedaba en el tablero para siempre. En el local se acumularon 46 en trece
+     días: al abrir caja, el barista encontraba el tablero lleno de comandas
+     viejas por delante de las del día, y la tecla Enter apuntaba a una de hace
+     dos semanas. El turno cerrado es la señal de que ese trabajo ya terminó
+     —se sirvió o ya no se va a servir—, así que no tiene por qué seguir ahí. */
   kdsOrders: db.prepare(`SELECT * FROM orders WHERE sent_at IS NOT NULL
-                         AND send_seq > served_seq AND voided = 0 ORDER BY sent_at ASC`),
+                         AND send_seq > served_seq AND voided = 0
+                         AND sent_at >= @desde
+                         ORDER BY COALESCE(pending_since, sent_at) ASC`),
   orderInsert: db.prepare(`INSERT INTO orders (id, shift_id, number, ts, time_label, order_type, cashier, lines, payment, table_json,
       status, opened_at, sent_at, paid_at, send_seq, served_seq, opened_by, prep_status)
     VALUES (@id, @shift_id, @number, @ts, @time_label, @order_type, @cashier, @lines, @payment, @table_json,
@@ -425,7 +457,14 @@ const S = {
      vez. Y `sent_at` pasa a ser el del ÚLTIMO envío, no el del primero: el
      cronómetro del tablero mide desde que llegó la comanda, y con la hora de
      apertura una mesa de dos horas mostraba en rojo una bebida recién pedida. */
+  /* `pending_since` solo se reinicia si la orden NO tenía trabajo pendiente
+     antes de este envío. En SQLite las expresiones de la derecha leen los
+     valores VIEJOS de la fila, así que `send_seq > served_seq` pregunta por el
+     estado previo al envío, que es justo lo que hace falta: una segunda ronda
+     sobre una comanda que sigue en el tablero conserva su lugar en la cola. */
   orderMarkSent: db.prepare(`UPDATE orders SET status = 'enviada', sent_at = @now, send_seq = @send_seq,
+    pending_since = CASE WHEN send_seq > served_seq AND pending_since IS NOT NULL
+                         THEN pending_since ELSE @now END,
     prep_status = 'pendiente', ready_at = NULL, served_at = NULL WHERE id = @id`),
   orderMarkPaid: db.prepare(`UPDATE orders SET status = 'cobrada', paid_at = @now, payment = @payment,
     shift_id = @shift_id, cashier = @cashier, ts = @ts, time_label = @time_label WHERE id = @id`),
@@ -524,6 +563,9 @@ export function rowToOrder(r) {
   };
   if (r.opened_at) o.openedAt = r.opened_at;
   if (r.sent_at) o.sentAt = r.sent_at;
+  // Lugar en la cola del tablero (ver pending_since en el esquema). El
+  // cronómetro sigue usando sentAt; esto es solo el orden.
+  if (r.pending_since) o.pendingSince = r.pending_since;
   if (r.paid_at) o.paidAt = r.paid_at;
   if (r.opened_by) o.openedBy = r.opened_by;
   if (r.ready_at) o.readyAt = r.ready_at;
@@ -802,9 +844,13 @@ export const kvUpdatedAt = (key) => (S.kvUpdatedAt.get(key) || {}).updated_at ||
    Las órdenes que se quedan sin items de bebida no entran al tablero: son
    órdenes de pura comida y su camino es la impresora de cocina. */
 function kdsBoard() {
+  // Con la caja cerrada no hay tablero: la pantalla del barista ya lo dice, y
+  // así el trabajo del turno anterior no reaparece al abrir el siguiente.
+  const turno = S.openShift.get();
+  if (!turno) return [];
   const cats = kvGet("cdv_cats") || [];
   const out = [];
-  for (const r of S.kdsOrders.all()) {
+  for (const r of S.kdsOrders.all({ desde: turno.opened_at || 0 })) {
     const o = rowToOrder(r);
     /* Solo las rondas que aún no se entregaron. Si la mesa ya recibió su primera
        tanda y pidió más, el barista debe ver lo NUEVO y no volver a preparar lo
@@ -903,7 +949,8 @@ export function getDashboard() {
       enviadas: abiertas.filter((o) => o.status === "enviada").length,
     },
     preparacion: {
-      pendientes: S.kdsOrders.all().length,
+      // Mismo criterio que el tablero: lo pendiente del turno abierto.
+      pendientes: kdsBoard().length,
     },
     alertas: {
       insumosBajoMinimo: bajoMinimo.map((i) => ({ name: i.name, stock: i.stock, unit: i.unit, minStock: i.minStock })),

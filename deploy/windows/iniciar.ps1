@@ -10,7 +10,15 @@
   propósito: un servicio corre como SYSTEM y ahí no existen ni la unidad de
   Google Drive (respaldo) ni la impresora compartida del usuario (ticket).
   Corriendo en la sesión del cajero, las dos funcionan.
+
+  -SoloPantallas abre las ventanas que falten y termina, SIN tocar el servidor.
+  Es lo que usa el acceso directo "Abrir pantallas del POS" del escritorio:
+  después de una sesión de escritorio remoto, la sesión vuelve a los monitores
+  físicos pero el tablero de barra puede haberse quedado sin abrir, porque
+  desde el escritorio remoto Windows no ve la segunda pantalla.
 #>
+
+param([switch]$SoloPantallas)
 
 $ErrorActionPreference = "Stop"
 
@@ -109,8 +117,21 @@ function PantallaBarra {
   }
 }
 
+# ¿Ya hay una ventana del POS con ese perfil? Se reconoce por el perfil propio
+# de cada pantalla, así no se abre dos veces la misma ni se cuenta el Chrome
+# personal de quien use la máquina.
+function VentanaAbierta($perfil) {
+  $procs = Get-CimInstance Win32_Process -Filter "Name = 'chrome.exe'" -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandLine -like "*--user-data-dir=$perfil*" -and $_.CommandLine -notlike "*--type=*" }
+  return [bool]$procs
+}
+
 # --- navegador en modo pantalla completa ---
 function AbrirVentana($nombre, $perfil, $posicion) {
+  if (VentanaAbierta $perfil) {
+    Escribir "$nombre ya estaba abierta; no se abre otra"
+    return
+  }
   $chrome = @(
     "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
     "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe"
@@ -157,6 +178,16 @@ function AbrirApp {
   } else {
     Escribir "un solo monitor (o BARRA_PANTALLA=off): no se abre el tablero de barra"
   }
+}
+
+# --- solo abrir las pantallas que falten, sin tocar el servidor ---
+# El servidor sigue corriendo y nadie pierde una orden a medio tomar: esto es
+# para recuperar una ventana que se quedó cerrada, no para reiniciar.
+if ($SoloPantallas) {
+  Escribir "abriendo solo las pantallas que falten (el servidor no se toca)"
+  AbrirApp
+  Escribir "listo"
+  exit 0
 }
 
 # --- bucle de supervisión ---

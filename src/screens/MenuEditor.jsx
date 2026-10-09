@@ -19,6 +19,33 @@ function ordenGrupos(mods) {
   return [...GRUPOS_BASE.filter((id) => ids.includes(id)), ...ids.filter((id) => !GRUPOS_BASE.includes(id))];
 }
 
+// De "Bebida incluida" a un id estable ("bebida_incluida"), sin acentos ni espacios.
+function slugGrupo(nombre) {
+  return (
+    nombre
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_|_$/g, "") || "grupo"
+  );
+}
+
+/* Agrega un grupo nuevo a `mods`, con id único. Se usa desde dos sitios: la
+   pestaña "Leche, azúcar y extras" y el formulario de producto (para no
+   obligar a salir del producto que se está editando solo para crear el grupo
+   que necesita). Devuelve el id nuevo, para que quien llamó pueda marcarlo de
+   una vez en el producto que estaba editando. */
+function nuevoGrupo(mods, nombre, type) {
+  let id = slugGrupo(nombre);
+  if (mods[id]) {
+    let n = 2;
+    while (mods[id + "_" + n]) n++;
+    id = id + "_" + n;
+  }
+  return { id, mods: { ...mods, [id]: { id, label: nombre, type, required: false, options: [] } } };
+}
+
 // Descarta filas a medio escribir (sin ingrediente o en cero) al guardar.
 const cleanRecipe = (rows) =>
   (rows || [])
@@ -67,6 +94,77 @@ function CheckRow({ checked, onChange, label }) {
         {checked && <Icon name="check" size={16} stroke={3} />}
       </span>
       <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)" }}>{label}</span>
+    </button>
+  );
+}
+
+/* Formulario compacto para crear un grupo de opciones (nombre + tipo). Se usa
+   dos veces con la misma pinta: en la pestaña de Opciones y dentro del
+   formulario de producto, así que vive aparte en vez de repetirse. */
+function NuevoGrupoForm({ valor, onChange, onCrear, onCancelar, compact }) {
+  return (
+    <div
+      style={{
+        background: compact ? "var(--cream)" : "#fff",
+        border: "1px dashed var(--borde-fuerte)",
+        borderRadius: compact ? 12 : "var(--r)",
+        padding: compact ? "12px 14px" : "16px 20px",
+        display: "flex",
+        flexDirection: "column",
+        gap: compact ? 10 : 12,
+      }}
+    >
+      {!compact && <div style={{ fontFamily: "var(--ui)", fontWeight: 600, fontSize: 16, color: "var(--tinta)" }}>Nuevo grupo de opciones</div>}
+      <input
+        autoFocus
+        value={valor.nombre}
+        onChange={(e) => onChange((n) => ({ ...n, nombre: e.target.value }))}
+        placeholder="Ej. Temperatura, Sabor, Bebida incluida…"
+        style={inp}
+      />
+      <div style={{ display: "flex", gap: 8 }}>
+        <Pill active={valor.type === "single"} onClick={() => onChange((n) => ({ ...n, type: "single" }))}>
+          El cliente elige una
+        </Pill>
+        <Pill active={valor.type === "multi"} onClick={() => onChange((n) => ({ ...n, type: "multi" }))}>
+          Puede elegir varias
+        </Pill>
+      </div>
+      <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+        <Btn kind="ghost" size="sm" onClick={onCancelar}>
+          Cancelar
+        </Btn>
+        <Btn kind="primary" size="sm" disabled={!valor.nombre.trim()} onClick={onCrear} icon="check">
+          {compact ? "Crear y marcar" : "Crear grupo"}
+        </Btn>
+      </div>
+    </div>
+  );
+}
+
+function BotonNuevoGrupo({ onClick, compact }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        marginTop: compact ? 10 : 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: compact ? 7 : 8,
+        width: "100%",
+        background: "none",
+        border: "2px dashed var(--line)",
+        borderRadius: compact ? 12 : "var(--r)",
+        padding: compact ? "9px 16px" : "14px 16px",
+        cursor: "pointer",
+        color: "var(--primary)",
+        fontWeight: 700,
+        fontFamily: "var(--ui)",
+        fontSize: compact ? 14 : 15,
+      }}
+    >
+      <Icon name="plus" size={compact ? 15 : 18} /> Nuevo grupo de opciones
     </button>
   );
 }
@@ -128,7 +226,7 @@ function RecipeEditor({ value, onChange, ingredients, allowNegative, compact, em
 }
 
 // ---------- Formulario de producto ----------
-function ProductForm({ initial, cats, ingredients, modGroups, onCancel, onSave, onDelete }) {
+function ProductForm({ initial, cats, ingredients, modGroups, onCrearGrupo, onCancel, onSave, onDelete }) {
   const [name, setName] = useState(initial.name || "");
   const [cat, setCat] = useState(initial.cat || cats[0].id);
   const [price, setPrice] = useState(initial.price != null ? String(initial.price) : "");
@@ -139,6 +237,11 @@ function ProductForm({ initial, cats, ingredients, modGroups, onCancel, onSave, 
   const [icon, setIcon] = useState(initial.icon || "");
   const [image, setImage] = useState(initial.image || "");
   const [recipe, setRecipe] = useState(() => (initial.recipe || []).map((r) => ({ ...r })));
+  // Crear un grupo de opciones SIN salir de este producto: antes solo se podía
+  // desde la pestaña "Leche, azúcar y extras", y quien estaba editando un
+  // producto (el caso normal — "a esta hamburguesa le falta un extra") no
+  // tenía ahí ningún botón para crear uno. Al crear, se marca de una vez.
+  const [nuevoGrupoLocal, setNuevoGrupoLocal] = useState(null); // { nombre, type } | null
   const isNew = !initial.id;
 
   const ingById = useMemo(() => Object.fromEntries(ingredients.map((i) => [i.id, i])), [ingredients]);
@@ -149,6 +252,13 @@ function ProductForm({ initial, cats, ingredients, modGroups, onCancel, onSave, 
 
   function toggleMod(id) {
     setMods((m) => (m.includes(id) ? m.filter((x) => x !== id) : [...m, id]));
+  }
+  function crearGrupoLocal() {
+    const nombre = (nuevoGrupoLocal.nombre || "").trim();
+    if (!nombre || !onCrearGrupo) return;
+    const id = onCrearGrupo(nombre, nuevoGrupoLocal.type);
+    setMods((m) => [...m, id]);
+    setNuevoGrupoLocal(null);
   }
   function setSize(i, field, value) {
     setSizes((prev) => prev.map((s, idx) => (idx === i ? { ...s, [field]: field === "delta" ? Math.round((parseFloat(value) || 0) * 100) / 100 : value } : s)));
@@ -315,11 +425,23 @@ function ProductForm({ initial, cats, ingredients, modGroups, onCancel, onSave, 
                 return <CheckRow key={gid} checked={mods.includes(gid)} onChange={() => toggleMod(gid)} label={g.label} />;
               })}
               {Object.keys(modGroups || {}).length === 0 && (
-                <div style={{ fontSize: 13, color: "var(--muted)" }}>
-                  Todavía no hay grupos de opciones. Créalos desde la pestaña "Leche, azúcar y extras".
-                </div>
+                <div style={{ fontSize: 13, color: "var(--muted)" }}>Todavía no hay grupos de opciones. Crea el primero abajo.</div>
               )}
             </div>
+            {onCrearGrupo &&
+              (nuevoGrupoLocal ? (
+                <div style={{ marginTop: 12 }}>
+                  <NuevoGrupoForm
+                    valor={nuevoGrupoLocal}
+                    onChange={setNuevoGrupoLocal}
+                    onCrear={crearGrupoLocal}
+                    onCancelar={() => setNuevoGrupoLocal(null)}
+                    compact
+                  />
+                </div>
+              ) : (
+                <BotonNuevoGrupo compact onClick={() => setNuevoGrupoLocal({ nombre: "", type: "single" })} />
+              ))}
           </Field>
 
           {/* Receta: lo que consume UNA unidad. Las ventas lo descuentan solas. */}
@@ -378,16 +500,6 @@ function ProductForm({ initial, cats, ingredients, modGroups, onCancel, onSave, 
   );
 }
 
-// De "Bebida incluida" a un id estable ("bebida_incluida"), sin acentos ni espacios.
-function slugGrupo(nombre) {
-  return nombre
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_|_$/g, "") || "grupo";
-}
-
 // ---------- Editor de modificadores (leche, azúcar, extras, y los que se agreguen) ----------
 function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = [] }) {
   const order = ordenGrupos(mods);
@@ -396,14 +508,7 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
   function crearGrupo() {
     const nombre = (nuevo.nombre || "").trim();
     if (!nombre) return;
-    let id = slugGrupo(nombre);
-    // Id repetido (dos grupos con nombre parecido): se le agrega un número.
-    if (mods[id]) {
-      let n = 2;
-      while (mods[id + "_" + n]) n++;
-      id = id + "_" + n;
-    }
-    setMods((prev) => ({ ...prev, [id]: { id, label: nombre, type: nuevo.type, required: false, options: [] } }));
+    setMods((prev) => nuevoGrupo(prev, nombre, nuevo.type).mods);
     setNuevo(null);
   }
 
@@ -486,6 +591,19 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
           Define cuánto se cobra de más por cada opción. <b>+Q0.00</b> = sin costo adicional. Los precios aplican a todos los productos que usen la opción. Con <b>Destino</b> el extra viaja con su producto (lo normal) o se manda aparte: útil cuando un plato de cocina trae café, que lo prepara la barra.
         </span>
       </div>
+
+      {/* Crear un grupo nuevo va PRIMERO, no al final de la lista: con muchos
+          grupos cargados (sabores, temperatura, "bebida incluida" de cada
+          combo…) la pestaña se vuelve una página larguísima, y el botón se
+          perdía hasta abajo — alguien con 18 grupos cargados tenía que
+          desplazarse miles de píxeles para encontrarlo, que en la práctica es
+          lo mismo que no tenerlo. */}
+      {nuevo ? (
+        <NuevoGrupoForm valor={nuevo} onChange={setNuevo} onCrear={crearGrupo} onCancelar={() => setNuevo(null)} />
+      ) : (
+        <BotonNuevoGrupo onClick={() => setNuevo({ nombre: "", type: "single" })} />
+      )}
+
       {order.map((gid) => {
         const g = mods[gid];
         if (!g) return null;
@@ -682,51 +800,6 @@ function ModifiersEditor({ mods, setMods, ingredients = [], menu = [], cats = []
           </div>
         );
       })}
-
-      {/* Crear un grupo nuevo: temperatura, sabor, "bebida incluida" de un
-          combo… cualquier pregunta que la carta necesite y que no sea leche,
-          azúcar ni extras. Sale sin opciones; se le agregan con "Agregar
-          opción" una vez creado, igual que a los demás grupos. */}
-      {nuevo ? (
-        <div style={{ background: "#fff", border: "2px dashed var(--borde-fuerte)", borderRadius: "var(--r)", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ fontFamily: "var(--ui)", fontWeight: 600, fontSize: 16, color: "var(--tinta)" }}>Nuevo grupo de opciones</div>
-          <input
-            autoFocus
-            value={nuevo.nombre}
-            onChange={(e) => setNuevo((n) => ({ ...n, nombre: e.target.value }))}
-            placeholder="Ej. Temperatura, Sabor, Bebida incluida…"
-            style={inp}
-          />
-          <div style={{ display: "flex", gap: 8 }}>
-            <Pill active={nuevo.type === "single"} onClick={() => setNuevo((n) => ({ ...n, type: "single" }))}>
-              El cliente elige una
-            </Pill>
-            <Pill active={nuevo.type === "multi"} onClick={() => setNuevo((n) => ({ ...n, type: "multi" }))}>
-              Puede elegir varias
-            </Pill>
-          </div>
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <Btn kind="ghost" size="sm" onClick={() => setNuevo(null)}>
-              Cancelar
-            </Btn>
-            <Btn kind="primary" size="sm" disabled={!nuevo.nombre.trim()} onClick={crearGrupo} icon="check">
-              Crear grupo
-            </Btn>
-          </div>
-        </div>
-      ) : (
-        <button
-          onClick={() => setNuevo({ nombre: "", type: "single" })}
-          style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            width: "100%", background: "none", border: "2px dashed var(--line)", borderRadius: "var(--r)",
-            padding: "14px 16px", cursor: "pointer", color: "var(--primary)", fontWeight: 700,
-            fontFamily: "var(--ui)", fontSize: 15,
-          }}
-        >
-          <Icon name="plus" size={18} /> Nuevo grupo de opciones
-        </button>
-      )}
     </div>
   );
 }
@@ -856,6 +929,14 @@ export function MenuEditor({ menu, setMenu, mods, setMods, cats, setCats, ingred
     setCats((prev) => prev.filter((c) => c.id !== id));
     if (activeCat === id) setActiveCat("all");
   }
+  // Crear un grupo desde DENTRO del formulario de producto: se agrega al
+  // catálogo global de opciones (igual que desde la pestaña Opciones) y
+  // devuelve el id para que el producto que se está editando lo marque.
+  function crearGrupoDesdeProducto(nombre, type) {
+    const { id, mods: next } = nuevoGrupo(mods, nombre, type);
+    setMods(next);
+    return id;
+  }
 
   const TABS = [
     ["productos", "Productos"],
@@ -983,7 +1064,18 @@ export function MenuEditor({ menu, setMenu, mods, setMods, cats, setCats, ingred
           <CategoriesEditor cats={cats} setCats={setCats} counts={counts} onDelete={removeCat} />
         )}
       </div>
-      {editing && <ProductForm initial={editing} cats={cats} ingredients={ingredients} modGroups={mods} onCancel={() => setEditing(null)} onSave={upsert} onDelete={remove} />}
+      {editing && (
+        <ProductForm
+          initial={editing}
+          cats={cats}
+          ingredients={ingredients}
+          modGroups={mods}
+          onCrearGrupo={crearGrupoDesdeProducto}
+          onCancel={() => setEditing(null)}
+          onSave={upsert}
+          onDelete={remove}
+        />
+      )}
     </div>
   );
 }
